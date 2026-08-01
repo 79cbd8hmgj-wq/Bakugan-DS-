@@ -8,6 +8,7 @@ import sys
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
 from bakugan_ds.inspection import inspect_rom
 from bakugan_ds.profile import load_profile
+from bakugan_ds.workspace.extract import ExtractionOptions, extract_workspace
 
 DEFAULT_PROFILE = Path("config/b6re_rev0.json")
 
@@ -24,6 +25,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="parse a ROM that does not match the selected profile",
     )
+    extract_parser = subparsers.add_parser(
+        "extract", help="extract a deterministic editable ROM workspace"
+    )
+    extract_parser.add_argument("rom", type=Path)
+    extract_parser.add_argument("workspace", type=Path)
+    extract_parser.add_argument("--profile", type=Path, default=DEFAULT_PROFILE)
+    extract_parser.add_argument("--force", action="store_true")
     return parser
 
 
@@ -52,6 +60,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                 require_supported=not arguments.allow_unsupported,
             )
             _write_report(inspection.to_json(), arguments.output)
+            return 0
+        if arguments.command == "extract":
+            profile = load_profile(arguments.profile)
+            workspace = arguments.workspace.expanduser().resolve()
+            manifest = extract_workspace(
+                arguments.rom,
+                profile,
+                ExtractionOptions(workspace=workspace, force=arguments.force),
+            )
+            print(
+                f"Extracted workspace {workspace} "
+                f"({len(manifest.files)} files, {len(manifest.overlays)} overlays); "
+                f"manifest: {workspace / 'manifests/workspace.json'}"
+            )
             return 0
     except UnsupportedRomError as exc:
         print(str(exc), file=sys.stderr)

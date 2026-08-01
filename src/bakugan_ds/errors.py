@@ -16,3 +16,7 @@ class RomFormatError(BakuganDSError):
 
 class BoundsError(RomFormatError):
     """Raised when a structure points outside the available ROM bytes."""
+
+
+class WorkspaceError(BakuganDSError):
+    """Raised when a workspace cannot be safely created or replaced."""

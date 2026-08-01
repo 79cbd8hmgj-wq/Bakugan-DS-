@@ -1,0 +1,29 @@
+{
+  "id": "b6re_rev0",
+  "sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+  "size": 134217728,
+  "title": "BAKUGAN W",
+  "game_code": "B6RE",
+  "maker_code": "52",
+  "revision": 0,
+  "expected": {
+    "arm9_offset": 16384,
+    "arm9_ram_address": 33554432,
+    "arm9_size": 448192,
+    "arm7_offset": 887296,
+    "arm7_ram_address": 37224448,
+    "arm7_size": 160048,
+    "fnt_offset": 1047552,
+    "fnt_size": 212348,
+    "fat_offset": 1260032,
+    "fat_size": 88040,
+    "arm9_overlay_offset": 464896,
+    "arm9_overlay_size": 288,
+    "arm7_overlay_offset": 0,
+    "arm7_overlay_size": 0,
+    "nitrofs_file_count": 11005,
+    "directory_count": 95,
+    "arm9_overlay_count": 9,
+    "arm7_overlay_count": 0
+  }
+}

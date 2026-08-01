@@ -1,0 +1,84 @@
+rom_profile: b6re_rev0
+confidence: confirmed
+overlays:
+  - overlay_id: 0
+    file_id: 0
+    ram_address: 0x02219440
+    ram_size: 60224
+    bss_size: 320
+    static_init_start: 0x0222699C
+    static_init_end: 0x022269A0
+    compressed_size: 31612
+    flags: 1
+  - overlay_id: 1
+    file_id: 1
+    ram_address: 0x02219440
+    ram_size: 65056
+    bss_size: 160
+    static_init_start: 0x022278A8
+    static_init_end: 0x022278AC
+    compressed_size: 34648
+    flags: 1
+  - overlay_id: 2
+    file_id: 2
+    ram_address: 0x02219440
+    ram_size: 35680
+    bss_size: 96
+    static_init_start: 0x02220FD4
+    static_init_end: 0x02220FD8
+    compressed_size: 19716
+    flags: 1
+  - overlay_id: 3
+    file_id: 3
+    ram_address: 0x02219440
+    ram_size: 10080
+    bss_size: 64
+    static_init_start: 0x0221B85C
+    static_init_end: 0x0221B860
+    compressed_size: 5812
+    flags: 1
+  - overlay_id: 4
+    file_id: 4
+    ram_address: 0x02219440
+    ram_size: 20320
+    bss_size: 64
+    static_init_start: 0x0221DC44
+    static_init_end: 0x0221DC48
+    compressed_size: 11380
+    flags: 1
+  - overlay_id: 5
+    file_id: 5
+    ram_address: 0x02219440
+    ram_size: 30848
+    bss_size: 96
+    static_init_start: 0x022202E0
+    static_init_end: 0x022202E4
+    compressed_size: 16684
+    flags: 1
+  - overlay_id: 6
+    file_id: 6
+    ram_address: 0x02219440
+    ram_size: 5632
+    bss_size: 32
+    static_init_start: 0x0221A694
+    static_init_end: 0x0221A698
+    compressed_size: 2988
+    flags: 1
+  - overlay_id: 7
+    file_id: 7
+    ram_address: 0x02219440
+    ram_size: 467360
+    bss_size: 1600
+    static_init_start: 0x02285CBC
+    static_init_end: 0x02285CC4
+    compressed_size: 255740
+    flags: 1
+  - overlay_id: 8
+    file_id: 8
+    ram_address: 0x02219440
+    ram_size: 74144
+    bss_size: 288
+    static_init_start: 0x02229890
+    static_init_end: 0x02229898
+    compressed_size: 41000
+    flags: 1

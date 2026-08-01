@@ -1,0 +1,284 @@
+from pathlib import Path
+import struct
+
+import pytest
+
+from bakugan_ds.compression.lz10 import decompress_lz10
+from bakugan_ds.errors import WorkspaceError
+from bakugan_ds.inspection import RomInspection
+from bakugan_ds.nds.fat import parse_fat
+from bakugan_ds.nds.fnt import parse_fnt
+from bakugan_ds.nds.header import NdsHeader
+from bakugan_ds.nds.overlays import parse_arm9_overlays
+from bakugan_ds.profile import RomIdentity, load_profile
+from bakugan_ds.workspace.extract import ExtractionOptions, extract_workspace
+from bakugan_ds.workspace.manifest import sha256_bytes
+from bakugan_ds.workspace.rebuild import RebuildOptions, rebuild_rom
+
+
+def make_blz_fixture() -> bytes:
+    footer = struct.pack("<II", 14 | (8 << 24), 7)
+    return bytes.fromhex("00 f0 41 42 43 10") + footer
+
+
+def make_rom(tmp_path: Path) -> tuple[Path, RomInspection]:
+    rom = bytearray(b"\xFF" * 0x2000)
+    rom[0x00:0x0C] = b"BAKUGAN W\x00\x00\x00"
+    rom[0x0C:0x10] = b"B6RE"
+    rom[0x10:0x12] = b"52"
+    rom[0x1E] = 0
+    struct.pack_into("<III", rom, 0x20, 0x200, 0x02000000, 0x02000000)
+    struct.pack_into("<I", rom, 0x2C, 4)
+    struct.pack_into("<III", rom, 0x30, 0x204, 0x02380000, 0x02380000)
+    struct.pack_into("<I", rom, 0x3C, 4)
+
+    fnt = bytearray(struct.pack("<IHH", 8, 1, 1))
+    fnt.extend(bytes([5]) + b"a.bin")
+    fnt.extend(bytes([5]) + b"b.bin")
+    fnt.append(0)
+    rom[0x400 : 0x400 + len(fnt)] = fnt
+    struct.pack_into("<II", rom, 0x40, 0x400, len(fnt))
+    struct.pack_into("<II", rom, 0x48, 0x500, 24)
+    struct.pack_into("<II", rom, 0x50, 0x300, 32)
+    struct.pack_into("<II", rom, 0x58, 0, 0)
+    struct.pack_into("<I", rom, 0x80, len(rom))
+
+    blz = make_blz_fixture()
+    lz10 = bytes.fromhex("10 09 00 00 10 41 42 43 30 02")
+    plain = b"PLAIN"
+    rom[0x600 : 0x600 + len(blz)] = blz
+    rom[0x800 : 0x800 + len(lz10)] = lz10
+    rom[0xA00 : 0xA00 + len(plain)] = plain
+    struct.pack_into("<II", rom, 0x500, 0x600, 0x600 + len(blz))
+    struct.pack_into("<II", rom, 0x508, 0x800, 0x800 + len(lz10))
+    struct.pack_into("<II", rom, 0x510, 0xA00, 0xA00 + len(plain))
+    struct.pack_into(
+        "<8I",
+        rom,
+        0x300,
+        0,
+        0x02219440,
+        21,
+        0,
+        0,
+        0,
+        0,
+        0x0100000E,
+    )
+    rom[0x200:0x204] = b"ARM9"
+    rom[0x204:0x208] = b"ARM7"
+
+    path = tmp_path / "source.nds"
+    path.write_bytes(rom)
+    header = NdsHeader.from_bytes(rom)
+    fat = parse_fat(rom, header)
+    fnt_tree = parse_fnt(rom, header, len(fat))
+    overlays = parse_arm9_overlays(rom, header)
+    inspection = RomInspection(
+        source_path=path,
+        identity=RomIdentity("BAKUGAN W", "B6RE", "52", 0, len(rom), sha256_bytes(bytes(rom))),
+        profile_id="b6re_rev0",
+        supported=True,
+        header=header,
+        fat=fat,
+        fnt=fnt_tree,
+        arm9_overlays=overlays,
+        arm7_overlays=(),
+        layout_mismatches=(),
+    )
+    return path, inspection
+
+
+def make_workspace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, Path, RomInspection]:
+    source, inspection = make_rom(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.extract.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    workspace = tmp_path / "workspace"
+    extract_workspace(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        ExtractionOptions(workspace),
+    )
+    return source, workspace, inspection
+
+
+def parse_rebuilt(path: Path) -> tuple[bytes, NdsHeader]:
+    data = path.read_bytes()
+    return data, NdsHeader.from_bytes(data)
+
+
+def test_no_change_rebuild_is_exact_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    output = tmp_path / "rebuilt.nds"
+
+    report = rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output),
+    )
+
+    assert output.read_bytes() == source.read_bytes()
+    assert report.exact_copy is True
+    assert report.changes == ()
+    assert output.with_suffix(".nds.build.json").is_file()
+
+
+def test_rebuild_changed_lz10_file_round_trips(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    changed = b"EDITED-LZ10"
+    (workspace / "modified/nitrofs/a.bin").write_bytes(changed)
+    output = tmp_path / "rebuilt.nds"
+
+    report = rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output),
+    )
+
+    data, header = parse_rebuilt(output)
+    fat = parse_fat(data, header)
+    assert decompress_lz10(data[fat[1].start : fat[1].end]) == changed
+    assert report.exact_copy is False
+    assert report.changes[0].encoding == "lz10"
+
+
+def test_rebuild_changed_plain_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    changed = b"NEW-PLAIN-CONTENT"
+    (workspace / "modified/nitrofs/b.bin").write_bytes(changed)
+    output = tmp_path / "rebuilt.nds"
+
+    rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output),
+    )
+
+    data, header = parse_rebuilt(output)
+    fat = parse_fat(data, header)
+    assert data[fat[2].start : fat[2].end] == changed
+
+
+def test_rebuild_changed_overlay_stores_uncompressed_and_clears_flags(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    overlay_path = workspace / "modified/overlays/overlay_000.bin"
+    modified = bytearray(overlay_path.read_bytes())
+    modified[0] ^= 0xFF
+    overlay_path.write_bytes(modified)
+    output = tmp_path / "rebuilt.nds"
+
+    report = rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output),
+    )
+
+    data, header = parse_rebuilt(output)
+    fat = parse_fat(data, header)
+    overlay = parse_arm9_overlays(data, header)[0]
+    assert fat[0].size == 21
+    assert data[fat[0].start : fat[0].end] == bytes(modified)
+    assert overlay.flags == 0
+    assert overlay.compressed_size == 0
+    assert report.changes[0].encoding == "uncompressed-overlay"
+
+
+def test_rebuild_applies_same_size_arm9_edit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    (workspace / "modified/arm9.bin").write_bytes(b"EDIT")
+    output = tmp_path / "rebuilt.nds"
+
+    rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output),
+    )
+
+    data, header = parse_rebuilt(output)
+    assert data[header.arm9_offset : header.arm9_offset + header.arm9_size] == b"EDIT"
+
+
+def test_rebuild_rejects_modified_arm_size(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    (workspace / "modified/arm9.bin").write_bytes(b"TOO-LONG")
+
+    with pytest.raises(WorkspaceError, match="ARM9 size"):
+        rebuild_rom(
+            source,
+            load_profile(Path("config/b6re_rev0.json")),
+            workspace,
+            RebuildOptions(tmp_path / "rebuilt.nds"),
+        )
+
+
+def test_rebuild_refuses_existing_output_without_force(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    output = tmp_path / "rebuilt.nds"
+    output.write_bytes(b"existing")
+
+    with pytest.raises(WorkspaceError, match="output already exists"):
+        rebuild_rom(
+            source,
+            load_profile(Path("config/b6re_rev0.json")),
+            workspace,
+            RebuildOptions(output),
+        )
+
+
+def test_rebuild_force_replaces_existing_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    output = tmp_path / "rebuilt.nds"
+    output.write_bytes(b"existing")
+
+    rebuild_rom(
+        source,
+        load_profile(Path("config/b6re_rev0.json")),
+        workspace,
+        RebuildOptions(output, force=True),
+    )
+
+    assert output.read_bytes() == source.read_bytes()
+
+
+def test_rebuild_rejects_payloads_that_exceed_rom_capacity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, workspace, _ = make_workspace(tmp_path, monkeypatch)
+    (workspace / "modified/nitrofs/b.bin").write_bytes(b"X" * 0x3000)
+
+    with pytest.raises(WorkspaceError, match="capacity"):
+        rebuild_rom(
+            source,
+            load_profile(Path("config/b6re_rev0.json")),
+            workspace,
+            RebuildOptions(tmp_path / "rebuilt.nds"),
+        )

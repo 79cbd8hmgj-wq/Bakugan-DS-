@@ -89,3 +89,27 @@ workspace/
 
 The `original` tree is made read-only after extraction. This permission is an
 accidental-edit safeguard, not a security boundary.
+
+## Rebuild a ROM
+
+```bash
+bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-modded.nds
+```
+
+A workspace with no edits produces a byte-identical copy of the supported ROM.
+Changed NitroFS resources originally stored as LZ10 are recompressed
+deterministically. A changed overlay is stored uncompressed at its declared RAM
+size, and its overlay-table compression flag and compressed-size field are
+cleared. Use `--force` to replace an existing output and its `.build.json`
+report.
+
+## Apply guarded patches
+
+```bash
+bakugan-ds patch work/bakugan patches/example.json
+```
+
+Patch files describe fixed-length binary replacements against `arm9`, `arm7`,
+`overlay:<id>`, or `nitrofs:<path>`. Every replacement includes the exact bytes
+expected at the target offset. If any guard is stale, out of bounds, or targets
+the wrong ROM profile, no patch target is written.

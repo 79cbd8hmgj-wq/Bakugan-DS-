@@ -57,3 +57,35 @@ BAKUGAN_DS_ROM="/absolute/path/to/game.nds" python -m pytest -m integration -v
 ```
 
 The ROM path and generated reports are ignored by Git.
+
+## Extract an editable workspace
+
+```bash
+bakugan-ds extract "/path/to/game.nds" work/bakugan
+```
+
+Use `--force` to replace an existing workspace only after a complete new staging
+workspace has been created successfully.
+
+The extractor creates approximately 300 MB of local files for the supported
+ROM. Exact compressed payloads remain under `original/raw`; decoded reference
+files remain under read-only `original/decoded`; editable copies are written to
+`modified`.
+
+```text
+workspace/
+├── original/
+│   ├── arm9.bin
+│   ├── arm7.bin
+│   ├── raw/{overlays,nitrofs}/
+│   └── decoded/{overlays,nitrofs}/
+├── modified/
+│   ├── arm9.bin
+│   ├── arm7.bin
+│   ├── overlays/
+│   └── nitrofs/
+└── manifests/{workspace,files,overlays}.json
+```
+
+The `original` tree is made read-only after extraction. This permission is an
+accidental-edit safeguard, not a security boundary.

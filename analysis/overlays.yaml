@@ -9,6 +9,8 @@ overlays:
     static_init_start: 0x0222699C
     static_init_end: 0x022269A0
     compressed_size: 31612
+    raw_sha256: 0bcecd5b31f038a4d21409003e80b2ac4515bdf2ea6e0ac1077c90b1e80651ee
+    decoded_sha256: 3af16fecf784a116985a85f1cf5c33e2ebf47842f338b7f5640346f78f1fa6cc
     flags: 1
   - overlay_id: 1
     file_id: 1
@@ -18,6 +20,8 @@ overlays:
     static_init_start: 0x022278A8
     static_init_end: 0x022278AC
     compressed_size: 34648
+    raw_sha256: 7166492f052606370e282c84074814e962cbe9fbd856029ae8d6051ce98f691e
+    decoded_sha256: 65c807a92bce03d6e6d7d053c8c8c6c933d27de02089a39deca231f207cd139a
     flags: 1
   - overlay_id: 2
     file_id: 2
@@ -27,6 +31,8 @@ overlays:
     static_init_start: 0x02220FD4
     static_init_end: 0x02220FD8
     compressed_size: 19716
+    raw_sha256: a5e1a343a725ae063f1985835be360bbd8079bf0eac7d14d446df536f94c711e
+    decoded_sha256: 9b9398a3541c016ad758f7fd8916339ab511fcc32e93cefab5ab62fd36f1dfb7
     flags: 1
   - overlay_id: 3
     file_id: 3
@@ -36,6 +42,8 @@ overlays:
     static_init_start: 0x0221B85C
     static_init_end: 0x0221B860
     compressed_size: 5812
+    raw_sha256: 7cdae8bcf3d7d1d428072d7cca0966a36851db9d0973820059dce1d7bfb76c1f
+    decoded_sha256: c9b69da60807c0fb7353d46f8f1540d7841af2edb1ae0e9cc35cc22b5990d28f
     flags: 1
   - overlay_id: 4
     file_id: 4
@@ -45,6 +53,8 @@ overlays:
     static_init_start: 0x0221DC44
     static_init_end: 0x0221DC48
     compressed_size: 11380
+    raw_sha256: f766ce59525d618c1afaeb29c44bb1504a7303256a4748cb959382dcb941bfe5
+    decoded_sha256: 6c5e1a24f88ef0250615dbbd9864083418950d7c4030e97c4210531ef205316d
     flags: 1
   - overlay_id: 5
     file_id: 5
@@ -54,6 +64,8 @@ overlays:
     static_init_start: 0x022202E0
     static_init_end: 0x022202E4
     compressed_size: 16684
+    raw_sha256: 8a594b1f282f593a8137cc0d95579a3623929bf3d9c39fc4d58d262fdb4634ac
+    decoded_sha256: 0480e937027639d8c0dde189cdfa313ed58ef0d0e6ce15c71195cce243d4c011
     flags: 1
   - overlay_id: 6
     file_id: 6
@@ -63,6 +75,8 @@ overlays:
     static_init_start: 0x0221A694
     static_init_end: 0x0221A698
     compressed_size: 2988
+    raw_sha256: b39c476eb6d38d6cf6f7e66aded1306328887854272a57319afb7d033ba96c92
+    decoded_sha256: 8d61e3008f8a2ed059bf2a34b1619a5f614f1d9ce96a853e347562683771bb97
     flags: 1
   - overlay_id: 7
     file_id: 7
@@ -72,6 +86,8 @@ overlays:
     static_init_start: 0x02285CBC
     static_init_end: 0x02285CC4
     compressed_size: 255740
+    raw_sha256: 0078608585052efc0b90ab084af3856e0162871de2cc43e70218657a9e2b0e97
+    decoded_sha256: 82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1
     flags: 1
   - overlay_id: 8
     file_id: 8
@@ -81,4 +97,6 @@ overlays:
     static_init_start: 0x02229890
     static_init_end: 0x02229898
     compressed_size: 41000
+    raw_sha256: 349aa48be3504b736ac32874a81e7482576eb3132ed47a9d77c44fc18ac159b3
+    decoded_sha256: d83966e19bb04b3e42ef8801557aaca2b45c6ac1be191d44237a780a9f7e55e2
     flags: 1

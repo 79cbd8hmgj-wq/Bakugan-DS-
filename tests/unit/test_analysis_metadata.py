@@ -24,6 +24,8 @@ def test_overlay_metadata_records_all_nine_ids() -> None:
     assert "ram_size: 467360" in text
     assert "bss_size: 1600" in text
     assert "compressed_size: 255740" in text
+    assert "raw_sha256: 0078608585052efc0b90ab084af3856e0162871de2cc43e70218657a9e2b0e97" in text
+    assert "decoded_sha256: 82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1" in text
 
 
 def test_reverse_engineering_workflow_defines_confidence_levels() -> None:
@@ -33,3 +35,10 @@ def test_reverse_engineering_workflow_defines_confidence_levels() -> None:
     assert "## Candidate" in text
     assert "runtime address" in text
     assert "component-relative offset" in text
+
+
+def test_overlay_handoff_records_verified_bss_range() -> None:
+    text = Path("docs/overlay-analysis-handoff.md").read_text(encoding="utf-8")
+    assert "0x0228B5E0" in text
+    assert "0x0228BC20" in text
+    assert "overlay_007.bin" in text

@@ -1,30 +1,19 @@
-import os
 from pathlib import Path
 
 import pytest
 
 from bakugan_ds.inspection import inspect_rom
-from bakugan_ds.profile import load_profile
-
-
-@pytest.fixture(scope="module")
-def reference_rom() -> Path:
-    value = os.environ.get("BAKUGAN_DS_ROM")
-    if value is None:
-        pytest.skip("set BAKUGAN_DS_ROM to run reference-ROM integration tests")
-    path = Path(value)
-    if not path.is_file():
-        pytest.fail(f"BAKUGAN_DS_ROM does not point to a file: {path}")
-    return path
+from bakugan_ds.profile import RomProfile
 
 
 @pytest.mark.integration
-def test_reference_rom_matches_verified_structure(reference_rom: Path) -> None:
-    profile = load_profile(Path("config/b6re_rev0.json"))
-    inspection = inspect_rom(reference_rom, profile, require_supported=True)
+def test_reference_rom_matches_verified_structure(
+    reference_rom: Path, reference_profile: RomProfile
+) -> None:
+    inspection = inspect_rom(reference_rom, reference_profile, require_supported=True)
 
     assert inspection.supported is True
-    assert inspection.identity.sha256 == profile.sha256
+    assert inspection.identity.sha256 == reference_profile.sha256
     assert inspection.header.arm9_offset == 0x4000
     assert inspection.header.arm9_ram_address == 0x02000000
     assert inspection.header.arm9_size == 448192

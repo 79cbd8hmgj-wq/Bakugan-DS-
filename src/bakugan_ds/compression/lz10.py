@@ -61,3 +61,20 @@ def decompress_lz10(data: Buffer) -> bytes:
             f"LZ10 decoded size mismatch: expected {declared_size}, got {len(output)}"
         )
     return bytes(output)
+
+
+def compress_lz10(data: bytes) -> bytes:
+    size = len(data)
+    if size == 0:
+        raise ValueError("cannot LZ10-compress empty input")
+    if size > 0xFFFFFF:
+        raise ValueError("LZ10 input size exceeds the 24-bit header limit")
+
+    output = bytearray((0x10, size & 0xFF, (size >> 8) & 0xFF, (size >> 16) & 0xFF))
+    position = 0
+    while position < size:
+        output.append(0)
+        chunk_end = min(position + 8, size)
+        output.extend(data[position:chunk_end])
+        position = chunk_end
+    return bytes(output)

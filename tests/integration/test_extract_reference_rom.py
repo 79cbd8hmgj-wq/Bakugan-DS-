@@ -1,35 +1,30 @@
-import os
 from pathlib import Path
 
 import pytest
 
 from bakugan_ds.inspection import inspect_rom
-from bakugan_ds.profile import load_profile
-from bakugan_ds.workspace.manifest import sha256_bytes
+from bakugan_ds.profile import RomProfile
 from bakugan_ds.workspace.extract import ExtractionOptions, extract_workspace
-
-
-@pytest.fixture(scope="module")
-def reference_rom() -> Path:
-    value = os.environ.get("BAKUGAN_DS_ROM")
-    if value is None:
-        pytest.skip("set BAKUGAN_DS_ROM to run reference-ROM integration tests")
-    path = Path(value)
-    if not path.is_file():
-        pytest.fail(f"BAKUGAN_DS_ROM does not point to a file: {path}")
-    return path
+from bakugan_ds.workspace.manifest import WorkspaceManifest, sha256_bytes
 
 
 @pytest.mark.integration
-def test_reference_rom_extracts_deterministically(reference_rom: Path, tmp_path: Path) -> None:
-    profile = load_profile(Path("config/b6re_rev0.json"))
-    first_root = tmp_path / "first"
+def test_reference_rom_extracts_deterministically(
+    reference_rom: Path,
+    reference_profile: RomProfile,
+    reference_workspace: tuple[Path, WorkspaceManifest],
+    tmp_path: Path,
+) -> None:
+    first_root, first = reference_workspace
     second_root = tmp_path / "second"
 
-    inspection = inspect_rom(reference_rom, profile, require_supported=True)
+    inspection = inspect_rom(reference_rom, reference_profile, require_supported=True)
     rom_data = reference_rom.read_bytes()
-    first = extract_workspace(reference_rom, profile, ExtractionOptions(first_root))
-    second = extract_workspace(reference_rom, profile, ExtractionOptions(second_root))
+    second = extract_workspace(
+        reference_rom,
+        reference_profile,
+        ExtractionOptions(second_root),
+    )
 
     assert len(first.files) == 10996
     assert sum(item.compression == "lz10" for item in first.files) == 8476

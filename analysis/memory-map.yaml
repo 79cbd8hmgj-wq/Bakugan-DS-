@@ -1,0 +1,30 @@
+rom_profile: b6re_rev0
+game_code: B6RE
+revision: 0
+confidence: confirmed
+arm9:
+  rom_offset: 0x00004000
+  arm9_ram_address: 0x02000000
+  size: 448192
+arm7:
+  rom_offset: 0x000D8A00
+  arm7_ram_address: 0x02380000
+  size: 160048
+nitrofs:
+  fnt_offset: 0x000FFC00
+  fnt_size: 212348
+  fat_offset: 0x00133A00
+  fat_size: 88040
+  fat_entry_count: 11005
+  named_file_count: 10996
+  directory_count: 95
+overlays:
+  arm9_overlay_table_offset: 0x00071800
+  arm9_overlay_table_size: 288
+  arm9_count: 9
+  arm7_count: 0
+  overlay_load_address: 0x02219440
+notes:
+  - Header and table-derived values are confirmed by exact-ROM integration tests.
+  - FAT entries 0 through 8 are overlay payloads and intentionally have no FNT names.
+  - Overlay responsibilities are not confirmed by these values.

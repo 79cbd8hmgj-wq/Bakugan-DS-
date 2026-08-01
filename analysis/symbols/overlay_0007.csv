@@ -1,0 +1,4 @@
+name,address,confidence,evidence
+Candidate_GPEffect_State_022665EC,0x022665EC,candidate,"Nearest ARM function to literal 0x0226683C referencing gp_pickup2 at 0x0228A210"
+Candidate_GPEffect_State_02266868,0x02266868,candidate,"Nearest ARM function to literal 0x022669FC referencing gp_pickup2 at 0x0228A21C"
+Candidate_GPEffect_State_02266A28,0x02266A28,candidate,"Nearest ARM function to literals 0x02267058 and 0x0226705C referencing gp_pickup2 and gp_down at 0x0228A228 and 0x0228A234"

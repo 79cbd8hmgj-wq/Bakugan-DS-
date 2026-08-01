@@ -1,0 +1,58 @@
+rom_profile: b6re_rev0
+component: overlay_0007
+confidence: candidate
+scope: gp_effect_state_machines
+findings:
+  - function_address: 0x022665EC
+    component_offset: 0x0004D1AC
+    evidence:
+      - literal_address: 0x0226683C
+        string_address: 0x0228A210
+        string: gp_pickup2
+  - function_address: 0x02266868
+    component_offset: 0x0004D428
+    evidence:
+      - literal_address: 0x022669FC
+        string_address: 0x0228A21C
+        string: gp_pickup2
+  - function_address: 0x02266A28
+    component_offset: 0x0004D5E8
+    evidence:
+      - literal_address: 0x02267058
+        string_address: 0x0228A228
+        string: gp_pickup2
+      - literal_address: 0x0226705C
+        string_address: 0x0228A234
+        string: gp_down
+interpretation:
+  - These functions are statically connected to GP pickup and GP-down effect resources.
+  - Their large switch/state-machine shapes make them useful battle-system entry points.
+  - They are not yet confirmed as the central G-Power calculation.
+runtime_promotion_requirement:
+  - Find a live displayed G-Power value in emulator RAM.
+  - Set a write breakpoint and capture the writing instruction and call stack.
+  - Promote a function only when the observed write or its callers establish the calculation role.
+
+gate_bonus_candidate:
+  component: arm9
+  encoding_hypothesis: six unsigned bytes equal to displayed attribute bonuses divided by 10
+  start_address: 0x0205EFBA
+  end_address: 0x0205F173
+  exact_reference_matches: 19
+  representative_matches:
+    - reference_name: Preyas's
+      address: 0x0205EFBA
+    - reference_name: Hydranoid
+      address: 0x0205EFD8
+    - reference_name: Fortress
+      address: 0x0205EFF6
+    - reference_name: Juggernoid
+      address: 0x0205F008
+    - reference_name: Stinglash
+      address: 0x0205F027
+    - reference_name: Manion
+      address: 0x0205F05C
+  confidence: probable_data_region
+  caveats:
+    - The surrounding record schema, ordering, and seventh or later fields are not confirmed.
+    - Two all-equal bonus rows also match overlay 7 and are treated as likely low-specificity matches.

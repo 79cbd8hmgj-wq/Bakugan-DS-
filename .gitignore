@@ -14,3 +14,5 @@ work/
 reports/
 *.bin
 .worktrees/
+references/generated/
+analysis/generated/

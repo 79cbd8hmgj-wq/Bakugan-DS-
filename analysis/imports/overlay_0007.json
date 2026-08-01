@@ -1,0 +1,12 @@
+{
+  "bss_end": 36224032,
+  "bss_size": 1600,
+  "bss_start": 36222432,
+  "component": "overlay_0007",
+  "decoded_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+  "executable_end": 36222432,
+  "file_name": "overlay_007.bin",
+  "format_version": 1,
+  "load_address": 35755072,
+  "size": 467360
+}

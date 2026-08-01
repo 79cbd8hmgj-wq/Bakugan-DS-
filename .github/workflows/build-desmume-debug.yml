@@ -1,0 +1,201 @@
+name: Build DeSmuME Debug Bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      desmume_ref:
+        description: DeSmuME commit, tag, or branch
+        required: false
+        default: 84e445159ccf2fd7900748094518eb1e88bdc7d0
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Linux x86_64 ARM9 debugger
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install build and packaging dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            autoconf \
+            automake \
+            binutils \
+            build-essential \
+            ca-certificates \
+            file \
+            git \
+            libasound2-dev \
+            libglib2.0-dev \
+            libglu1-mesa-dev \
+            libgtk2.0-dev \
+            libpcap-dev \
+            libsdl2-dev \
+            libtool \
+            libx11-dev \
+            libzzip-dev \
+            make \
+            pax-utils \
+            pkg-config \
+            xz-utils \
+            zlib1g-dev
+
+      - name: Resolve and check out DeSmuME source
+        id: source
+        shell: bash
+        env:
+          REQUESTED_REF: ${{ inputs.desmume_ref }}
+          DEFAULT_REF: 84e445159ccf2fd7900748094518eb1e88bdc7d0
+        run: |
+          set -euo pipefail
+          ref="${REQUESTED_REF:-$DEFAULT_REF}"
+          git clone https://github.com/TASEmulators/desmume.git source
+          git -C source checkout --detach "$ref"
+          resolved_commit="$(git -C source rev-parse HEAD)"
+          echo "requested_ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "resolved_commit=$resolved_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Configure and build DeSmuME CLI with GDB stub
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd source/desmume/src/frontend/posix
+          autoreconf -i
+          ./configure --prefix=/usr --enable-gdb-stub
+          make -j"$(nproc)"
+          test -x cli/desmume-cli
+
+      - name: Assemble debugger bundle
+        shell: bash
+        env:
+          REQUESTED_REF: ${{ steps.source.outputs.requested_ref }}
+          RESOLVED_COMMIT: ${{ steps.source.outputs.resolved_commit }}
+        run: |
+          set -euo pipefail
+
+          binary="source/desmume/src/frontend/posix/cli/desmume-cli"
+          bundle="bundle/desmume-debug"
+          mkdir -p "$bundle/lib"
+          install -m 0755 "$binary" "$bundle/desmume-cli"
+
+          file "$bundle/desmume-cli" | tee "$bundle/desmume-file.txt"
+          grep -Eq 'ELF 64-bit.*x86-64' "$bundle/desmume-file.txt"
+
+          ldd "$bundle/desmume-cli" | tee "$bundle/desmume-ldd.txt"
+          if grep -q 'not found' "$bundle/desmume-ldd.txt"; then
+            echo "A required DeSmuME shared library was not resolved." >&2
+            exit 1
+          fi
+
+          mapfile -t libraries < <(
+            ldd "$bundle/desmume-cli" \
+              | awk '/=> \// {print $3} /^[[:space:]]*\/.*\(/ {print $1}' \
+              | sort -u
+          )
+          for library in "${libraries[@]}"; do
+            base="$(basename "$library")"
+            case "$base" in
+              ld-linux-x86-64.so.2|libc.so.6|libm.so.6|libdl.so.2|libpthread.so.0|librt.so.1|libresolv.so.2)
+                continue
+                ;;
+            esac
+            test -r "$library"
+            cp -L "$library" "$bundle/lib/$base"
+          done
+
+          cat > "$bundle/run-desmume-debug.sh" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export LD_LIBRARY_PATH="$ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-dummy}"
+          export SDL_AUDIODRIVER="${SDL_AUDIODRIVER:-dummy}"
+          exec "$ROOT/desmume-cli" "$@"
+          SH
+          chmod 0755 "$bundle/run-desmume-debug.sh"
+
+          set +e
+          SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+            "$bundle/desmume-cli" --help > "$bundle/desmume-help.txt" 2>&1
+          help_status=$?
+          set -e
+          test -s "$bundle/desmume-help.txt"
+          if ! grep -qi 'arm9gdb' "$bundle/desmume-help.txt" \
+             && ! strings "$bundle/desmume-cli" | grep -qi 'arm9gdb'; then
+            echo "The compiled binary does not expose the ARM9 GDB option." >&2
+            exit 1
+          fi
+
+          set +e
+          "$bundle/run-desmume-debug.sh" --help > /tmp/desmume-bundled-help.txt 2>&1
+          wrapper_status=$?
+          set -e
+          test -s /tmp/desmume-bundled-help.txt
+          if [[ "$wrapper_status" -eq 126 || "$wrapper_status" -eq 127 ]]; then
+            cat /tmp/desmume-bundled-help.txt >&2
+            exit 1
+          fi
+
+          compiler_version="$(c++ --version | head -n 1)"
+          build_timestamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cat > "$bundle/BUILD_INFO.txt" <<EOF
+          Requested DeSmuME ref: $REQUESTED_REF
+          Resolved DeSmuME commit: $RESOLVED_COMMIT
+          Runner OS: ubuntu-24.04
+          Architecture: x86_64
+          Compiler: $compiler_version
+          Configure command: ./configure --prefix=/usr --enable-gdb-stub
+          Workflow repository commit: $GITHUB_SHA
+          Build timestamp UTC: $build_timestamp
+          Initial help exit status: $help_status
+          Bundled help exit status: $wrapper_status
+          EOF
+
+          cat > "$bundle/README.txt" <<'EOF'
+          DeSmuME Linux x86_64 debugger bundle for Bakugan DS Milestone 4B.
+
+          Start the emulator with the ARM9 GDB server on port 20000:
+
+            ./run-desmume-debug.sh --arm9gdb=20000 /path/to/game.nds
+
+          The launcher prepends the included lib directory to LD_LIBRARY_PATH and
+          defaults SDL video and audio to dummy drivers. Override those environment
+          variables before launching when a visible or audible frontend is required.
+
+          This bundle contains emulator code only. It contains no game image, save,
+          extracted asset, or rebuilt image.
+          EOF
+
+          cp source/desmume/COPYING "$bundle/license.txt"
+
+          (
+            cd "$bundle"
+            find . -type f ! -name SHA256SUMS -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+
+          tar -C bundle -cJf bundle/desmume-linux-gdb-x86_64.tar.xz desmume-debug
+          test -s bundle/desmume-linux-gdb-x86_64.tar.xz
+          tar -tJf bundle/desmume-linux-gdb-x86_64.tar.xz
+
+      - name: Upload DeSmuME debugger bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: desmume-linux-gdb-x86_64
+          path: bundle/desmume-linux-gdb-x86_64.tar.xz
+          retention-days: 7
+          if-no-files-found: error

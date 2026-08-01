@@ -113,3 +113,9 @@ Patch files describe fixed-length binary replacements against `arm9`, `arm7`,
 `overlay:<id>`, or `nitrofs:<path>`. Every replacement includes the exact bytes
 expected at the target offset. If any guard is stale, out of bounds, or targets
 the wrong ROM profile, no patch target is written.
+
+## Build the runtime debugger
+
+Milestone 4B requires a Linux x86_64 DeSmuME CLI with ARM9 GDB-stub support.
+The manual, ROM-free GitHub Actions workflow and artifact handoff are documented
+in [docs/desmume-debug-bundle.md](docs/desmume-debug-bundle.md).

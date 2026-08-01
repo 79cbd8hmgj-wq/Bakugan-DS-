@@ -31,3 +31,17 @@ def test_desmume_workflow_never_handles_game_data() -> None:
     text = WORKFLOW.read_text(encoding="utf-8").lower()
     for forbidden in ("*.nds", "*.sav", "*.dsv", "save state", "bakugan - battle brawlers"):
         assert forbidden not in text
+
+
+def test_desmume_handoff_documents_required_steps() -> None:
+    text = Path("docs/desmume-debug-bundle.md").read_text(encoding="utf-8")
+    for required in (
+        "Build DeSmuME Debug Bundle",
+        "Run workflow",
+        "desmume-linux-gdb-x86_64",
+        "run-desmume-debug.sh --arm9gdb=20000",
+        ".dsv",
+        ".sav",
+        "Do not upload the ROM to GitHub",
+    ):
+        assert required in text

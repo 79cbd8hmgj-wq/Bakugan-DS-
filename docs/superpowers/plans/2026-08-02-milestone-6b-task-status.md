@@ -99,14 +99,14 @@ Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace 
 
 **Status:** in progress.
 
-Current checkpoint: **4D — activation-counter presence or confirmed absence and replacement storage**.
+Current checkpoint: **4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion**.
 
 Task 4 checkpoints:
 
 1. 4A — static Gate-state and mutation-path inventory: complete
 2. 4B — runtime normal capture and arena-removal transition: complete
 3. 4C — reuse, alternate/scripted paths, lifetime, and reset: complete
-4. 4D — activation-counter presence or confirmed absence and replacement storage: pending
+4. 4D — activation-counter presence or confirmed absence and replacement storage: complete
 5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: pending
 
 ### Checkpoint 4A
@@ -123,7 +123,7 @@ Static evidence identifies:
 
 The normal result path increments score and capture history first, then removes the defender's arena placement, writes Gate-slot state `2`, clears the board reference, decrements the arena-placement count, and separately cleans both combatant descriptors.
 
-No per-Gate activation increment appears in the audited placement, removal, transfer, result, and Gate-slot setter paths. This remains unresolved rather than confirmed absent until the bounded exhaustive audit in Checkpoint 4D.
+No per-Gate activation increment appears in the audited placement, removal, transfer, result, and Gate-slot setter paths. This was resolved through the bounded exhaustive audit in Checkpoint 4D.
 
 ### Checkpoint 4B
 
@@ -157,4 +157,21 @@ This confirms the arena-record presence byte, the corresponding board-grid refer
 - Scripted setup at `0x0226A48C` directly overrides Gate-slot values and writes `+0xF8 = 0`; it can make the cache diverge from a simple count of zero-state slots.
 - Destruction ends object validity without clearing Gate state in place. New construction is the authoritative reset boundary.
 
-Checkpoint 4D will perform the bounded exhaustive activation-state audit and determine whether System 2.0 must allocate a new activation counter.
+### Checkpoint 4D
+
+`analysis/gates/gate-activation-counter-audit.json` at commit `b607f54c66fc30eec295991b1a8e5647f4db808f` confirms that the exact B6RE revision-0 Gate lifecycle contains no original per-Gate activation counter.
+
+The bounded exhaustive audit covered every direct decoded-overlay-7 caller of Gate-slot mutation, arena allocation/removal/transfer, descriptor attachment/detachment, and battle construction; the complete constructor, result, reset, scripted setup, and teardown regions; all 18 direct overlay-7 callers of ARM9 Gate-bonus accessor `0x02065BF4`; and every known adjacent participant, session, arena-record, battle-object, score, capture-history, placement-count, and descriptor-count candidate.
+
+Rejected activation-count candidates include:
+
+- `session +0x294`, confirmed as active arena-placement count;
+- `session +0x295` and arena entry `+0x21`, confirmed as descriptor/scene linkage state;
+- participant `+0xF8`, confirmed as an ordinary available-slot cache with scripted overrides;
+- participant `+0xEE` and `+0xF4`, already confirmed as match score and capture-history count;
+- Gate-slot state bytes, which hold enumerated lifecycle state rather than an incrementing count;
+- battle-local Gate ID/owner fields and the pure ARM9 Gate-bonus table accessor, neither of which mutates activation history.
+
+System 2.0 must allocate new match-local activation state. The safe contract reserves `activation_count_by_arena_entry[12]` as unsigned saturating bytes at offsets `0x2C..0x37` of the already approved future 64-byte overlay-7 BSS cache `0x02293C20..0x02293C60`. The array resets at session construction, initializes on arena allocation, increments once after canonical Gate identity is established during battle construction, resets when an active placement changes Gate identity, and clears when the placement is removed. No original object byte or save-data field is repurposed, and the cache is not implemented in Milestone 6B.
+
+Checkpoint 4E will consolidate the confirmed Gate state into the normalized artifact, validators, lifecycle documentation, exact-binary tests, and final Task 4 verification.

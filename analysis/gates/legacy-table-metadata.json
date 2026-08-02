@@ -1,20 +1,39 @@
 {
   "attribute_order": [
-    "attribute_0",
-    "attribute_1",
-    "attribute_2",
-    "attribute_3",
-    "attribute_4",
-    "attribute_5"
+    "pyrus",
+    "aquos",
+    "subterra",
+    "haos",
+    "darkus",
+    "ventus"
   ],
   "complete_table_committed": false,
-  "confidence": "probable",
-  "control_cases": [],
+  "confidence": "confirmed",
+  "control_cases": [
+    {"attribute_id": 0, "card_id": 19, "evidence_id": "gate-019-attribute-0", "expected_bonus_g": 80},
+    {"attribute_id": 1, "card_id": 19, "evidence_id": "gate-019-attribute-1", "expected_bonus_g": 160},
+    {"attribute_id": 2, "card_id": 19, "evidence_id": "gate-019-attribute-2", "expected_bonus_g": 70},
+    {"attribute_id": 3, "card_id": 19, "evidence_id": "gate-019-attribute-3", "expected_bonus_g": 100},
+    {"attribute_id": 4, "card_id": 19, "evidence_id": "gate-019-attribute-4", "expected_bonus_g": 70},
+    {"attribute_id": 5, "card_id": 19, "evidence_id": "gate-019-attribute-5", "expected_bonus_g": 40},
+    {"attribute_id": 0, "card_id": 20, "evidence_id": "gate-020-attribute-0", "expected_bonus_g": 160},
+    {"attribute_id": 1, "card_id": 20, "evidence_id": "gate-020-attribute-1", "expected_bonus_g": 110},
+    {"attribute_id": 2, "card_id": 20, "evidence_id": "gate-020-attribute-2", "expected_bonus_g": 90},
+    {"attribute_id": 3, "card_id": 20, "evidence_id": "gate-020-attribute-3", "expected_bonus_g": 120},
+    {"attribute_id": 4, "card_id": 20, "evidence_id": "gate-020-attribute-4", "expected_bonus_g": 90},
+    {"attribute_id": 5, "card_id": 20, "evidence_id": "gate-020-attribute-5", "expected_bonus_g": 40},
+    {"attribute_id": 0, "card_id": 22, "evidence_id": "gate-022-attribute-0", "expected_bonus_g": 180},
+    {"attribute_id": 1, "card_id": 22, "evidence_id": "gate-022-attribute-1", "expected_bonus_g": 60},
+    {"attribute_id": 2, "card_id": 22, "evidence_id": "gate-022-attribute-2", "expected_bonus_g": 90},
+    {"attribute_id": 3, "card_id": 22, "evidence_id": "gate-022-attribute-3", "expected_bonus_g": 140},
+    {"attribute_id": 4, "card_id": 22, "evidence_id": "gate-022-attribute-4", "expected_bonus_g": 130},
+    {"attribute_id": 5, "card_id": 22, "evidence_id": "gate-022-attribute-5", "expected_bonus_g": 50}
+  ],
   "element_width": 1,
   "end_address": 34216618,
   "end_address_hex": "0x020A1AAA",
   "evidence": {
-    "attribute_order_status": "Numeric attribute slots 0-5 are confirmed; human-readable names are deferred to Task 5.",
+    "attribute_order_status": "Confirmed from indexed entries 0-5 of font/mes_Bakugan.mes and selected Gate-row cross-checks.",
     "card_id_domain": {
       "adjacent_four_byte_table": "0x020A1258 + 213 * 4 = 0x020A15AC",
       "adjacent_halfword_table": "0x020A10AC + 213 * 2",

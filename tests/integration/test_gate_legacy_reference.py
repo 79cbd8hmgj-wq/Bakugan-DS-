@@ -15,6 +15,7 @@ from bakugan_ds.workspace.manifest import WorkspaceManifest
 
 METADATA_PATH = Path("analysis/gates/legacy-table-metadata.json")
 IDENTITY_PATH = Path("analysis/gates/card-id-evidence.json")
+SELECTOR_PATH = Path("analysis/gates/battle-type-selector.json")
 
 
 @pytest.mark.integration
@@ -98,3 +99,38 @@ def test_selected_gate_ids_and_attribute_order_match_rom_resources(
         manifest_entry = file_by_path[asset["path"]]
         assert manifest_entry.file_id == asset["file_id"]
         assert manifest_entry.decoded_sha256 == asset["sha256"]
+
+
+@pytest.mark.integration
+def test_gate_battle_type_metadata_matches_selected_cases(
+    reference_runtime_arm9: Path,
+    reference_workspace: tuple[Path, WorkspaceManifest],
+) -> None:
+    selector = load_json_object(SELECTOR_PATH)
+    runtime_image = load_runtime_arm9(reference_runtime_arm9)
+    metadata = selector["metadata_accessor"]
+    assert isinstance(metadata, dict)
+    table_address = metadata["table_address"]
+    record_count = metadata["record_count"]
+    record_stride = metadata["record_stride"]
+    assert isinstance(table_address, int)
+    assert isinstance(record_count, int)
+    assert isinstance(record_stride, int)
+    start = table_address - runtime_image.component.base_address
+    table = runtime_image.component.data[start : start + record_count * record_stride]
+    assert hashlib.sha256(table).hexdigest() == metadata["table_sha256"]
+
+    workspace, _ = reference_workspace
+    names = parse_indexed_messages(
+        (workspace / "original/decoded/nitrofs/font/mes_CardName.mes").read_bytes()
+    )
+    cases = selector["comparison_cases"]
+    assert isinstance(cases, list)
+    for case in cases:
+        assert isinstance(case, dict)
+        card_id = case["card_id"]
+        assert isinstance(card_id, int)
+        row_start = card_id * record_stride
+        assert list(table[row_start : row_start + record_stride]) == case["metadata_record"]
+        assert table[row_start + 2] == case["selected_type_id"]
+        assert names[card_id] == case["label"]

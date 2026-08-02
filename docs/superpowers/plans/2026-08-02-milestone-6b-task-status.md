@@ -24,7 +24,7 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2B.3 — trace canonical Gate-owner source**.
+Current checkpoint: **2B.4 — owner lifetime, reset, and alternate-path validation**.
 
 Task 2 checkpoints:
 
@@ -32,7 +32,8 @@ Task 2 checkpoints:
 2. 2B — canonical Gate owner: in progress
    - 2B.1 — player-owned Gate capture: complete
    - 2B.2 — reverse-owner control: complete
-   - 2B.3 — trace canonical Gate-owner source: pending
+   - 2B.3 — trace canonical Gate-owner source: complete
+   - 2B.4 — owner lifetime, reset, and alternate-path validation: pending
 3. 2C — challenger and combatant mapping: pending
 4. 2D — human and AI identity: pending
 5. 2E — effect targeting rules: pending
@@ -91,4 +92,20 @@ The controlled battle established:
 
 Therefore the interpretation of `+0x28D/+0x28E` as canonical Gate owner followed by challenger is rejected with confirmed evidence. The pair remains a probable fixed participant/combatant ordering only.
 
-Checkpoint 2B now continues by tracing the actual object or field that associates active Gate ID 21 with participant index 1. No Task 2 field is considered globally confirmed until that source's lifecycle and scripted behavior are documented.
+### Checkpoint 2B.3 result
+
+The confirmed owner-source path is stored in `analysis/gates/gate-owner-source-path.json` at commit `51d8e0ae0f10664e74fd92b40607cc80521eec08`.
+
+For the observed clean-launch battle path:
+
+- the arena-placement record stores Gate slot index at byte `+0` and Gate-owner participant index at byte `+1`;
+- the battle constructor copies the owner index into battle object `+0x06`;
+- the constructor selects the owner participant object and reads the Gate ID from `participant +0x54 + gate_slot_index * 4`;
+- the active Gate ID is stored in battle object `+0x04`;
+- in the AI-owned control, the placement record held slot `0`, owner participant `1`, and the resulting battle header held Gate ID `21`, owner `1`;
+- constructor entry clears `+0x04` and `+0x06` before assigning the derived values;
+- all assignments occur before the first Gate bonus lookup.
+
+The source path is confirmed for the observed tutorial/story path. Checkpoint 2B.4 must confirm lifetime through result/capture, reset behavior, and whether normal or alternate scripted construction bypasses this path.
+
+No Task 2 field is considered globally confirmed until the applicable runtime and lifecycle evidence is complete.

@@ -1,0 +1,202 @@
+{
+  "binary": {
+    "decoded_overlay": 7,
+    "decoded_overlay_runtime_base": "0x02219440",
+    "decoded_overlay_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+  },
+  "checkpoint": "4C",
+  "confidence_boundary": "This checkpoint confirms the decoded-overlay-7 Gate-slot state machine, ordinary transfer behavior, scripted overrides, construction reset, and object lifetime. It confirms value 0 as selectable by the ordinary Gate-slot chooser, value 1 as assigned to an active arena placement, and value 2 as unavailable to ordinary selection. It does not narrow value 2 to captured or removed because scripted setup writes value 2 before battle and the Checkpoint 4B active Gate already held value 2 before arena removal. No activation-count claim is made here.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "How do participant Gate-slot values 0, 1, and 2 move through ordinary placement, transfer, removal, scripted setup, construction, and teardown?",
+  "instruction_evidence": [
+    {
+      "purpose": "session construction clears the arena table, board-grid state, and active-placement count",
+      "runtime_start": "0x0225FD5C",
+      "runtime_end": "0x0225FF18",
+      "length": 444,
+      "sha256": "490bc7e93bc1c69408b29ee55eacaf200fd9d731138de9e0e071394e314c3143"
+    },
+    {
+      "purpose": "ordinary arena allocation, removal, and active-placement transfer",
+      "runtime_start": "0x02262638",
+      "runtime_end": "0x02262768",
+      "length": 304,
+      "sha256": "70a0d60c025b5397a2a218aca6b86819c1c105f11b675766d97436621de7a8c8"
+    },
+    {
+      "purpose": "scripted state-machine block marks Gate slots 1 and 2 unavailable",
+      "runtime_start": "0x02262B80",
+      "runtime_end": "0x02262BA0",
+      "length": 32,
+      "sha256": "73fee291f605fd234b6070ecd71aba8fc6e828e2bcc7f6e9df13c3f3ab50704a"
+    },
+    {
+      "purpose": "participant construction clears the participant battle-state region containing all Gate-slot entries",
+      "runtime_start": "0x022696B4",
+      "runtime_end": "0x02269734",
+      "length": 128,
+      "sha256": "f37089d68c71a1c0f2064ce0e9c11e21cc1fdd31ec0af3390ed7bbfeac27292d"
+    },
+    {
+      "purpose": "participant construction populates Gate IDs and initializes ordinary available-slot bookkeeping",
+      "runtime_start": "0x02269838",
+      "runtime_end": "0x02269BC8",
+      "length": 912,
+      "sha256": "d8220fc9b939850457fe05d1f11212d987bba1e9a9d3613f3ac14d0cdfd7ed08"
+    },
+    {
+      "purpose": "participant destructors release the optional AI controller and free the object without in-place Gate-state clearing",
+      "runtime_start": "0x02269C28",
+      "runtime_end": "0x02269C94",
+      "length": 108,
+      "sha256": "d79198da01f9bd6e15be8b06dd772814f870dfac32537e982244757ff6b12555"
+    },
+    {
+      "purpose": "central Gate-slot state setter and zero/nonzero available-count adjustment",
+      "runtime_start": "0x0226A404",
+      "runtime_end": "0x0226A448",
+      "length": 68,
+      "sha256": "c120e6a295ecefeead7099b47f095b0388d3372f831700f31d4b9a7d4f3b2fd8"
+    },
+    {
+      "purpose": "scripted participant setup directly overrides Gate-slot values and available-count bookkeeping",
+      "runtime_start": "0x0226A48C",
+      "runtime_end": "0x0226A5DC",
+      "length": 336,
+      "sha256": "a797632d45fcba1452547bac4cc4373fb98bb832e0bb7b653ae928b7ec0b7dea"
+    },
+    {
+      "purpose": "ordinary Gate-slot chooser counts and selects only slots whose state is zero",
+      "runtime_start": "0x0226A5E8",
+      "runtime_end": "0x0226A6F8",
+      "length": 272,
+      "sha256": "e66c593302e2b577dc2b2ee9fa5601d7d14db4aeaa0904a465a8209516583e2e"
+    }
+  ],
+  "direct_setter_call_inventory": [
+    {
+      "call_address": "0x02262690",
+      "requested_state": 1,
+      "path": "arena allocation",
+      "effect": "The selected participant Gate slot becomes assigned to the new occupied arena record; session +0x294 increments."
+    },
+    {
+      "call_address": "0x022626DC",
+      "requested_state": 2,
+      "path": "arena removal",
+      "effect": "The active placement's owner Gate slot becomes unavailable to the ordinary zero-state chooser; the arena record and board-grid reference are cleared and session +0x294 decrements."
+    },
+    {
+      "call_address": "0x02262740",
+      "requested_state": 0,
+      "path": "active placement transfer, old owner/slot",
+      "effect": "The old Gate slot is returned to the ordinary selectable pool."
+    },
+    {
+      "call_address": "0x02262760",
+      "requested_state": 1,
+      "path": "active placement transfer, new owner/slot",
+      "effect": "The replacement Gate slot becomes assigned to the same active arena entry."
+    },
+    {
+      "call_address": "0x02262B8C",
+      "requested_state": 2,
+      "path": "scripted state-machine setup",
+      "effect": "Participant Gate slot 1 is made unavailable."
+    },
+    {
+      "call_address": "0x02262B9C",
+      "requested_state": 2,
+      "path": "scripted state-machine setup",
+      "effect": "Participant Gate slot 2 is made unavailable."
+    }
+  ],
+  "state_model": [
+    {
+      "value": 0,
+      "semantic_name": "selectable_or_unassigned",
+      "confidence": "confirmed",
+      "evidence": [
+        "Participant construction clears the 120-byte battle-state region containing all Gate-slot state bytes before Gate IDs are populated.",
+        "The ordinary chooser at 0x0226A5E8 counts only zero-state Gate slots and returns one of those slots for placement.",
+        "Active-placement transfer writes the old slot back to zero."
+      ]
+    },
+    {
+      "value": 1,
+      "semantic_name": "assigned_to_active_arena_placement",
+      "confidence": "confirmed",
+      "evidence": [
+        "Arena allocation writes state 1 while creating an occupied arena record and incrementing session +0x294.",
+        "Active-placement transfer writes state 1 to the replacement owner/slot without changing the number of active arena records."
+      ]
+    },
+    {
+      "value": 2,
+      "semantic_name": "unavailable_to_ordinary_placement",
+      "confidence": "confirmed",
+      "evidence": [
+        "Arena removal writes state 2.",
+        "The ordinary chooser excludes all nonzero states.",
+        "Multiple scripted setup paths write state 2 before ordinary result removal.",
+        "Checkpoint 4B observed the active Gate at state 2 before and after removal, rejecting the narrower captured-only interpretation."
+      ]
+    }
+  ],
+  "available_count_behavior": {
+    "access": "participant +0xF8",
+    "ordinary_initialization": "Participant construction copies the configured Gate-slot count from global match configuration +0x99 after clearing and populating the participant Gate records.",
+    "ordinary_updates": [
+      "A zero-to-nonzero transition decrements +0xF8 when the current count is nonzero.",
+      "A nonzero-to-zero transition increments +0xF8.",
+      "A nonzero-to-nonzero transition leaves +0xF8 unchanged."
+    ],
+    "scripted_override": "The setup helper at 0x0226A48C directly writes +0xF8 = 0. In one mode it can simultaneously leave Gate slot 0 at state 0, proving +0xF8 is a maintained or overridden cache rather than an invariant recomputation of zero-state entries.",
+    "conclusion": "Use +0xF8 only in the confirmed ordinary participant/mode context. System 2.0 should resolve actual slot states when scripted setup can override the cache."
+  },
+  "scripted_and_alternate_paths": {
+    "setup_helper": "0x0226A48C",
+    "call_sites": [
+      "0x02262D2C",
+      "0x02262D34",
+      "0x02262E18",
+      "0x02262E20",
+      "0x02262F3C",
+      "0x02262F44",
+      "0x022630B0",
+      "0x022630B8"
+    ],
+    "observed_rules": [
+      "Outside mode 14, slots 1 and 2 are directly set to state 2; slot 0 is set to 0 only for mode byte +0x85 value 1 and otherwise set to 2.",
+      "The same helper directly sets participant +0xF8 to 0.",
+      "Mode 14 follows separate participant-specific setup branches and also directly sets selected Gate-slot state bytes to 2.",
+      "The scripted state-machine block at 0x02262B80 additionally marks slots 1 and 2 as state 2 through the central setter."
+    ],
+    "conclusion": "Scripted modes intentionally bypass the ordinary constructor-to-placement lifecycle and may begin with Gate slots unavailable before any observed arena removal."
+  },
+  "reuse_and_reset": {
+    "same_active_placement_transfer": "0x02262714 returns the old owner/slot to state 0, rewrites the arena entry's owner and slot identity, and marks the replacement slot state 1. The occupied record and session +0x294 count remain active.",
+    "post_removal_reuse": "No dedicated decoded-overlay-7 path was identified that returns a removed placement's state-2 slot to zero after the arena record has been cleared. The only ordinary state-0 writer is active-placement transfer, which operates on a still-addressable placement entry.",
+    "participant_reset": "Fresh participant construction clears all Gate-slot records to zero, repopulates Gate IDs, and initializes +0xF8 from the configured Gate count before optional scripted overrides.",
+    "session_reset": "Session construction clears 652 bytes beginning at session +0x0C, covering arena records, board-grid state, and session +0x294; it also explicitly writes +0x294 = 0.",
+    "destruction": "Participant destruction does not clear Gate-slot states or +0xF8 in place; it releases owned resources and frees the object. Session teardown similarly ends validity. New construction, not destruction, establishes reset state."
+  },
+  "supported_conclusions": [
+    "Gate-slot state 0 is the ordinary selectable or unassigned state.",
+    "Gate-slot state 1 is tied to assignment to an active occupied arena placement.",
+    "Gate-slot state 2 means unavailable to ordinary placement selection but is not uniquely synonymous with captured or removed.",
+    "An active placement can be transferred: the old slot returns to 0 and the replacement slot becomes 1 without changing active-placement count.",
+    "Ordinary arena removal writes 2 and removes the physical arena record; no dedicated same-session post-removal reuse path was found.",
+    "Scripted setup can pre-mark Gate slots as 2 and directly override +0xF8, explaining the Checkpoint 4B tutorial pre-state.",
+    "Participant and session construction are the authoritative reset boundaries; destruction invalidates objects without in-place state clearing.",
+    "System 2.0 must distinguish physical arena presence from participant Gate-slot availability and must not infer one from the other in scripted modes."
+  ],
+  "unresolved": [
+    "The player-facing gameplay label for every scripted use of state 2.",
+    "Whether any code outside decoded overlay 7 restores a removed Gate slot during the same match.",
+    "Whether special network or story modes interpret participant +0xF8 differently after direct scripted overrides.",
+    "Activation-count presence or confirmed absence, reserved for Checkpoint 4D."
+  ]
+}

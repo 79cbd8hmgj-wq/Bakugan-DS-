@@ -1,0 +1,89 @@
+{
+  "confidence_boundary": "This reverse-owner control proves that the session pair at +0x28D/+0x28E is not the canonical Gate-owner/challenger pair. It does not yet identify the actual canonical owner field or source object.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "runtime_observation": {
+    "active_gate_card_id": 21,
+    "active_gate_owner_participant_index": 1,
+    "battle_constructor_breakpoint": "0x0223CFE8",
+    "gate_lookup_helper": "0x02065BF4",
+    "gate_lookup_calls": [
+      {
+        "attribute_id": 2,
+        "gate_card_id": 21,
+        "pc": "0x02065BF4"
+      },
+      {
+        "attribute_id": 0,
+        "gate_card_id": 21,
+        "pc": "0x02065BF4"
+      }
+    ],
+    "launch_method": "clean executable launch with normal battery save; no executable save state",
+    "participant_0": {
+      "base_g": 190,
+      "gate_card_ids": [
+        19,
+        40,
+        72
+      ],
+      "participant_object_runtime_address": "0x022E24E0"
+    },
+    "participant_1": {
+      "base_g": 230,
+      "gate_card_ids": [
+        21,
+        59,
+        93
+      ],
+      "participant_object_runtime_address": "0x022E2640"
+    },
+    "session_fields": {
+      "+0x28A": 0,
+      "+0x28D": 0,
+      "+0x28E": 1
+    },
+    "session_pointer_holder": "0x020D433C",
+    "session_runtime_address": "0x0229FC80"
+  },
+  "raw_local_capture_hashes": {
+    "2b2_ai_turn_wait5.png": "c5f42eaf33604bf25d1a89adf72ae2f164d59614e074a663b7d07680a1f5d634",
+    "2b2_flick2.png": "9e2dad2f331033a517109337fc4d3e144b61f963b20edc8f6b5e18b53bc53898",
+    "2b2_gate_lookup_regs.json": "fd328bb503211664cc2be674ce4f52e148e802961d7e2ab0ccd02b3546f2ebfe",
+    "2b2_gate_lookup_regs_second.json": "1de0af8012882a280c87fd3d6bd863601291e8e40ab2c33bfe0e2a20c1732d44",
+    "2b2_participant0_mem.json": "ca74415eb005e909181e2700436b05058b06cb105ad31205cd43155b7b4fed34",
+    "2b2_participant1_mem.json": "cd73ca5b91a87226080bd8a03e26abbb1ab11775b0100abcf4cf1c296dfabb63",
+    "2b2_participant_fields.json": "2ddef64517be101bc152a431747d2e520e8df7f0a6eb204159b0b94b3090a88f"
+  },
+  "supported_conclusions": [
+    "The active Gate is global Gate ID 21 because both Gate bonus lookups entered 0x02065BF4 with r0 = 21.",
+    "Participant index 1 owns Gate ID 21 in this capture because ID 21 appears in participant 1's three Gate-card slots and does not appear in participant 0's slots.",
+    "The active Gate therefore belongs to participant index 1 while participant index 0 contests it.",
+    "Despite reversed Gate ownership relative to the player-owned control, session +0x28D remained 0 and +0x28E remained 1.",
+    "The +0x28D/+0x28E pair is therefore not a canonical owner/challenger encoding.",
+    "The pair remains suitable as a combatant-order or participant-order candidate, but those semantics require separate confirmation."
+  ],
+  "rejected_interpretations": [
+    {
+      "field": "+0x28D",
+      "interpretation": "canonical Gate owner participant index",
+      "reason": "It remained 0 while participant index 1 owned the active Gate ID 21."
+    },
+    {
+      "field": "+0x28E",
+      "interpretation": "canonical Gate challenger participant index",
+      "reason": "It remained 1 while participant index 0 was the participant contesting participant 1's Gate."
+    }
+  ],
+  "unresolved": [
+    "The authoritative field or object that stores canonical Gate ownership",
+    "Whether Gate ownership is stored directly or derived by matching the active Gate ID against participant Gate slots",
+    "The exact semantics of +0x28D and +0x28E",
+    "Whether +0x28A represents active participant, current turn, winner, or another slot selector",
+    "How scripted battles represent or override Gate ownership"
+  ],
+  "next_checkpoint": {
+    "id": "2B.3",
+    "objective": "Trace the active Gate ID and its owner source upstream from the Gate lookup or arena Gate object until a stable canonical owner field or deterministic owner-derivation path is identified."
+  }
+}

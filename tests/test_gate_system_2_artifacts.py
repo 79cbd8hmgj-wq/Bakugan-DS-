@@ -6,11 +6,6 @@ from pathlib import Path
 
 EVIDENCE = Path("analysis/gates/card-id-evidence.json")
 SYMBOLS = Path("analysis/symbols/gate_cards.csv")
-LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
-LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
-SELECTOR = Path("analysis/gates/battle-type-selector.json")
-BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
-CONTEXT = Path("analysis/gates/battle-context.json")
 FORBIDDEN_KEYS = {"raw_bytes", "ram_dump", "save_state", "screenshot", "complete_gate_table"}
 
 
@@ -60,6 +55,10 @@ def test_gate_symbol_csv_matches_selected_mappings() -> None:
     assert all(row["confidence"] == "confirmed" for row in rows)
 
 
+LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
+LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
+
+
 def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
     payload = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
     transitions = payload["transitions"]
@@ -77,6 +76,10 @@ def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
     assert "0x0223EA60" in document
     assert "Resolved to reset" in document
     assert "Reused" in document
+
+
+SELECTOR = Path("analysis/gates/battle-type-selector.json")
+BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
 
 
 def test_battle_type_selector_is_fixed_and_complete() -> None:
@@ -120,6 +123,9 @@ def test_battle_type_symbol_csv_has_required_columns() -> None:
         "DispatchBattleType",
     }
     assert all(row["confidence"] == "confirmed" for row in rows)
+
+
+CONTEXT = Path("analysis/gates/battle-context.json")
 
 
 def test_battle_context_has_confirmed_hook_safe_core() -> None:
@@ -179,7 +185,9 @@ def test_storage_strategy_selects_viable_primary_and_fallback() -> None:
     for required in (
         "4,152 bytes total",
         "0x0228BC20",
-        "0x0228BC60",
+        "0x02293C60",
+        "0x8000",
+        "0x7A7E0",
         "0x023E0000",
         "72-byte stack buffer",
         "Missing or malformed",

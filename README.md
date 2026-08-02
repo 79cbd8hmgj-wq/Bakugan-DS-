@@ -27,9 +27,10 @@ python -m pytest
 
 ## Current scope
 
-Milestone 1 validates the supported ROM and parses its NDS header, FAT, FNT,
-and overlay tables. Extraction, rebuilding, and gameplay patches follow in
-later milestones.
+The framework validates, extracts, rebuilds, and guarded-patches the supported
+ROM. Static and runtime analysis have confirmed the initial battle G-Power
+record, Gate/attribute lookup, target-total arithmetic, and display animation.
+Milestone 5 adds the first playable balance patch.
 
 ## Inspect a ROM
 
@@ -113,6 +114,21 @@ Patch files describe fixed-length binary replacements against `arm9`, `arm7`,
 `overlay:<id>`, or `nitrofs:<path>`. Every replacement includes the exact bytes
 expected at the target offset. If any guard is stale, out of bounds, or targets
 the wrong ROM profile, no patch target is written.
+
+## First gameplay patch
+
+`patches/gpower-progression-50.json` keeps each Bakugan form's level-1 base G
+unchanged while reducing its additive level/progression contribution to 50%.
+Apply it to a clean workspace before rebuilding:
+
+```bash
+bakugan-ds patch work/bakugan patches/gpower-progression-50.json
+bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-G50.nds
+```
+
+The exact instructions, expected roster effects, validation results, and current
+limitations are documented in
+[docs/gpower-rebalance.md](docs/gpower-rebalance.md).
 
 ## Build the runtime debugger
 

@@ -11,7 +11,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PATCH_PATH = ROOT / "patches/core-g-compression-400.json"
 DOC_PATH = ROOT / "docs/core-g-compression.md"
-RUNTIME_PATH = ROOT / "analysis/runtime-observations/core_g_compression_400.json"
 OVERLAY_BASE = 0x02219440
 OVERLAY_SIZE = 467360
 OVERLAY_SHA256 = "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
@@ -195,38 +194,95 @@ def test_document_states_scope_commands_and_runtime_gate() -> None:
         "bakugan-ds patch",
         "bakugan-ds rebuild",
         "Verification evidence",
+        "Clean full-game smoke test",
+        "returned to the surrounding park story",
     ):
         assert required in text
 
 
-def test_runtime_observation_records_controlled_cpu_and_clean_battle_entry() -> None:
+RUNTIME_PATH = ROOT / "analysis/runtime-observations/core_g_compression_validation.json"
+
+
+def test_runtime_observation_records_controlled_and_full_game_proof() -> None:
     payload = json.loads(RUNTIME_PATH.read_text(encoding="utf-8"))
     assert payload["profile_id"] == "b6re_rev0"
+    assert payload["source_rom_sha256"] == (
+        "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+    )
+    assert payload["rebuilt_rom_sha256"] == (
+        "429a5830e1a996cccd26e6cb93793aa229eb6f83a5e687fd4d0604e81eebbce0"
+    )
     assert payload["patch"]["threshold_g"] == 400
     assert payload["patch"]["high_curve"] == "200 + floor(core_g / 2)"
+    assert [item["id"] for item in payload["patch"]["regions"]] == list(
+        EXPECTED_REGIONS
+    )
 
-    cases = {item["case"]: item for item in payload["controlled_arm9_execution"]}
+    assert payload["overlay"]["changed_byte_count"] == 41
+    assert payload["overlay"]["decoded_size"] == OVERLAY_SIZE
+    assert payload["overlay"]["bss_size"] == 1600
+    build = payload["build_verification"]
+    assert build["rom_size"] == 134217728
+    assert build["overlay_output_encoding"] == "uncompressed-overlay"
+    assert build["overlay_flags"] == 0
+    assert build["overlay_compressed_size"] == 0
+    assert build["unchanged_fat_payloads_verified"] == 11004
+    assert build["layout_mismatches"] == 0
+
+    cases = {item["case"]: item for item in payload["controlled_constructor_cases"]}
     low = cases["low_unchanged"]
-    assert low["inputs"] == {
-        "opponent": {"core_g": 230, "mutable_modifier_g": 0},
-        "player": {"core_g": 190, "mutable_modifier_g": 0},
+    assert low["outputs"]["opponent"]["base_snapshot_g"] == 230
+    assert low["outputs"]["player"]["base_snapshot_g"] == 190
+    assert low["outputs"]["zero_initialized_gate_fields"] == [0, 0, 0, 0]
+
+    high = cases["high_modifier_and_symmetry"]
+    assert high["inputs"] == {
+        "opponent": {"core_g": 650, "mutable_modifier_g": 30},
+        "player": {"core_g": 650, "mutable_modifier_g": 0},
     }
-    assert low["outputs"] == {
-        "opponent_base_snapshot_g": 230,
-        "player_base_snapshot_g": 190,
+    assert high["outputs"]["opponent"] == {
+        "compressed_core_g": 525,
+        "base_snapshot_g": 555,
+        "current_snapshot_g": 555,
+    }
+    assert high["outputs"]["player"] == {
+        "compressed_core_g": 525,
+        "base_snapshot_g": 525,
+        "current_snapshot_g": 525,
     }
 
-    high = cases["high_and_modifier_symmetry"]
-    assert high["outputs"] == {
-        "opponent_base_snapshot_g": 555,
-        "player_base_snapshot_g": 525,
-    }
-
-    gate_cases = {item["case"]: item for item in payload["controlled_gate_execution"]}
+    gate_cases = {item["case"]: item for item in payload["controlled_gate_cases"]}
     assert gate_cases["high_player_gate"]["equation"] == "525 + 100 = 625"
     assert gate_cases["high_modifier_gate"]["equation"] == "555 + 100 = 655"
 
     smoke = payload["clean_game_smoke"]
-    assert smoke["reached_first_battle"] is True
+    assert smoke["title_screen_reached"] is True
+    assert smoke["profile_created"] is True
+    assert smoke["first_battle_entered"] is True
     assert smoke["serpenoid_selection_g"] == 190
-    assert smoke["full_battle_completion_claimed"] is False
+    assert smoke["player_throw_completed"] is True
+    assert smoke["player_bakugan_stood_on_gate"] is True
+    assert smoke["gate_result"] == {
+        "opponent": {
+            "base_snapshot_g": 230,
+            "gate_bonus_g": 180,
+            "target_total_g": 410,
+        },
+        "player": {
+            "base_snapshot_g": 190,
+            "gate_bonus_g": 100,
+            "target_total_g": 290,
+        },
+    }
+    assert smoke["attribute_minigame_entered"] is True
+    assert smoke["tutorial_exit_method"] == "built_in_skip_after_failed_rub_retry"
+    assert smoke["tutorial_completion_dialogue_observed"] is True
+    assert smoke["returned_to_surrounding_story"] is True
+    assert smoke["post_exit_input_responsive"] is True
+    assert smoke["overlay_failure_observed"] is False
+    assert "does not claim a natural win" in smoke["scope_note"]
+
+    hashes = payload["local_evidence_hashes"]
+    assert len(hashes) == 7
+    assert all(len(value) == 64 for value in hashes.values())
+    assert "not committed" in payload["repository_boundary"]

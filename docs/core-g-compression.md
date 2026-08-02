@@ -42,12 +42,47 @@ For rollback, create a fresh workspace or restore `modified/overlays/overlay_007
 
 ## Verification evidence
 
-The exact replacement block was executed through DeSmuME's ARM9 GDB stub with controlled source records and readback-verified memory writes:
+### Exact overlay and rebuild
+
+The three guards match the confirmed decoded overlay 7. The rebuilt ROM remains
+134,217,728 bytes, reparses without layout mismatches, and stores overlay 7
+uncompressed at its unchanged 467,360-byte RAM size with the original 1,600-byte
+BSS. Exactly 41 instruction bytes change inside the declared regions; all other
+11,004 FAT payloads remain byte-identical.
+
+### Controlled ARM9 execution
+
+The exact replacement block was executed through DeSmuME's ARM9 GDB stub with
+controlled source records and readback-verified memory writes:
 
 - low inputs remained unchanged: opponent `230`, player `190`;
-- high inputs followed the same curve for both combatants: `650 -> 525`;
-- a `+30` mutable modifier remained separate: `525 + 30 = 555`;
-- the unchanged Gate path still produced `525 + 100 = 625` and `555 + 100 = 655`;
-- all Gate fields were zero-initialized before the later lookup.
+- both `650 G` core inputs compressed symmetrically to `525 G`;
+- a separate `+30 G` mutable modifier remained fully additive, producing `555 G`;
+- the unchanged Gate path produced `525 + 100 = 625` and `555 + 100 = 655`;
+- Gate fields remained zero-initialized until the later Gate lookup/store path.
 
-A separate clean, no-debugger boot of the rebuilt ROM created a new profile and reached the first battle. Serpenoid displayed `190 G` on the selection screen, and no overlay-load failure was observed. This smoke test does **not** claim that a full battle was completed. Normalized evidence is stored in `analysis/runtime-observations/core_g_compression_400.json`; ROM bytes, RAM dumps, screenshots, and save data remain local.
+### Clean full-game smoke test
+
+A separate clean boot used the rebuilt ROM and created a new profile without
+loading any save state, so overlay 7 came from the patched ROM rather than stale
+saved executable RAM. The run:
+
+1. reached the title screen and created a Pyrus profile;
+2. entered the first tutorial battle;
+3. selected Serpenoid at its unchanged `190 G`;
+4. completed two throws and stood on the required Gate Card;
+5. displayed the original controlled Gate totals, opponent `230 + 180 = 410`
+   and player `190 + 100 = 290`;
+6. entered the attribute-rub minigame;
+7. used the game's built-in tutorial-skip option after a failed rub retry;
+8. displayed the tutorial-completion dialogue;
+9. returned to the surrounding park story and accepted another input.
+
+This smoke test proves boot, battle entry, normal low-G arithmetic, throw/stand,
+Gate calculation, tutorial exit, overlay stability, and return to responsive
+story state. It does not claim a natural win of the rub minigame.
+
+Normalized evidence is stored in
+`analysis/runtime-observations/core_g_compression_validation.json`. The rebuilt
+ROM, extracted overlay, RAM data, save states, screenshots, and debugger captures
+remain local and are not committed.

@@ -1,0 +1,6 @@
+name,component,address,confidence,evidence
+PlayerBakuganAux_GetRecord,arm9_runtime,0x02023248,confirmed,"Returns roster + 0x88 + identity_index * 4"
+PlayerBakuganAux_PackedLevelExperience,runtime_ram,roster+0x88+identity*4,confirmed,"Halfword 0 packs zero-based level in bits 0-3 and experience in bits 4-15"
+PlayerBakuganAux_FieldStats,runtime_ram,roster+0x8A+identity*4,confirmed,"Halfword 1 packs five three-bit field stats"
+BattleExperienceBoost_Add40,overlay_0007,0x0222B668,confirmed,"Adds 40 XP while current XP is below 4055 and preserves the low level nibble"
+BattleResult_AddExperience,overlay_0007,0x0224224C,confirmed,"Adds battle XP only when current XP is at most 4095 minus the reward and preserves the level nibble"

@@ -1,0 +1,172 @@
+{
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "size": 467360
+  },
+  "confidence_boundary": "The source identities and result index are confirmed from executable and previously committed runtime evidence. The target-mode names and fail-closed rules are the System 2.0 resolver contract derived from those confirmed sources; they are not claims that the original game already has a generic effect-target dispatcher.",
+  "confirmed_result_fields": [
+    {
+      "access": "battle-result controller +0x21",
+      "confidence": "confirmed",
+      "initialization": "Constructor 0x0223E238 stores signed -1 at 0x0223E27C.",
+      "lifetime": "Valid while the battle-result controller and its battle object at +0x38 remain live.",
+      "meaning": "winning combatant record index; -1 means unresolved or no normal winner, 0 and 1 select the two 20-byte combatant records",
+      "mutations": [
+        "0x02241A64..0x02241A74 resolves a direct result to index 0 or 1.",
+        "0x02242094..0x0224209C calls result helper 0x02244440 and stores its 0-or-1 return value."
+      ],
+      "reset": "A new battle-result controller reconstructs the field as -1; destructor 0x0223E450 destroys the associated battle object and ends validity.",
+      "signed": true,
+      "width_bits": 8
+    },
+    {
+      "access": "battle-result controller +0x0E",
+      "confidence": "confirmed",
+      "initialization": "Constructor 0x0223E238 initializes the byte to zero, but it has no loser meaning until a valid winner has been resolved.",
+      "lifetime": "Presentation cache used after winner resolution during the live result-controller lifetime.",
+      "meaning": "cached losing combatant record index, written as the opposite of winner index 0 or 1",
+      "mutations": [
+        "0x02241CD4..0x02241CE4 stores 1 when winner is 0 and 0 otherwise."
+      ],
+      "reset": "Reinitialized by the next result-controller constructor and discarded at destruction.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "address": "0x0223E238",
+      "end": "0x0223E340",
+      "purpose": "construct the result controller, initialize +0x21 to -1, and construct/store the linked battle object at +0x38",
+      "sha256": "37899124ba7100bb8bd0a2ba05aa31817d2a314e0709ee2cffe6cf806f8cda74"
+    },
+    {
+      "address": "0x02241A64",
+      "end": "0x02241A78",
+      "purpose": "resolve a direct battle result and store winning combatant index 0 or 1 at result-controller +0x21",
+      "sha256": "8e07a67a5a7ec93cd2da0d3268bdff3262890d29145dc479ff6e400733f5f8d5"
+    },
+    {
+      "address": "0x02242094",
+      "end": "0x022420C0",
+      "purpose": "call the calculated-result helper, store its 0-or-1 return at +0x21, then reject -1 before normal result processing",
+      "sha256": "4a43aa1075b6c2af40b5c690905fbd20b077d8b287e5eb3e80fdde787d7d6c8e"
+    },
+    {
+      "address": "0x02241B3C",
+      "end": "0x02241BD0",
+      "purpose": "read +0x21 and select winner combatant record 0 or 1 for result presentation",
+      "sha256": "e478622fe9816ba1675d0f13d7c67bc43c2dd07d609629b1d93922a445bf693d"
+    },
+    {
+      "address": "0x02241CD4",
+      "end": "0x02241D5C",
+      "purpose": "derive the opposite loser index and select the losing combatant record for presentation",
+      "sha256": "e07b0f840ca2c752fdc2bd2ae7753cc4af364d570c2c78d316df8c5fdbdfbe32"
+    },
+    {
+      "address": "0x022420B0",
+      "end": "0x02242118",
+      "purpose": "guard unresolved -1 and compare the winning combatant with the active player-side participant before reward processing",
+      "sha256": "f5dd69863ad93661f7bde5708a2182fe2473b4586db575e085e8f479ca07a57d"
+    },
+    {
+      "address": "0x022423E0",
+      "end": "0x02242498",
+      "purpose": "consume the same signed winner index during final result and progression handling",
+      "sha256": "d1b570e0fb4b0c98a8f29fa2a3076c13fb4588fe2f37ca8fcf4633789715691a"
+    },
+    {
+      "address": "0x02244440",
+      "end": "0x022447C0",
+      "purpose": "calculated battle-result helper; evaluates both combatant records and returns only index 0 or 1",
+      "sha256": "8dbc3c0727ab824736bc041f86297fa15cdfb8efe88e25b25736cf8d64f5a75a"
+    },
+    {
+      "address": "0x0223E450",
+      "end": "0x0223E4B4",
+      "purpose": "destroy the linked battle object and end result-context validity",
+      "sha256": "4b4188b41e2f4a38b1b70a02c6b6a0721c95975df13aa5487b03dae193098457"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "resolver_context": {
+    "challenger_participant": "Resolve session +0x28E to its 20-byte descriptor, then read the low nibble of descriptor byte +0x0F.",
+    "defender_participant": "Resolve session +0x28D to its 20-byte descriptor, then read the low nibble of descriptor byte +0x0F.",
+    "gate_owner_participant": "Read battle object +0x06.",
+    "is_ai": "Read participant +0xC8 and test for non-null.",
+    "source_participant": "An explicit participant index supplied by the effect-dispatch call; it must never be inferred from record order.",
+    "winner_record_index": "Read signed result-controller +0x21 only after the result-settled timing point."
+  },
+  "target_modes": [
+    {
+      "availability": "available while the battle object is live",
+      "mode": "owner",
+      "resolution": "Return the single participant index stored at battle object +0x06. A combatant-only effect must separately require that this participant maps to one of the two current combatant records."
+    },
+    {
+      "availability": "available for a distinct two-combatant collision",
+      "mode": "defender",
+      "resolution": "Return the participant selected by session +0x28D."
+    },
+    {
+      "availability": "available for a distinct two-combatant collision",
+      "mode": "challenger",
+      "resolution": "Return the participant selected by session +0x28E."
+    },
+    {
+      "availability": "requires an explicit source participant",
+      "mode": "self",
+      "resolution": "Return source_participant unchanged after confirming that it is one of the live combatants for combatant-only effects."
+    },
+    {
+      "availability": "requires a distinct combatant pair and an explicit source participant that matches exactly one combatant",
+      "mode": "opponent",
+      "resolution": "Return the other combatant participant. Do not interpret Gate ownership, human/AI identity, or record number as the source."
+    },
+    {
+      "availability": "available for a distinct two-combatant collision",
+      "mode": "both",
+      "resolution": "Return the ordered unique pair [defender_participant, challenger_participant]."
+    },
+    {
+      "availability": "available only after result-controller +0x21 is 0 or 1",
+      "mode": "winner",
+      "resolution": "Map winner record index 0 to defender participant and index 1 to challenger participant."
+    },
+    {
+      "availability": "available only after result-controller +0x21 is 0 or 1",
+      "mode": "loser",
+      "resolution": "Map winner record index 0 to challenger participant and index 1 to defender participant. Derive this as winner_index XOR 1 rather than trusting result-controller +0x0E before its presentation write."
+    },
+    {
+      "availability": "available while participant objects and both combatants are live",
+      "mode": "human",
+      "resolution": "Filter the ordered unique combatant pair to participants whose +0xC8 pointer is null."
+    },
+    {
+      "availability": "available while participant objects and both combatants are live",
+      "mode": "ai",
+      "resolution": "Filter the ordered unique combatant pair to participants whose +0xC8 pointer is non-null."
+    }
+  ],
+  "fail_closed_rules": [
+    "Reject winner and loser targets while result-controller +0x21 is -1 or outside 0..1.",
+    "Reject opponent, both, winner, and loser targeting when defender and challenger do not form a distinct two-combatant pair.",
+    "Reject self or opponent targeting when no explicit source participant was supplied.",
+    "Reject opponent targeting when the source participant is not exactly one of the two live combatants.",
+    "Do not silently convert an owner participant who is not currently battling into defender, challenger, or opponent.",
+    "Deduplicate human and AI target sets by participant index while preserving defender-then-challenger order.",
+    "Do not persist participant pointers, battle pointers, result-controller pointers, or AI-controller pointers in Gate data."
+  ],
+  "supported_conclusions": [
+    "Gate owner, defender, challenger, human, and AI targets derive from independent confirmed sources.",
+    "The winner index is a signed result-controller field, not a battle-object field and not a participant index.",
+    "Winner and loser participant identities require one additional combatant-index-to-participant mapping step.",
+    "The generic self and opponent modes must be relative to an explicit effect source, not relative to Gate ownership or player/AI identity.",
+    "The original game does not provide a generic target-mode dispatcher; the listed modes are a deterministic System 2.0 contract over confirmed runtime context."
+  ]
+}

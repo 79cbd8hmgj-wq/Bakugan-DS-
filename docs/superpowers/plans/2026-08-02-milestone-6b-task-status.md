@@ -81,7 +81,7 @@ Python compilation, Ruff, strict mypy, the complete repository test suite, chang
 
 ## Task 3
 
-Current checkpoint: **3B — runtime confirmation of participant `+0xEE` score behavior**.
+Current checkpoint: **3B — runtime confirmation of participant `+0xEE` score behavior; retry pending after bounded negative attempt 1**.
 
 Task 3 checkpoints:
 
@@ -114,4 +114,14 @@ Not yet confirmed:
 - round and match reset behavior;
 - a controlled runtime increment and no-change observation.
 
-Checkpoint 3B will answer only whether participant `+0xEE` changes exactly for the winning side in one clean result and remains unchanged for the non-winning side.
+### Checkpoint 3B attempt 1
+
+A bounded negative result is stored in `analysis/gates/match-score-runtime-attempt-1.json` at commit `cb527249848ccb6a4a67fd79fa24a92ab643b60b`.
+
+The exact B6RE ROM remains available and verified, but the prior DeSmuME process, GDB connection, debug executable, battery save, and compatible save state did not survive the execution-session boundary. Available uploaded-file history contained textual debugger handoff records but no reusable executable or save payload.
+
+No runtime observation was fabricated from stale addresses. Participant addresses `0x022E24E0` and `0x022E2640` from the earlier clean session are explicitly prohibited from reuse because the participant pointers must be re-derived in the new process.
+
+The retry contract is fixed at the candidate increment block `0x022423F0..0x0224242C`: capture both live participant `+0xEE` values before the block, map the settled winner through Task 2's defender/challenger model, continue through the block, and verify winner `N -> N+1` with the other participant unchanged. Adjacent `+0xFE` may be recorded but must remain semantically unnamed.
+
+Participant `+0xEE` remains candidate-only. Checkpoints 3C–3F have not started.

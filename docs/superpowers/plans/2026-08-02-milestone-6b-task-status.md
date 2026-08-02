@@ -81,12 +81,12 @@ Python compilation, Ruff, strict mypy, the complete repository test suite, chang
 
 ## Task 3
 
-Current checkpoint: **3B — runtime confirmation of participant `+0xEE` score behavior; retry pending after bounded negative attempt 1**.
+Current checkpoint: **3C — captured-Gate counter identity and relationship to participant `+0xEE`**.
 
 Task 3 checkpoints:
 
 1. 3A — static match-score candidate inventory: complete
-2. 3B — runtime score-changing result and no-change control: pending
+2. 3B — runtime score-changing result and no-change control: complete
 3. 3C — captured-Gate counter identity and relationship to score: pending
 4. 3D — victory threshold and comparison path: pending
 5. 3E — update timing, round lifetime, scripted behavior, and reset: pending
@@ -96,32 +96,35 @@ Task 3 checkpoints:
 
 Static candidate evidence is stored in `analysis/gates/match-score-candidates.json` at commit `e61452d70f57785c3ac18a23c985b419131864cd`.
 
-Confirmed only at candidate confidence:
-
 - participant byte `+0xEE` is cleared by participant construction;
 - result finalization resolves the winning participant, sets adjacent byte `+0xFE`, increments `+0xEE`, and stores it back;
 - independent consumers compare or combine `+0xEE` values from participant objects;
-- result-controller `+0x21` and `+0x0E` remain rejected as score counters because Task 2 confirmed them as winner and loser record indices;
-- adjacent participant `+0xF4` is reserved for the captured-Gate counter checkpoint rather than being conflated with score.
-
-Four exact overlay-7 instruction ranges and their SHA-256 hashes are recorded. The decoded overlay matched the expected B6RE revision-0 SHA-256.
-
-Not yet confirmed:
-
-- whether `+0xEE` means captured Gates, abstract score, or a mode-dependent team total;
-- whether team modes aggregate participant counters;
-- the victory threshold;
-- round and match reset behavior;
-- a controlled runtime increment and no-change observation.
+- result-controller `+0x21` and `+0x0E` are rejected as score counters because Task 2 confirmed them as winner and loser record indices;
+- adjacent participant `+0xF4` remains reserved for the captured-Gate investigation.
 
 ### Checkpoint 3B attempt 1
 
 A bounded negative result is stored in `analysis/gates/match-score-runtime-attempt-1.json` at commit `cb527249848ccb6a4a67fd79fa24a92ab643b60b`.
 
-The exact B6RE ROM remains available and verified, but the prior DeSmuME process, GDB connection, debug executable, battery save, and compatible save state did not survive the execution-session boundary. Available uploaded-file history contained textual debugger handoff records but no reusable executable or save payload.
+The first runtime attempt stopped because the previous DeSmuME executable, process, GDB connection, and save state had not survived the execution-session boundary. No stale runtime address was reused and no semantic confidence was promoted.
 
-No runtime observation was fabricated from stale addresses. Participant addresses `0x022E24E0` and `0x022E2640` from the earlier clean session are explicitly prohibited from reuse because the participant pointers must be re-derived in the new process.
+### Checkpoint 3B confirmed result
 
-The retry contract is fixed at the candidate increment block `0x022423F0..0x0224242C`: capture both live participant `+0xEE` values before the block, map the settled winner through Task 2's defender/challenger model, continue through the block, and verify winner `N -> N+1` with the other participant unchanged. Adjacent `+0xFE` may be recorded but must remain semantically unnamed.
+Runtime evidence is stored in `analysis/gates/match-score-runtime-winner-update.json` at commit `ce9327bf2eb91e2df3fd1aed7dae81b55e81dd1e`.
 
-Participant `+0xEE` remains candidate-only. Checkpoints 3C–3F have not started.
+A newly rebuilt and checksum-verified DeSmuME ARM9 GDB bundle booted the exact B6RE revision-0 ROM through a clean new profile into the standalone Battle tutorial. No executable save state was loaded.
+
+At `0x022423F0`, the settled winner was combatant record 0. The result path resolved that record to participant index 1 and live participant pointer `0x022E2640`. Participant index 0 was at `0x022E24E0`.
+
+Across the exact update block ending at `0x0224242C`:
+
+```text
+participant 1 (winner) +0xEE: 2 -> 3
+participant 0 (other)  +0xEE: 2 -> 2
+participant 1 (winner) +0xFE: 0 -> 1
+participant 0 (other)  +0xFE: 0 -> 0
+```
+
+This confirms participant `+0xEE` as authoritative participant-owned state incremented exactly for the settled winner, with the other combatant providing the required no-change control. Byte `+0xFE` is recorded but remains semantically unnamed.
+
+Checkpoint 3B does not yet prove that `+0xEE` specifically means captured Gate Cards or establish the final victory threshold. Those questions remain isolated to checkpoints 3C and 3D.

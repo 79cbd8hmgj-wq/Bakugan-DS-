@@ -1,170 +1,170 @@
 {
-  "format_version": 1,
-  "rom_profile": "b6re_rev0",
-  "source_rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
-  "rebuilt_rom_sha256": "429a5830e1a996cccd26e6cb93793aa229eb6f83a5e687fd4d0604e81eebbce0",
-  "confidence": "confirmed_structural_and_runtime",
-  "patch": {
-    "manifest": "patches/core-g-compression-400.json",
-    "curve": "core <= 400 ? core : 200 + (core >> 1)",
-    "runtime_regions": [
-      "0x0223D058",
-      "0x0223D0F0-0x0223D134",
-      "0x0223D1B8"
-    ],
-    "patched_overlay_sha256": "7e310ef95fcc3304870b98d11046ed453b1dc2d270f42a438af161b603437f2e"
-  },
-  "structural_verification": {
-    "rom_size_bytes": 134217728,
-    "overlay_id": 7,
-    "overlay_load_address": "0x02219440",
-    "overlay_decoded_size_bytes": 467360,
-    "overlay_bss_size_bytes": 1600,
+  "build_verification": {
+    "free_bytes_after_repack": 3040652,
+    "layout_mismatches": 0,
+    "overlay_compressed_size": 0,
+    "overlay_flags": 0,
     "overlay_output_encoding": "uncompressed-overlay",
-    "changed_instruction_bytes": 41,
-    "unchanged_fat_payloads_verified": 11004,
-    "code_cave_used": false,
-    "branch_hook_used": false,
-    "bss_moved": false
+    "rom_size": 134217728,
+    "unchanged_fat_payloads_verified": 11004
   },
-  "runtime_environment": {
-    "emulator": "DeSmuME 0.9.14 git#0 dev+ x64-JIT SSE2",
-    "source_commit": "84e445159ccf2fd7900748094518eb1e88bdc7d0",
-    "arm9_mode": "Interpreter",
-    "transport": "ARM9 GDB stub",
-    "proof_method": "Execute the exact approved constructor block and unchanged Gate-add block with controlled source records, then read the resulting participant halfwords."
+  "clean_game_smoke": {
+    "attribute_minigame_entered": true,
+    "first_battle_entered": true,
+    "gate_result": {
+      "opponent": {
+        "base_snapshot_g": 230,
+        "gate_bonus_g": 180,
+        "target_total_g": 410
+      },
+      "player": {
+        "base_snapshot_g": 190,
+        "gate_bonus_g": 100,
+        "target_total_g": 290
+      }
+    },
+    "method": "Fresh no-debugger boot of the rebuilt ROM with a newly created profile; no save state restored executable RAM.",
+    "overlay_failure_observed": false,
+    "player_bakugan_stood_on_gate": true,
+    "player_throw_completed": true,
+    "post_exit_input_responsive": true,
+    "profile_created": true,
+    "returned_to_surrounding_story": true,
+    "scope_note": "The clean run exercised selection, two successful throws and stands, Gate calculation, attribute-minigame entry, the built-in tutorial skip, completion dialogue, and return to story. It does not claim a natural win of the rub minigame.",
+    "serpenoid_selection_g": 190,
+    "title_screen_reached": true,
+    "tutorial_completion_dialogue_observed": true,
+    "tutorial_exit_method": "built_in_skip_after_failed_rub_retry"
   },
-  "constructor_cases": [
+  "controlled_constructor_cases": [
     {
-      "name": "mixed_low_high_symmetry",
-      "player": {
-        "core_input": 190,
-        "mutable_modifier": 0,
-        "current_output": 190,
-        "base_snapshot_output": 190
+      "case": "low_unchanged",
+      "inputs": {
+        "opponent": {
+          "core_g": 230,
+          "mutable_modifier_g": 0
+        },
+        "player": {
+          "core_g": 190,
+          "mutable_modifier_g": 0
+        }
       },
-      "opponent": {
-        "core_input": 650,
-        "mutable_modifier": 0,
-        "current_output": 525,
-        "base_snapshot_output": 525
+      "outputs": {
+        "opponent": {
+          "base_snapshot_g": 230,
+          "current_snapshot_g": 230
+        },
+        "player": {
+          "base_snapshot_g": 190,
+          "current_snapshot_g": 190
+        },
+        "zero_initialized_gate_fields": [0, 0, 0, 0]
       },
-      "stop_packet": "S05"
+      "stop_signal": "S05"
     },
     {
-      "name": "threshold_and_mutable_modifiers",
-      "player": {
-        "core_input": 400,
-        "mutable_modifier": 30,
-        "current_output": 430,
-        "base_snapshot_output": 430
+      "case": "high_modifier_and_symmetry",
+      "inputs": {
+        "opponent": {
+          "core_g": 650,
+          "mutable_modifier_g": 30
+        },
+        "player": {
+          "core_g": 650,
+          "mutable_modifier_g": 0
+        }
       },
-      "opponent": {
-        "core_input": 440,
-        "mutable_modifier": 30,
-        "current_output": 450,
-        "base_snapshot_output": 450
+      "outputs": {
+        "opponent": {
+          "base_snapshot_g": 555,
+          "compressed_core_g": 525,
+          "current_snapshot_g": 555
+        },
+        "player": {
+          "base_snapshot_g": 525,
+          "compressed_core_g": 525,
+          "current_snapshot_g": 525
+        },
+        "zero_initialized_gate_fields": [0, 0, 0, 0]
       },
-      "stop_packet": "S05"
-    },
-    {
-      "name": "boundary_and_small_excess",
-      "player": {
-        "core_input": 401,
-        "mutable_modifier": 0,
-        "current_output": 400,
-        "base_snapshot_output": 400
-      },
-      "opponent": {
-        "core_input": 410,
-        "mutable_modifier": 0,
-        "current_output": 405,
-        "base_snapshot_output": 405
-      },
-      "stop_packet": "S05"
-    },
-    {
-      "name": "odd_core_rounds_down",
-      "player": {
-        "core_input": 441,
-        "mutable_modifier": 0,
-        "current_output": 420,
-        "base_snapshot_output": 420
-      },
-      "opponent": {
-        "core_input": 651,
-        "mutable_modifier": 0,
-        "current_output": 525,
-        "base_snapshot_output": 525
-      },
-      "stop_packet": "S05"
-    },
-    {
-      "name": "maximum_observed_core",
-      "player": {
-        "core_input": 900,
-        "mutable_modifier": 0,
-        "current_output": 650,
-        "base_snapshot_output": 650
-      },
-      "opponent": {
-        "core_input": 990,
-        "mutable_modifier": 0,
-        "current_output": 695,
-        "base_snapshot_output": 695
-      },
-      "stop_packet": "S05"
+      "stop_signal": "S05"
     }
   ],
-  "gate_addition_cases": [
+  "controlled_execution_method": {
+    "copyrighted_artifacts_committed": false,
+    "emulator": "DeSmuME 0.9.14 ARM9 GDB stub",
+    "memory_writes_verified_by_readback": true,
+    "method": "Execute the exact patched ARM constructor and unchanged Gate add/store block against controlled source records in ARM9 RAM."
+  },
+  "controlled_gate_cases": [
     {
-      "name": "low_gate_total",
-      "base_snapshot": 190,
-      "gate_bonus": 100,
-      "target_total": 290,
-      "stop_packet": "S05"
+      "base_snapshot_g": 525,
+      "case": "high_player_gate",
+      "equation": "525 + 100 = 625",
+      "gate_bonus_g": 100,
+      "stop_signal": "S05",
+      "target_total_g": 625
     },
     {
-      "name": "high_gate_total",
-      "base_snapshot": 525,
-      "gate_bonus": 100,
-      "target_total": 625,
-      "stop_packet": "S05"
-    },
-    {
-      "name": "modifier_gate_total",
-      "base_snapshot": 555,
-      "gate_bonus": 100,
-      "target_total": 655,
-      "stop_packet": "S05"
+      "base_snapshot_g": 555,
+      "case": "high_modifier_gate",
+      "equation": "555 + 100 = 655",
+      "gate_bonus_g": 100,
+      "stop_signal": "S05",
+      "target_total_g": 655
     }
   ],
-  "contribution_isolation": {
-    "low_core_preserved": true,
-    "high_core_compressed": true,
-    "both_combatants_symmetric": true,
-    "mutable_modifier_unscaled": true,
-    "gate_bonus_unscaled": true,
-    "persistent_roster_rewritten": false,
-    "field_pickup_handlers_modified": false
-  },
-  "boot_and_exit_observation": {
-    "patched_overlay_loaded": true,
-    "tutorial_gate_card": "Saurus",
-    "tutorial_battle_type": "Scratch",
-    "gate_reveal_reached": true,
-    "battle_transition_animation_reached": true,
-    "exit_destination": "title_new_game_menu",
-    "menu_frame_captured": true,
-    "surrounding_story_state_reached": false,
-    "bounded_note": "The isolated state had no persistent completed profile, so the observed clean battle exit returned to the title/New Game menu rather than a story hub."
-  },
+  "format_version": 1,
   "local_evidence_hashes": {
-    "runtime_proof_json_sha256": "c32a4d048283265021b69cfd67ab12040a0be633ee12380b3fa7c3f095989760",
-    "build_verification_json_sha256": "3b9f5efde72cab4d31ee6954e3e827f5d6013b2333d6a4699d86525729a86079",
-    "exit_initial_frame_sha256": "1d4e1b31492f6329a79b02dc3b03463a1d9b47c476efd087daf66a534b8502be",
-    "exit_transition_frame_sha256": "c143a804369d844aa5af58fb1b0d3de8ca6f25db58c9bffcb00d9a4cf0806258",
-    "exit_menu_frame_sha256": "18e01a560721dde4b03bcb524b2bd25b5367eb67297a0d80c6cc63fc5f9edbb0"
+    "build_verification_sha256": "3b9f5efde72cab4d31ee6954e3e827f5d6013b2333d6a4699d86525729a86079",
+    "clean_gate_result_screenshot_sha256": "e463fe66c74b88179d7f879467d433c2c5897866f066770301f08aec90e61150",
+    "clean_second_stand_screenshot_sha256": "69b653ce67175612342d98477262bb85e8dd91baa1ba122914a06c17dc748edd",
+    "controlled_runtime_results_sha256": "4fb5cc396ff576f192e23bffcecc4dd3a1c12a17620726981b0d1b5d530c1d5d",
+    "post_exit_responsive_screenshot_sha256": "0309783838f482bcd00cc302addde3100c236e6ec460e0f2dae306f3012e509c",
+    "story_return_screenshot_sha256": "fd5fa3540d3ded676ca34df1ae53e41d507f0a025b57b86a13394f7e576684c9",
+    "tutorial_completion_dialogue_screenshot_sha256": "1b3aace0c44bbba1bf3d227f16d1f46941e8a4437b18dadc77fabe08876044e2"
   },
-  "repository_boundary": "Only normalized addresses, hashes, arithmetic inputs and outputs, structural counts, confidence labels, and bounded status observations are committed. ROMs, rebuilt ROMs, overlays, RAM bytes, save states, screenshots, emulator homes, and logs remain local."
+  "overlay": {
+    "bss_size": 1600,
+    "changed_byte_count": 41,
+    "decoded_size": 467360,
+    "load_address": "0x02219440",
+    "original_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "overlay_id": 7,
+    "patched_sha256": "7e310ef95fcc3304870b98d11046ed453b1dc2d270f42a438af161b603437f2e"
+  },
+  "patch": {
+    "applies_to": "both combatants core G before the mutable modifier",
+    "high_curve": "200 + floor(core_g / 2)",
+    "low_curve": "core_g",
+    "manifest": "patches/core-g-compression-400.json",
+    "preserves": [
+      "persistent roster G values",
+      "general mutable G modifier",
+      "field G-Power pickups",
+      "Gate Card and attribute bonuses"
+    ],
+    "regions": [
+      {
+        "id": "preload-core-compression-constant",
+        "overlay_offset": "0x00023C18",
+        "runtime_address": "0x0223D058"
+      },
+      {
+        "id": "compress-both-core-g-inputs",
+        "overlay_offset": "0x00023CB0",
+        "runtime_address": "0x0223D0F0"
+      },
+      {
+        "id": "restore-gate-scale-constant",
+        "overlay_offset": "0x00023D78",
+        "runtime_address": "0x0223D1B8"
+      }
+    ],
+    "threshold_g": 400
+  },
+  "profile_id": "b6re_rev0",
+  "rebuilt_rom_sha256": "429a5830e1a996cccd26e6cb93793aa229eb6f83a5e687fd4d0604e81eebbce0",
+  "repository_boundary": "Only normalized values, addresses, formulas, hashes, and verification status are committed. ROMs, rebuilt ROMs, overlays, RAM bytes, save states, screenshots, and debugger captures are not committed and remain local.",
+  "source_rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
 }

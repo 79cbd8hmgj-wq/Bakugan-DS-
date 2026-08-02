@@ -28,8 +28,9 @@ python -m pytest
 ## Current scope
 
 The repository provides exact-ROM inspection, deterministic extraction and
-rebuilding, guarded patches, and normalized runtime-analysis evidence for the
-battle G-Power pipeline.
+rebuilding, guarded patches, normalized runtime-analysis evidence for the
+battle G-Power pipeline, and the reverse-engineering foundation for Gate Card
+System 2.0.
 
 ## Inspect a ROM
 
@@ -54,6 +55,14 @@ without copying it into the repository:
 
 ```bash
 BAKUGAN_DS_ROM="/absolute/path/to/game.nds" python -m pytest -m integration -v
+```
+
+Gate runtime integration tests also require a runtime-decompressed ARM9 image:
+
+```bash
+BAKUGAN_DS_ROM="/absolute/path/to/game.nds" \
+BAKUGAN_DS_RUNTIME_ARM9="/absolute/path/to/runtime-arm9.bin" \
+python -m pytest -m integration -v
 ```
 
 The ROM path and generated reports are ignored by Git.
@@ -124,6 +133,42 @@ constructor before mutable modifiers and Gate Card bonuses are added.
 bakugan-ds patch work/bakugan patches/core-g-compression-400.json
 bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-Core-G-400.nds
 ```
+
+## Gate Card System 2.0 foundation
+
+Milestone 6A maps the original Gate table, card IDs, attribute order, activation
+lifecycle, fixed battle-type selector, hook-safe context, expansion storage,
+and guarded hook boundaries. It does **not** implement a System 2.0 gameplay
+effect or rebalance any Gate Card.
+
+Inspect the confirmed legacy table metadata without dumping the table:
+
+```bash
+bakugan-ds gate inspect work/bakugan \
+  --runtime-arm9 work/runtime/arm9.bin \
+  --metadata analysis/gates/legacy-table-metadata.json
+```
+
+Export the complete legacy table only to an ignored local report:
+
+```bash
+bakugan-ds gate export-legacy work/bakugan \
+  work/reports/gates/legacy-table.json \
+  --runtime-arm9 work/runtime/arm9.bin \
+  --metadata analysis/gates/legacy-table-metadata.json
+```
+
+Write the confirmed hook-safe context and explicit exclusions:
+
+```bash
+bakugan-ds gate report-context work/bakugan \
+  work/reports/gates/battle-context.json \
+  --evidence analysis/gates/battle-context.json
+```
+
+See [the legacy Gate system documentation](docs/gate-card-legacy-system.md) and
+[the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md). The first
+experimental System 2.0 Gate is deferred to a separately reviewed Milestone 6B.
 
 ## Build the runtime debugger
 

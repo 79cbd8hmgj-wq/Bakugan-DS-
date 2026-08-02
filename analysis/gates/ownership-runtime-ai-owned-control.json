@@ -1,0 +1,108 @@
+{
+  "confidence_boundary": "This reverse-owner control rejects session +0x28D/+0x28E as canonical Gate-owner/challenger fields. It does not yet identify the actual canonical Gate-owner field. The ordered pair is therefore retained only as a participant/combatant-order candidate until later checkpoints confirm its broader semantics.",
+  "format_version": 1,
+  "participant_mapping": [
+    {
+      "base_g": 190,
+      "battle_side": "P1/player",
+      "gate_card_ids": [
+        19,
+        40,
+        72
+      ],
+      "participant_index": 0,
+      "participant_object_runtime_address": "0x022E24E0"
+    },
+    {
+      "base_g": 230,
+      "battle_side": "P2/AI opponent",
+      "gate_card_ids": [
+        21,
+        59,
+        93
+      ],
+      "participant_index": 1,
+      "participant_object_runtime_address": "0x022E2640"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "raw_capture_policy": {
+    "committed": false,
+    "local_hashes": {
+      "battle_constructor_registers": "e89ded64447d10f48c65287ad3d0677eb548dcc7462031bb6b0e58e0dda607fc",
+      "first_gate_lookup_registers": "fd328bb503211664cc2be674ce4f52e148e802961d7e2ab0ccd02b3546f2ebfe",
+      "participant_0_memory": "ca74415eb005e909181e2700436b05058b06cb105ad31205cd43155b7b4fed34",
+      "participant_1_memory": "cd73ca5b91a87226080bd8a03e26abbb1ab11775b0100abcf4cf1c296dfabb63",
+      "participant_fields": "2ddef64517be101bc152a431747d2e520e8df7f0a6eb204159b0b94b3090a88f",
+      "participant_pointer_table": "b3d09809278f7c43d51519da63363cfe4b1374318634349a854076b63a10c9b0",
+      "reverse_owner_screen": "9e2dad2f331033a517109337fc4d3e144b61f963b20edc8f6b5e18b53bc53898",
+      "second_gate_lookup_registers": "1de0af8012882a280c87fd3d6bd863601291e8e40ab2c33bfe0e2a20c1732d44",
+      "session_pointer_holder": "84e9898491a4280b8acff1034025d639959df654cde7762bffc16c4f033b8055"
+    }
+  },
+  "runtime_observation": {
+    "active_gate_card_id": 21,
+    "active_gate_lookup_calls": [
+      {
+        "attribute_id": 2,
+        "gate_card_id": 21,
+        "helper": "0x02065BF4"
+      },
+      {
+        "attribute_id": 0,
+        "gate_card_id": 21,
+        "helper": "0x02065BF4"
+      }
+    ],
+    "battle_constructor": "0x0223CFE8",
+    "battle_constructor_object": "0x022E58E0",
+    "battle_constructor_return": "0x0223E338",
+    "gate_owner_for_scenario": "P2/AI participant index 1",
+    "launch_method": "same clean executable session as the player-owned control; no executable save state loaded",
+    "participant_pointer_table": {
+      "index_0": "0x022E24E0",
+      "index_1": "0x022E2640"
+    },
+    "session_fields": {
+      "+0x28A": 0,
+      "+0x28D": 0,
+      "+0x28E": 1
+    },
+    "session_pointer_holder": "0x020D433C",
+    "session_runtime_address": "0x0229FC80",
+    "trigger": "P1/player landed on the Gate occupied by P2/AI Shun, causing a battle on an AI-owned Gate"
+  },
+  "supported_conclusions": [
+    "The active Gate is global Gate ID 21 because both Gate lookup calls entered helper 0x02065BF4 with r0 = 21.",
+    "Gate ID 21 belongs to participant index 1 because it appears in that participant object's first Gate-card slot and does not appear in participant index 0's three Gate-card slots.",
+    "Participant index 1 is the P2/AI object in this capture because its source base G is 230, matching the displayed opponent, while participant index 0 has the player's 190 G source value.",
+    "The Gate owner reversed from participant index 0 in the player-owned control to participant index 1 in this control.",
+    "Session +0x28D and +0x28E did not reverse; they remained 0 and 1.",
+    "Therefore session +0x28D and +0x28E are not canonical Gate-owner and challenger fields."
+  ],
+  "rejected_interpretation": {
+    "confidence": "confirmed",
+    "field_pair": [
+      "+0x28D",
+      "+0x28E"
+    ],
+    "interpretation": "canonical Gate owner followed by challenger",
+    "reason": "The active Gate owner changed to participant index 1 while the pair remained ordered as 0, 1."
+  },
+  "remaining_candidates": [
+    {
+      "confidence": "probable",
+      "field_pair": [
+        "+0x28D",
+        "+0x28E"
+      ],
+      "interpretation": "fixed player-first/opponent-second or combatant-0/combatant-1 ordering"
+    }
+  ],
+  "unresolved": [
+    "The authoritative field or object that associates active Gate ID 21 with participant index 1",
+    "The initialization, mutation, lifetime, and reset path of that canonical owner source",
+    "Whether the same owner representation is used in normal non-tutorial and scripted battles",
+    "Whether +0x28A is active participant, current turn, winner, or another slot selector"
+  ]
+}

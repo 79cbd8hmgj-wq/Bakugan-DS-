@@ -1,11 +1,18 @@
 component,runtime_address,component_offset,name,confidence,evidence
+arm9,0x0202F134,0x0002F134,CountActiveMultiplayerParticipantSlots,confirmed,Counts active multiplayer slots used as the human-controlled prefix in modes 6 and 7.
 overlay_0007,0x02230F58,0x00017B18,ConstructAIController,confirmed,Initializes the participant-owned AI decision object stored at participant +0xC8.
 overlay_0007,0x0223CFE8,0x00023BA8,ConstructBattleObject,confirmed,Derives Gate owner and constructs the two 20-byte combatant records.
 overlay_0007,0x0223E238,0x00024DF8,ConstructBattleResultController,confirmed,Initializes signed winner index +0x21 to -1 and stores the linked battle object at +0x38.
 overlay_0007,0x0223F918,0x000264D8,AdvanceBattleResultState,confirmed,Resolves and consumes winner and loser combatant indices through result finalization.
+overlay_0007,0x022423F0,0x00028FB0,FinalizeNormalGateResult,confirmed,Maps the settled winner to a participant and increments participant match score +0xEE before capture-history bookkeeping.
+overlay_0007,0x0224242C,0x00028FEC,AppendParticipantCaptureHistory,confirmed,Appends one six-byte losing-combatant record at participant +0x84 and increments capture-history count +0xF4.
 overlay_0007,0x02244440,0x0002B000,CalculateBattleWinnerIndex,confirmed,Evaluates the two combatant records and returns winner record index 0 or 1.
 overlay_0007,0x02262A64,0x00049624,SetCombatantDescriptorPair,confirmed,Stores defender descriptor at session +0x28D and challenger descriptor at +0x28E.
+overlay_0007,0x02262D38,0x000498F8,SeedScriptedMatchScores,confirmed,One of four byte-identical setup blocks that increments both primary participant +0xEE scores twice.
+overlay_0007,0x02263150,0x00049D10,CheckGateMatchVictory,confirmed,Tests each participant score or team aggregate against the unsigned victory threshold of three.
+overlay_0007,0x022696B4,0x00050274,ConstructParticipant,confirmed,Initializes the 320-byte participant object and clears +0xEE +0xF4 and the capture-history ledger.
 overlay_0007,0x02269734,0x000502F4,InitializeParticipantControlIdentity,confirmed,Leaves participant +0xC8 null for human slots and allocates an AI controller for later slots.
+overlay_0007,0x02269C28,0x000507E8,DestroyParticipantMembers,confirmed,Destroys the optional AI controller without clearing match score +0xEE.
+overlay_0007,0x02269C5C,0x0005081C,DeleteParticipant,confirmed,Cleans participant members and frees the participant object without an in-place score reset.
 overlay_0007,0x0226B4AC,0x0005206C,BranchOnActiveParticipantAI,confirmed,Selects AI-specific battle setup when active participant +0xC8 is non-null.
 overlay_0007,0x0226E430,0x00054FF0,RunAIShotPlanner,confirmed,Returns for null +0xC8 and consumes the AI controller when non-null.
-arm9,0x0202F134,0x0002F134,CountActiveMultiplayerParticipantSlots,confirmed,Counts active multiplayer slots used as the human-controlled prefix in modes 6 and 7.

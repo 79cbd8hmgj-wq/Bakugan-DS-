@@ -1,6 +1,6 @@
 # Gate Card System 2.0 Runtime Context
 
-**Milestone:** 6B complete-system discovery  
+**Milestone:** 6B complete-system discovery
 **Current completed domain:** ownership and participant targeting
 
 This document records only confirmed runtime context. Later Milestone 6B tasks will extend it with score, capture, Gate reuse, Ability Card, landing, difficulty, timing, RNG, and loader lifecycles.

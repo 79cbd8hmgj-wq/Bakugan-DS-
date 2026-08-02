@@ -1,0 +1,161 @@
+{
+  "checkpoint": "3E",
+  "confidence_boundary": "This checkpoint confirms the update order, participant-object lifetime, alternate and scripted score writers, and constructor-driven reset behavior for the decoded B6RE overlay-7 implementation. Runtime evidence confirms that terminal scores survive the common match-complete decision into later post-result tutorial UI. Static evidence confirms that ordinary and specialized result paths increment the existing score, scripted setup paths can seed both sides deterministically, participant destruction does not clear the byte, and participant construction is the only direct overlay-7 path that clears +0xEE. This does not claim that every external overlay or forced story transition must use the same writer; consumers must fail closed outside the confirmed participant-session context.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "When is participant +0xEE updated, how long does it remain valid, how do scripted paths affect it, and where is it reset?",
+  "binary": {
+    "decoded_overlay": 7,
+    "decoded_overlay_runtime_base": "0x02219440",
+    "decoded_overlay_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+  },
+  "normal_result_timing": {
+    "instruction_range": "0x022423F0..0x02242498",
+    "instruction_range_sha256": "15e3428b8e7a68ef6c45dfbf4a4dfddd1ce28d865f861f6f59cf1928aaaf9200",
+    "score_update_range": "0x0224241C..0x0224242C",
+    "score_update_sha256": "b24e0c1448335b4ef60393fda1326e03f718c0be9398bcc3c0e4aa40b0456e6f",
+    "ordered_actions": [
+      "Resolve the settled winner record to its participant object.",
+      "Set winner participant +0xFE to 1.",
+      "Load winner participant +0xEE.",
+      "Add exactly 1 and store the result back to +0xEE.",
+      "Only after the score store, append the losing-combatant record to the separate +0x84 capture-history ledger and increment +0xF4.",
+      "The common victory predicate is called later and observes the updated +0xEE value."
+    ],
+    "system2_event_boundary": "A match-score-changed event is valid immediately after 0x02242428 and before capture-history append or victory evaluation."
+  },
+  "runtime_persistence": {
+    "scenario": "The same clean standalone Battle tutorial session used by checkpoints 3B through 3D, after participant 1 reached the threshold and caller 0x0223E834 entered the match-complete route.",
+    "later_ui_state": "Post-result tutorial skip confirmation was active: 'Do you want to skip this tutorial?'",
+    "later_ui_screenshot_sha256_not_committed": "a920c54bc0c1b61d9c92fa3284fea75a8f9e6a3701658a62bb3164cc1f7fa01d",
+    "participant_0": {
+      "pointer": "0x022E24E0",
+      "score_address": "0x022E25CE",
+      "score": 2,
+      "selected_gdb_memory_response_sha256": "c82384be7583cfb6c82aaebae28f1d463493e4a2293b0f4de0a0a836f8b44ee5"
+    },
+    "participant_1": {
+      "pointer": "0x022E2640",
+      "score_address": "0x022E272E",
+      "score": 3,
+      "selected_gdb_memory_response_sha256": "f63dfa52083cc2e92714173e0ceff128ba67ddd4c7cc907fd85551d1177814a7"
+    },
+    "selected_register_response_sha256": "cfd60e3035e7ece6f6c4a0a3ceb6477297c6d4c802862ba4106d62a529b7249e",
+    "conclusion": "Neither the match-complete predicate nor the subsequent post-result/tutorial transition resets +0xEE. The score remains participant-session state after the battle result is finalized."
+  },
+  "alternate_and_specialized_result_writers": [
+    {
+      "range": "0x0223715C..0x02237174",
+      "sha256": "0b56f6a90846aa718ce44dc2da88cf4977628f92ac38325780c586eb995fdc23",
+      "behavior": "Sets selected participant +0xFE and increments that participant +0xEE exactly once."
+    },
+    {
+      "range": "0x02260EAC..0x02260EC4",
+      "sha256": "cffc3ee40ad997a09a97923c8e32e05e20e5dcf9f425df6a001a68473db85aa8",
+      "behavior": "Sets selected participant +0xFE and increments that participant +0xEE exactly once."
+    },
+    {
+      "range": "0x02261220..0x02261238",
+      "sha256": "1ea6f47d8b760ee86cf3bf1cc5e9abc672266a5355ad62a6e3873c25f554b04f",
+      "behavior": "Sets selected participant +0xFE and increments that participant +0xEE exactly once."
+    },
+    {
+      "range": "0x022613CC..0x02261450",
+      "score_prefix_sha256": "88070a9d35966508692d030888ee6605a962bb0af554d6a5547675bf4eefdefc",
+      "full_update_and_ledger_sha256": "9b7b0ef2d4becb5ce0b2efc9e07e868758dc47996113b39879c9234c9678e3d0",
+      "behavior": "Alternate result path sets winner +0xFE, increments +0xEE once, then appends the same six-byte capture-history geometry and increments +0xF4."
+    }
+  ],
+  "scripted_score_seeding": {
+    "description": "Four byte-identical setup blocks deliberately increment both primary participant score bytes twice. They also set +0xFE for both sides. These are deterministic mode or script setup operations rather than settled single-winner result updates.",
+    "per_block_behavior": "Repeat twice: participant 0 +0xEE += 1; participant 1 +0xEE += 1.",
+    "blocks": [
+      {
+        "range": "0x02262D38..0x02262D78",
+        "sha256": "71fdc699705f2f4ddaf66cb1add26b82e020e54eee2ca2f0f9a8906d20be1f6b"
+      },
+      {
+        "range": "0x02262E24..0x02262E64",
+        "sha256": "71fdc699705f2f4ddaf66cb1add26b82e020e54eee2ca2f0f9a8906d20be1f6b"
+      },
+      {
+        "range": "0x02262F48..0x02262F88",
+        "sha256": "71fdc699705f2f4ddaf66cb1add26b82e020e54eee2ca2f0f9a8906d20be1f6b"
+      },
+      {
+        "range": "0x022630BC..0x022630FC",
+        "sha256": "71fdc699705f2f4ddaf66cb1add26b82e020e54eee2ca2f0f9a8906d20be1f6b"
+      }
+    ],
+    "system2_rule": "Do not assume every match begins at zero after construction; read the live participant score after mode/script setup has completed."
+  },
+  "initialization_and_reset": {
+    "session_participant_allocation": {
+      "range": "0x02262448..0x0226247C",
+      "sha256": "7e5fd2c98d602e1b27393e45202a3f306e650e9a436eceff54696bcb5bec9bd1",
+      "behavior": "Allocates one 320-byte participant object per configured participant and directly invokes participant constructor 0x022696B4 inside the session-construction loop."
+    },
+    "participant_constructor": {
+      "address": "0x022696B4",
+      "reset_range": "0x022696B4..0x02269724",
+      "reset_range_sha256": "f89817e97e58b10ec17bb677405f80c3997cf3f2e210991e946d7d28da44143a",
+      "score_clear_instruction": "0x022696E4: strb 0, [participant, #0xEE]",
+      "related_resets": [
+        "Clear +0xEF, +0xF3, +0xF4, +0xF5, +0xFA, +0xFC, +0xFD, and +0xFE.",
+        "Clear the 120-byte participant battle-state region at +0x0C.",
+        "Clear the 36-byte capture-history ledger at +0x84."
+      ]
+    },
+    "direct_access_inventory": {
+      "decoded_overlay_7_total_direct_plus_0xEE_accesses": 54,
+      "loads": 40,
+      "stores": 14,
+      "only_direct_clear": "0x022696E4 in participant construction",
+      "all_other_direct_stores": "Load existing +0xEE, add 1, and store it back."
+    },
+    "reset_conclusion": "Normal result transitions, victory checks, and participant destruction do not zero the score. A fresh participant object begins at zero because its constructor clears +0xEE; scripted setup may then seed it before play."
+  },
+  "destruction": {
+    "non_deleting_destructor": {
+      "range": "0x02269C28..0x02269C58",
+      "sha256": "af0a2582a1df6449ade79f53e56601a13f820960981599ef6c2504259ea288d9",
+      "behavior": "Destroys the optional controller at +0xC8 but does not clear +0xEE."
+    },
+    "deleting_destructor": {
+      "range": "0x02269C5C..0x02269C94",
+      "sha256": "55cf368cdd94faaac1593e966b940a1694f0fdb840c42f25846e4f5e092847cf",
+      "behavior": "Performs the same controller cleanup and frees the participant object; it does not clear +0xEE before free."
+    },
+    "lifetime_conclusion": "The score is valid for the lifetime of the participant object. Destruction invalidates the object and pointer rather than resetting the byte for reuse."
+  },
+  "supported_conclusions": [
+    "The ordinary score increment occurs after winner resolution and before capture-history append and later victory evaluation.",
+    "A settled ordinary result changes exactly one participant score by +1; the non-winner score is unchanged.",
+    "Terminal scores persist after the common match-complete branch into later post-result/tutorial UI.",
+    "Specialized result writers preserve the same one-point increment semantics.",
+    "The alternate result path preserves the same score-before-ledger ordering.",
+    "Scripted or mode setup can seed both participant scores by deterministic increments before ordinary result processing.",
+    "Within decoded overlay 7, participant construction is the only direct clear of +0xEE.",
+    "Participant destruction does not clear the score; it ends the lifetime of the object.",
+    "System 2.0 must resolve live participant objects, read their post-setup +0xEE values, and never retain score pointers beyond participant-session destruction."
+  ],
+  "system2_contract": {
+    "score_access": "live participant +0xEE",
+    "ordinary_score_event": "emit after the winner +0xEE store and before capture-history append",
+    "score_scope": "participant object / match session",
+    "initial_value_rule": "constructor initializes to 0, then mode or scripted setup may seed it",
+    "reset_rule": "a newly constructed participant object starts at 0; destruction invalidates the old object without zeroing it",
+    "pointer_rule": "never cache participant or score addresses across session teardown or emulator process boundaries",
+    "scripted_mode_rule": "read the live score after setup; do not hardcode a zero start"
+  },
+  "raw_capture_policy": {
+    "committed": false,
+    "reason": "Only exact addresses, selected values, hashes, and normalized conclusions are committed. Raw GDB packets and screenshots remain local."
+  },
+  "unresolved": [
+    "Semantic names for every specialized result state that reaches the additional +0xEE writers.",
+    "Whether code outside decoded overlay 7 can force a story transition without consulting the common victory helper.",
+    "Whether any future System 2.0 hook should expose scripted score seeding as a separate event; that is an implementation-design question rather than missing original-game score semantics."
+  ]
+}

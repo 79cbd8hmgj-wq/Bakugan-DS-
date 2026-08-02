@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from itertools import pairwise
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.model import Confidence
@@ -123,7 +124,7 @@ def validate_lifecycle(transitions: tuple[LifecycleTransition, ...]) -> None:
         expected_sequences = list(range(len(ordered)))
         if [item.sequence for item in ordered] != expected_sequences:
             raise WorkspaceError(f"lifecycle scenario {scenario} has non-contiguous sequences")
-        for previous, current in zip(ordered, ordered[1:], strict=False):
+        for previous, current in pairwise(ordered):
             if previous.to_state is not current.from_state:
                 raise WorkspaceError(
                     f"lifecycle scenario {scenario} is disconnected between sequence "

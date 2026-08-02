@@ -196,12 +196,14 @@
       {
         "address": "0x0222B500",
         "delta": 30,
-        "interpretation": "probable progression"
+        "interpretation": "probable field G-Power Boost pickup",
+        "evidence": "Three-case field pickup handler; no +0xFD increment; documented field G-Power Boost value is +30."
       },
       {
         "address": "0x0222D154",
         "delta": 30,
-        "interpretation": "probable progression"
+        "interpretation": "probable level-up or progression award",
+        "evidence": "Immediately followed by incrementing participant byte +0xFD up to 99."
       },
       {
         "address": "0x02258CB4",
@@ -228,7 +230,9 @@
   "reference_crosscheck": {
     "source": "user-supplied Bakugan reference table; normalized summary only",
     "forms_checked": 38,
-    "unique_max_minus_min_values": [250],
+    "unique_max_minus_min_values": [
+      250
+    ],
     "interpretation": "Every listed form has a 250 G level-1-to-max range; this supports but does not prove the semantics of the +30 callsites or mutable modifier."
   },
   "confidence_boundaries": {
@@ -242,7 +246,7 @@
     },
     "progression_callsites": {
       "confidence": "probable",
-      "interpretation": "Two +30 callsites also increment participant byte +0xFD, but the exact level, experience, or battle-count meaning is not runtime-confirmed."
+      "interpretation": "Only 0x0222D154 is a progression/level-up candidate because it pairs +30 G with a +0xFD counter increment. The separate 0x0222B500 +30 path is a field G-Power Boost pickup candidate and does not increment +0xFD."
     },
     "evolution_representation": {
       "confidence": "candidate",

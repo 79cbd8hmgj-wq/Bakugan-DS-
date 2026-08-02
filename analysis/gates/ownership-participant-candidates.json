@@ -1,0 +1,133 @@
+{
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "size": 467360
+  },
+  "confidence_boundary": "Static evidence only. These entries are candidates and must not be treated as canonical Gate ownership, challenger identity, human/AI identity, or effect-targeting semantics until the applicable runtime checkpoints pass.",
+  "fields": [
+    {
+      "access": "global pointer holder",
+      "candidate_name": "battle_session_object_pointer",
+      "confidence": "candidate",
+      "evidence": "The literal 0x020D433C is referenced broadly throughout overlay 7 and is dereferenced before the participant-index fields and participant pointer table are accessed. Its high reference count shows that it is a central manager pointer, not that it is specifically an ownership object.",
+      "location": "0x020D433C",
+      "width_bits": 32
+    },
+    {
+      "access": "session object + 0x28D",
+      "candidate_name": "participant_index_a",
+      "confidence": "candidate",
+      "evidence": "Written by the paired setter at 0x02262A64, initialized to 0 in multiple setup branches, read by the battle constructor at 0x0223D024, and read with +0x28E in candidate result-state handlers.",
+      "location": "+0x28D",
+      "width_bits": 8
+    },
+    {
+      "access": "session object + 0x28E",
+      "candidate_name": "participant_index_b",
+      "confidence": "candidate",
+      "evidence": "Written by the paired setter at 0x02262A68, initialized to 1 in multiple setup branches, read by the battle constructor at 0x0223D02C, and read with +0x28D in candidate result-state handlers.",
+      "location": "+0x28E",
+      "width_bits": 8
+    },
+    {
+      "access": "session object + 0x28A",
+      "candidate_name": "active_participant_or_slot_index",
+      "confidence": "candidate",
+      "evidence": "Setup branches initialize this byte, and the candidate result handler at 0x02253A44 uses it to select one pointer from the table beginning at +0x0C. Static evidence does not distinguish current turn, active participant, winner, or another slot selector.",
+      "location": "+0x28A",
+      "width_bits": 8
+    },
+    {
+      "access": "session object + 0x0C + index * 4",
+      "candidate_name": "participant_object_pointer_table",
+      "confidence": "candidate",
+      "evidence": "The battle constructor and result-state code select pointers through this table using participant-related byte indices. Setup code also directly accesses pointers at +0x0C and +0x10 as a pair.",
+      "location": "+0x0C",
+      "width_bits": 32
+    },
+    {
+      "access": "session object + 0x7C + index * 20",
+      "candidate_name": "selected_combatant_descriptor_array",
+      "confidence": "candidate",
+      "evidence": "The battle constructor uses the bytes at +0x28D and +0x28E with a 20-byte stride from +0x7C, then consumes descriptor bytes at +0x0E and +0x0F while constructing the two battle records.",
+      "location": "+0x7C",
+      "width_bits": 160
+    }
+  ],
+  "format_version": 1,
+  "functions": [
+    {
+      "candidate_name": "set_participant_index_pair",
+      "component_offset": "0x49624",
+      "confidence": "candidate",
+      "evidence": "Stores r1 to session +0x28D and r2 to session +0x28E, then returns.",
+      "instruction_range_sha256": "68fc36d3a7306f85753596faf93959f1256b7649afd519ba64f356d08275ada4",
+      "runtime_address": "0x02262A64",
+      "runtime_end": "0x02262A70"
+    },
+    {
+      "candidate_name": "initialize_standard_participant_pair",
+      "component_offset": "0x49AE8",
+      "confidence": "candidate",
+      "evidence": "Writes 0 to +0x28D and 1 to +0x28E after a setup sequence, then initializes the paired object pointers at +0x0C and +0x10.",
+      "instruction_range_sha256": "3d22c3e0cbbc1eb6927f7e07bf5f587383d4dda88ee2085317ea5f62527f8e4f",
+      "runtime_address": "0x02262F28",
+      "runtime_end": "0x02262F38"
+    },
+    {
+      "candidate_name": "initialize_tutorial_or_scripted_participant_pair",
+      "component_offset": "0x49C5C",
+      "confidence": "candidate",
+      "evidence": "A separate setup branch writes the same 0/1 pair to +0x28D/+0x28E before initializing the paired object pointers. The exact scenario label still requires runtime confirmation.",
+      "instruction_range_sha256": "3d22c3e0cbbc1eb6927f7e07bf5f587383d4dda88ee2085317ea5f62527f8e4f",
+      "runtime_address": "0x0226309C",
+      "runtime_end": "0x022630AC"
+    },
+    {
+      "candidate_name": "construct_battle_records_from_participant_indices",
+      "component_offset": "0x23BA8",
+      "confidence": "candidate",
+      "evidence": "The confirmed battle-record constructor reads +0x28D and +0x28E, selects two 20-byte descriptors from session +0x7C, selects paired participant objects through session +0x0C, and begins populating the two battle records.",
+      "instruction_range_sha256": "11c916277dde4bb5fc922e83c84f78b9ea1827c993ca608df7df3455df2700c9",
+      "runtime_address": "0x0223D014",
+      "runtime_end": "0x0223D0C0"
+    },
+    {
+      "candidate_name": "result_state_participant_reader_a",
+      "component_offset": "0x39DF0",
+      "confidence": "candidate",
+      "evidence": "Reads both +0x28D and +0x28E during a result/state-machine path and compares fields from the corresponding 20-byte descriptors. Static evidence does not establish winner, loser, owner, or challenger semantics.",
+      "instruction_range_sha256": "515ed18afaa73c866aa2136c0740c63558acf9e0ae361857d00a78ecedfbe723",
+      "runtime_address": "0x02253230",
+      "runtime_end": "0x022532AC"
+    },
+    {
+      "candidate_name": "result_state_participant_reader_b",
+      "component_offset": "0x3A5FC",
+      "confidence": "candidate",
+      "evidence": "Reads +0x28A, +0x28D, and +0x28E, selects a pointer from session +0x0C, and compares descriptor fields in another result/state-machine branch. Final targeting semantics remain unresolved.",
+      "instruction_range_sha256": "4c4d421733b9d190c7bf6508ce18712b1a2ecc7214ca5ee314f37946eafbf8be",
+      "runtime_address": "0x02253A3C",
+      "runtime_end": "0x02253A94"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "static_observations": [
+    "The +0x28D and +0x28E bytes form a paired index interface rather than independent flags.",
+    "Multiple setup paths assign the ordered pair 0 and 1, so that ordering alone cannot identify Gate owner versus challenger.",
+    "The battle constructor uses the pair symmetrically to build two combatant records.",
+    "Candidate result handlers consume the pair later, making them suitable runtime breakpoint targets for ownership and targeting confirmation.",
+    "No static path in this checkpoint proves human/AI identity or canonical Gate ownership."
+  ],
+  "unresolved": [
+    "Which of +0x28D or +0x28E is the canonical Gate owner in each battle scenario",
+    "Which index is the challenger or contesting participant",
+    "How participant indices map to combatant 0 and combatant 1 at runtime",
+    "Whether +0x28A represents active participant, current turn, winner, or another slot selector",
+    "Where authoritative human/AI identity is stored",
+    "How owner, challenger, winner, loser, self, opponent, and both resolve for effect targeting",
+    "Whether tutorial and scripted battles replace or preserve the normal participant representation"
+  ]
+}

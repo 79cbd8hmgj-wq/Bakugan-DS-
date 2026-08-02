@@ -1,14 +1,15 @@
-import json
-import pathlib
+from pathlib import Path
+
+from bakugan_ds.gates.io import load_json_object
 
 
-VALIDATION = pathlib.Path(
+VALIDATION = Path(
     "analysis/runtime-observations/core_g_compression_validation.json"
 )
 
 
 def load_validation() -> dict[str, object]:
-    return json.loads(VALIDATION.read_text(encoding="utf-8"))
+    return load_json_object(VALIDATION)
 
 
 def test_structural_verification_matches_rebuilt_rom_evidence() -> None:

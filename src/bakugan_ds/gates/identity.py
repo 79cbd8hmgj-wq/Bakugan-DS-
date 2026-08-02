@@ -60,6 +60,19 @@ def _require_object(value: object, label: str) -> dict[str, object]:
     return value
 
 
+def _parse_integer(value: object, label: str) -> int:
+    if isinstance(value, bool):
+        raise WorkspaceError(f"{label} must be an integer")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value, 0)
+        except ValueError as exc:
+            raise WorkspaceError(f"{label} must be an integer") from exc
+    raise WorkspaceError(f"{label} must be an integer")
+
+
 def normalize_identity_capture(
     payload: dict[str, object],
 ) -> tuple[tuple[AttributeIdentity, ...], tuple[GateIdentityMapping, ...]]:
@@ -69,7 +82,9 @@ def normalize_identity_capture(
         item = _require_object(raw, f"attributes[{index}]")
         try:
             identity = AttributeIdentity(
-                attribute_id=int(item["attribute_id"]),
+                attribute_id=_parse_integer(
+                    item["attribute_id"], f"attributes[{index}].attribute_id"
+                ),
                 name=str(item["name"]),
                 confidence=Confidence(str(item["confidence"])),
                 evidence_id=str(item["evidence_id"]),
@@ -88,7 +103,7 @@ def normalize_identity_capture(
         item = _require_object(raw, f"mappings[{index}]")
         try:
             mapping = GateIdentityMapping(
-                card_id=int(item["card_id"]),
+                card_id=_parse_integer(item["card_id"], f"mappings[{index}].card_id"),
                 label=str(item["label"]),
                 runtime_case=str(item["runtime_case"]),
                 confidence=Confidence(str(item["confidence"])),

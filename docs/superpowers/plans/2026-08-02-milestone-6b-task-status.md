@@ -24,7 +24,7 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2C.2 — challenger ordering policy**.
+Current checkpoint: **2D — human and AI identity**.
 
 Task 2 checkpoints:
 
@@ -34,9 +34,9 @@ Task 2 checkpoints:
    - 2B.2 — reverse-owner control: complete
    - 2B.3 — trace canonical Gate-owner source: complete
    - 2B.4 — owner lifetime, reset, and alternate-path validation: complete
-3. 2C — challenger and combatant mapping: in progress
+3. 2C — challenger and combatant mapping: complete
    - 2C.1 — descriptor-to-combatant mapping: complete
-   - 2C.2 — challenger ordering policy: pending
+   - 2C.2 — challenger ordering policy: complete
 4. 2D — human and AI identity: pending
 5. 2E — effect targeting rules: pending
 6. 2F — normalized artifact, tests, CI, and task completion: pending
@@ -78,6 +78,23 @@ Confirmed behavior:
 - record 1 contained participant 0's `190 + 100 = 290` values;
 - the Gate-calculation loop processes both records with a 20-byte stride.
 
-Therefore `+0x28D/+0x28E` are confirmed descriptor indices and must not be exposed as participant IDs. Checkpoint 2C.2 must determine the policy that orders the descriptors and identify the canonical challenger independently of record index.
+### Checkpoint 2C.2 result
 
-No later Task 2 field is considered confirmed until its own runtime and lifecycle evidence is complete.
+The challenger-ordering policy is stored in `analysis/gates/challenger-ordering.json` at commit `2a27761ac38275323ea0fde96813569a1dc807cf`.
+
+Confirmed behavior:
+
+- collision event `+0x16` stores the active or thrown Bakugan descriptor index;
+- collision event `+0x29` stores the selected standing target descriptor index, with `0xFF` meaning no target;
+- all seven direct overlay-7 callers of pair setter `0x02262A64` pass the active descriptor as `r2`, which is stored to session `+0x28E`;
+- when a distinct target exists, callers pass that target as `r1`, which is stored to session `+0x28D`;
+- session `+0x28D` therefore constructs combatant record 0 as the stationary target or defender;
+- session `+0x28E` constructs combatant record 1 as the active or thrown challenger;
+- the canonical challenging participant is the low nibble of descriptor byte `+0x0F` for the descriptor selected by `+0x28E`;
+- this ordering is independent of Gate ownership and human/AI identity;
+- two fallback call sites pass the same active descriptor for both arguments, so equal descriptor indices represent no distinct challenger/defender pair and must not be treated as a normal challenge;
+- the existing AI-owned runtime control agrees with the static call-site audit: participant 0 contested participant 1's Gate and appeared in combatant record 1.
+
+A fresh live collision-call capture was attempted but the GDB stream reset before producing a valid snapshot. That failed attempt was not used as evidence. Confidence comes from the exhaustive direct-call audit and the previously committed runtime controls.
+
+Gate owner, combatant identity, and challenging participant are now confirmed for Task 2. Human/AI identity remains pending in checkpoint 2D.

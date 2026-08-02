@@ -53,7 +53,8 @@ runtime_confirmation:
     target_total: base_snapshot_g + gate_attribute_bonus_g
   confidence_boundaries:
     source_mutable_modifier: confirmed_general_additive_channel
-    progression_callsites: probable
+    progression_callsite_0x0222D154: probable
+    field_gpower_pickup_0x0222B500: probable
     evolution_representation: candidate
     participant_field_0x0A: candidate
   rejected_false_positive:

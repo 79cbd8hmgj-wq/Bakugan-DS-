@@ -27,9 +27,9 @@ python -m pytest
 
 ## Current scope
 
-Milestone 1 validates the supported ROM and parses its NDS header, FAT, FNT,
-and overlay tables. Extraction, rebuilding, and gameplay patches follow in
-later milestones.
+The repository provides exact-ROM inspection, deterministic extraction and
+rebuilding, guarded patches, and normalized runtime-analysis evidence for the
+battle G-Power pipeline.
 
 ## Inspect a ROM
 
@@ -113,6 +113,17 @@ Patch files describe fixed-length binary replacements against `arm9`, `arm7`,
 `overlay:<id>`, or `nitrofs:<path>`. Every replacement includes the exact bytes
 expected at the target offset. If any guard is stale, out of bounds, or targets
 the wrong ROM profile, no patch target is written.
+
+## First gameplay balance patch
+
+The [core G-Power compression patch](docs/core-g-compression.md) preserves core
+G through 400 and halves only the excess above 400. It modifies the battle
+constructor before mutable modifiers and Gate Card bonuses are added.
+
+```bash
+bakugan-ds patch work/bakugan patches/core-g-compression-400.json
+bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-Core-G-400.nds
+```
 
 ## Build the runtime debugger
 

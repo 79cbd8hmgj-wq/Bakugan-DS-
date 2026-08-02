@@ -1,0 +1,187 @@
+{
+  "bounded_conclusions": [
+    "The original game stores Gate-slot state separately from participant match score and capture-history bookkeeping.",
+    "Arena-board presence, participant-owned Gate-slot state, and combatant scene cleanup are distinct mutation paths.",
+    "Normal result finalization updates score and capture history before removing the active arena placement and cleaning both combatant descriptors.",
+    "The audited transition paths contain no per-Gate activation increment, but this checkpoint does not establish confirmed absence."
+  ],
+  "component": {
+    "decoded_size": 467360,
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
+  },
+  "direct_call_inventory": {
+    "arena_placement_allocate_0x02262638": {
+      "call_count": 15,
+      "selected_callers": [
+        "0x02238CA8",
+        "0x0224A868",
+        "0x0224A888",
+        "0x02262BE4",
+        "0x02262C00"
+      ]
+    },
+    "arena_placement_remove_0x022626B8": {
+      "call_count": 5,
+      "callers": [
+        "0x022371A0",
+        "0x022424B0",
+        "0x02260ED0",
+        "0x022612AC",
+        "0x022613F0"
+      ]
+    },
+    "arena_placement_transfer_0x02262714": {
+      "call_count": 1,
+      "callers": [
+        "0x022656D0"
+      ]
+    },
+    "combatant_descriptor_cleanup_0x02262828": {
+      "call_count": 16,
+      "selected_callers": [
+        "0x0223713C",
+        "0x022424C4",
+        "0x022424D8",
+        "0x02260E34",
+        "0x02260E60"
+      ]
+    },
+    "participant_gate_slot_state_setter_0x0226A404": {
+      "call_count": 6,
+      "callers": [
+        "0x02262690",
+        "0x022626DC",
+        "0x02262740",
+        "0x02262760",
+        "0x02262B8C",
+        "0x02262B9C"
+      ]
+    }
+  },
+  "fields": [
+    {
+      "access": "session +0x1C + arena_entry_index * 8 +0x02",
+      "candidate_name": "arena_placement_occupied",
+      "confidence": "probable",
+      "evidence": "Allocation 0x02262638 requires zero then stores one; removal 0x022626B8 stores zero. The same functions add or remove the board-grid reference and update session +0x294.",
+      "observed_values": [
+        0,
+        1
+      ],
+      "owner_structure": "eight-byte arena-placement record",
+      "width_bits": 8
+    },
+    {
+      "access": "participant +0x56 + gate_slot_index * 4",
+      "candidate_name": "participant_gate_slot_state",
+      "confidence": "probable",
+      "evidence": "Central setter 0x0226A404 stores values 0, 1, or 2. Arena allocation sets 1, arena transfer clears the old slot to 0 and sets the new slot to 1, and arena removal sets 2.",
+      "observed_values": [
+        0,
+        1,
+        2
+      ],
+      "owner_structure": "participant object Gate-slot entry",
+      "state_candidates": {
+        "0": "available or not placed",
+        "1": "placed on arena",
+        "2": "removed, captured, or otherwise unavailable"
+      },
+      "width_bits": 8
+    },
+    {
+      "access": "participant +0xF8",
+      "candidate_name": "available_gate_slot_count",
+      "confidence": "probable",
+      "evidence": "Setter 0x0226A404 decrements this byte when a slot leaves state 0 and increments it when a slot returns to state 0. It is not changed by transitions between nonzero states.",
+      "owner_structure": "participant object",
+      "width_bits": 8
+    },
+    {
+      "access": "session +0x294",
+      "candidate_name": "active_arena_placement_count",
+      "confidence": "probable",
+      "evidence": "Arena allocation increments the byte after populating a free eight-byte entry; arena removal decrements it after clearing the entry and board-grid reference.",
+      "owner_structure": "battle session",
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "length": 236,
+      "purpose": "normal result score, capture history, arena removal, and descriptor cleanup ordering",
+      "runtime_end": "0x022424DC",
+      "runtime_start": "0x022423F0",
+      "sha256": "166b5c882d31a6d9a5c60df8a0f77ea28817d72fce9eabc16585ac6f4f780467"
+    },
+    {
+      "length": 128,
+      "purpose": "allocate an arena-placement entry and mark participant Gate slot state 1",
+      "runtime_end": "0x022626B8",
+      "runtime_start": "0x02262638",
+      "sha256": "c897a4e172176637bc6d9a3a8347747e39528fd6002b43e45c74327a180c979c"
+    },
+    {
+      "length": 92,
+      "purpose": "remove an arena-placement entry and mark participant Gate slot state 2",
+      "runtime_end": "0x02262714",
+      "runtime_start": "0x022626B8",
+      "sha256": "416fc9473ffc62cecccc31cfe782ae9fb6f22abd5ace82cf5c1d16832886b810"
+    },
+    {
+      "length": 84,
+      "purpose": "transfer an arena placement by setting old Gate slot state 0 and new Gate slot state 1",
+      "runtime_end": "0x02262768",
+      "runtime_start": "0x02262714",
+      "sha256": "e5cdc29964f42261e14c9e353b20c6f36d9f53bbbe7b41390e1b603530a99aad"
+    },
+    {
+      "length": 184,
+      "purpose": "clean a combatant descriptor and its scene-side state independently of arena placement removal",
+      "runtime_end": "0x022628E0",
+      "runtime_start": "0x02262828",
+      "sha256": "fdad97a41f2e97e3b77814964e64199fd1e366fb6c2b5ac7a8a78e79e581c369"
+    },
+    {
+      "length": 68,
+      "purpose": "central participant Gate-slot state transition and available-count adjustment",
+      "runtime_end": "0x0226A448",
+      "runtime_start": "0x0226A404",
+      "sha256": "c120e6a295ecefeead7099b47f095b0388d3372f831700f31d4b9a7d4f3b2fd8"
+    }
+  ],
+  "normal_result_order": [
+    "Increment the settled winner participant match score at +0xEE.",
+    "Append the winner capture-history entry and increment +0xF4.",
+    "Resolve the defender descriptor's arena-entry index and call 0x022626B8.",
+    "Set the removed Gate owner's per-slot state to value 2.",
+    "Clear the arena-placement occupied byte and board-grid reference, then decrement session +0x294.",
+    "Call 0x02262828 separately for both selected combatant descriptors."
+  ],
+  "profile_id": "b6re_rev0",
+  "question": "Which original fields and functions distinguish Gate-slot state, arena removal, capture bookkeeping, scene cleanup, reuse, and activation count?",
+  "rejected_or_separated": [
+    {
+      "field": "participant +0xF4",
+      "reason": "Confirmed capture-history record count, not Gate-slot availability or arena presence."
+    },
+    {
+      "field": "session descriptor cleanup at 0x02262828",
+      "reason": "Operates on combatant descriptors and scene state after board removal; it is not the arena-placement removal itself."
+    },
+    {
+      "field": "battle object destruction",
+      "reason": "Ends battle-object lifetime but does not perform the participant Gate-slot state transition or arena-entry removal identified here."
+    }
+  ],
+  "unresolved": [
+    "Runtime confirmation that participant Gate-slot state values 0, 1, and 2 mean available, placed, and captured or unavailable.",
+    "Whether a removed Gate can return from state 2 to state 0 during the same match in any normal or scripted mode.",
+    "Whether session +0x294 counts only Gates or all arena placements represented by this eight-byte table.",
+    "Whether an original per-Gate activation counter exists outside the audited placement, removal, transfer, result, and Gate-slot setter paths.",
+    "Exact reset timing for participant Gate-slot state and arena-placement records across round and match construction."
+  ]
+}

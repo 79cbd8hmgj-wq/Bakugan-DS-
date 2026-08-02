@@ -30,7 +30,7 @@ def test_target_total_watchpoints_record_exact_runtime_operands() -> None:
     }
 
 
-def test_runtime_symbols_separate_confirmed_math_from_probable_lookup_semantics() -> None:
+def test_runtime_symbols_promote_confirmed_math_and_gate_lookup() -> None:
     with Path("analysis/symbols/runtime_gpower.csv").open(newline="", encoding="utf-8") as handle:
         rows = {row["name"]: row for row in csv.DictReader(handle)}
 
@@ -38,10 +38,11 @@ def test_runtime_symbols_separate_confirmed_math_from_probable_lookup_semantics(
     assert rows["BattleGPower_AddGateBonus"]["confidence"] == "confirmed"
     assert rows["BattleGPower_StoreTarget"]["address"] == "0x0223D28C"
     assert rows["BattleGPower_StoreTarget"]["confidence"] == "confirmed"
-    assert rows["GateAttributeBonus_Lookup"]["confidence"] == "probable"
+    assert rows["GateAttributeBonus_Lookup"]["confidence"] == "confirmed"
+    assert rows["GateAttributeBonus_Table"]["address"] == "0x020A15AC"
 
 
-def test_runtime_document_states_the_remaining_semantic_boundary() -> None:
+def test_runtime_document_records_exact_operands_and_remaining_boundary() -> None:
     text = Path("docs/runtime-gpower-tracing.md").read_text(encoding="utf-8")
     for required in (
         "0x0223D290",
@@ -49,6 +50,7 @@ def test_runtime_document_states_the_remaining_semantic_boundary() -> None:
         "r1 = 180",
         "r2 = 190",
         "r1 = 100",
-        "helper's exact\ncard/attribute semantics remain probable",
+        "level-growth interpretation remains probable",
+        "Participant field `+0x0A` remains unresolved",
     ):
         assert required in text

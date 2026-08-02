@@ -117,9 +117,13 @@ class BattleTypeSelectorEvidence:
                 )
         if self.selection_mode == "fixed_metadata":
             if self.rng_calls or self.random_range is not None:
-                raise WorkspaceError("fixed metadata selector cannot claim RNG calls or a random range")
+                raise WorkspaceError(
+                    "fixed metadata selector cannot claim RNG calls or a random range"
+                )
         elif not self.rng_calls or self.random_range is None:
-            raise WorkspaceError("weighted random selector requires RNG calls and a random range")
+            raise WorkspaceError(
+                "weighted random selector requires RNG calls and a random range"
+            )
         for forced_path in self.forced_paths:
             forced_path.validate(type_ids)
 

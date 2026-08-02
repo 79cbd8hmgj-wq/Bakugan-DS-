@@ -1,0 +1,136 @@
+{
+  "component": {
+    "arm9_runtime": {
+      "base_address": "0x02000000",
+      "sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
+      "size": 786712
+    },
+    "overlay_0007": {
+      "load_address": "0x02219440",
+      "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+      "size": 467360
+    }
+  },
+  "confidence_boundary": "Human versus AI control is confirmed from the participant-owned controller pointer and the gameplay paths that branch on its presence. The remapped participant byte at +0xF2 remains a team/slot identity and is not promoted to a human/AI flag. Internal fields of the AI controller object are not part of the stable System 2.0 context contract.",
+  "field": {
+    "access": "participant object +0xC8",
+    "ai_encoding": "non-null pointer to the 0x90-byte AI controller object",
+    "confidence": "confirmed",
+    "human_encoding": "null pointer",
+    "name": "ai_controller_pointer",
+    "owner_structure": "320-byte participant object",
+    "signed": false,
+    "width_bits": 32
+  },
+  "format_version": 1,
+  "functions": [
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x502F4",
+      "evidence": "Stores the participant index at +0xF0, clears +0xC8, chooses a human-controlled prefix length of one in ordinary local modes, replaces that prefix length with the ARM9 active-slot count in modes 6 and 7, and allocates the AI controller only when participant_index is not inside that human prefix.",
+      "instruction_range_sha256": "1204717e82a81de6da25158104d566f92df13ce85243055bbf433a6d42fef8a9",
+      "name": "initialize_participant_control_identity",
+      "runtime_address": "0x02269734",
+      "runtime_end": "0x02269838"
+    },
+    {
+      "component": "arm9",
+      "component_offset": "0x2F134",
+      "evidence": "Checks four multiplayer slot entries through helper 0x02011968 and returns the number of active entries. The participant constructor uses this result only in game modes 6 and 7 as the count of participants that must not receive AI controllers.",
+      "instruction_range_sha256": "ee69568e4b002492e56a928a0d555d5f8e1fdd3e18cfd9686922e469efd78f07",
+      "name": "count_active_multiplayer_participant_slots",
+      "runtime_address": "0x0202F134",
+      "runtime_end": "0x0202F17C"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x17B18",
+      "evidence": "Initializes the 0x90-byte object stored at participant +0xC8 with the owning participant index at object +0x79 and AI decision state used by later planning functions.",
+      "instruction_range_sha256": "67af925fb10a4a4b9547d58b3670822a131475e420308d6213a45a7c441efcb9",
+      "name": "construct_ai_controller",
+      "runtime_address": "0x02230F58",
+      "runtime_end": "0x02231020"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x5206C",
+      "evidence": "Selects the active participant object and treats a non-null +0xC8 pointer as the AI path before entering AI-specific battle setup.",
+      "instruction_range_sha256": "1462485f96c1a4c73d58aef0bf5bfce5f3cdb2539a2acbb16b9bcc2065c19a34",
+      "name": "branch_on_active_participant_ai_control",
+      "runtime_address": "0x0226B4AC",
+      "runtime_end": "0x0226B4D8"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x54FF0",
+      "evidence": "Loads the active participant's +0xC8 pointer, returns immediately when it is null, and otherwise consumes the pointed-to decision state to generate the AI-controlled shot.",
+      "instruction_range_sha256": "429fd1f6cb43dc95e636805217948866488465c35bb8111de5549e55ac62226f",
+      "name": "run_ai_shot_planner",
+      "runtime_address": "0x0226E430",
+      "runtime_end": "0x0226E478"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x50BD4",
+      "evidence": "Calls AI-controller reset helper 0x02231038 only when +0xC8 is non-null. The participant identity pointer itself is preserved.",
+      "instruction_range_sha256": "ed4439d88088e1d36dbd59c1afbadcb8647381b7c7de918ae355543619525b30",
+      "name": "reset_ai_controller_state",
+      "runtime_address": "0x0226A014",
+      "runtime_end": "0x0226A024"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x507E8",
+      "evidence": "Destroys the object referenced by participant +0xC8 when non-null; the deleting destructor then releases the participant object. No identity transfer occurs.",
+      "instruction_range_sha256": "d79198da01f9bd6e15be8b06dd772814f870dfac32537e982244757ff6b12555",
+      "name": "destroy_participant_and_ai_controller",
+      "runtime_address": "0x02269C28",
+      "runtime_end": "0x02269C94"
+    }
+  ],
+  "lifecycle": {
+    "initialization": "The participant constructor first clears +0xC8. Participants within the human-controlled prefix retain null. Every later participant receives a newly allocated AI controller.",
+    "lifetime": "The pointer is participant-owned and stable for the participant object's session lifetime. AI state resets do not change the pointer.",
+    "mutations": [
+      "0x02269764 clears +0xC8 during participant construction.",
+      "0x0226982C stores the constructed AI controller for AI-controlled participants.",
+      "No later participant-rooted assignment to +0xC8 was found; gameplay paths only test or consume it."
+    ],
+    "reset": "0x0226A014 invokes the AI-controller state reset when the pointer is non-null. Final reset occurs by destruction with the participant object."
+  },
+  "profile_id": "b6re_rev0",
+  "runtime_cross_check": {
+    "evidence_artifact": "analysis/gates/ownership-runtime-ai-owned-control.json",
+    "observed_roles": [
+      {
+        "control_identity": "human",
+        "participant_index": 0,
+        "role": "P1/player"
+      },
+      {
+        "control_identity": "ai",
+        "participant_index": 1,
+        "role": "P2/AI opponent"
+      }
+    ],
+    "result": "The clean tutorial/story control uses an ordinary non-network mode. The constructor's fixed human prefix length of one therefore predicts participant 0 as null/human and participant 1 as non-null/AI, matching the independently observed player/opponent roles."
+  },
+  "scripted_and_multiplayer_behavior": {
+    "multiplayer": "Modes 6 and 7 replace the fixed one-human prefix with the active multiplayer-slot count returned by 0x0202F134. Human participants remain null-controlled; participants after that prefix receive AI controllers.",
+    "scripted": "The tutorial/story runtime control follows the same participant constructor and local one-human cutoff. No later tutorial or scripted write that changes participant +0xC8 was found."
+  },
+  "supported_conclusions": [
+    "participant +0xC8 is the authoritative human/AI control representation.",
+    "A null +0xC8 pointer identifies a human-controlled participant.",
+    "A non-null +0xC8 pointer identifies an AI-controlled participant.",
+    "The identity is independent of Gate ownership, challenger/defender ordering, and participant +0xF2 team/slot remapping.",
+    "System 2.0 can derive human_ai_identity as a boolean from +0xC8 without depending on AI-controller internals."
+  ],
+  "system2_context_contract": {
+    "ai_value": true,
+    "exposure": "is_ai boolean",
+    "human_value": false,
+    "read_rule": "is_ai = read_u32(participant + 0xC8) != 0",
+    "safety": "Read only while the participant object is live. Do not persist or dereference the controller pointer from Gate data."
+  }
+}

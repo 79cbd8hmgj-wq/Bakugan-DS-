@@ -1,0 +1,362 @@
+{
+  "format_version": 1,
+  "requirements": [
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ability-card-state",
+      "field": "ability_available",
+      "name": "ability_available"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ability-card-state",
+      "field": "ability_resolved",
+      "name": "ability_resolved"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ability-card-state",
+      "field": "ability_selected",
+      "name": "ability_selected"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ability-card-state",
+      "field": "ability_used",
+      "name": "ability_used"
+    },
+    {
+      "allow_absent": true,
+      "allow_deferred": false,
+      "artifact": "battle-history-and-rng",
+      "field": "battle_type_history",
+      "name": "battle_type_history"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "cache_initialization",
+      "name": "cache_initialization"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "cache_invalidation",
+      "name": "cache_invalidation"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "cache_reset",
+      "name": "cache_reset"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "calculation_trace_format",
+      "name": "calculation_trace_format"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "match-score-and-capture",
+      "field": "captured_gate_count",
+      "name": "captured_gate_count"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ownership-and-participants",
+      "field": "challenging_participant",
+      "name": "challenging_participant"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ownership-and-participants",
+      "field": "combatant_identity",
+      "name": "combatant_identity"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "difficulty-context",
+      "field": "difficulty",
+      "name": "difficulty"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ownership-and-participants",
+      "field": "effect_target",
+      "name": "effect_target"
+    },
+    {
+      "allow_absent": true,
+      "allow_deferred": true,
+      "artifact": "landing-and-shot-context",
+      "field": "arena_id",
+      "name": "arena_id"
+    },
+    {
+      "allow_absent": true,
+      "allow_deferred": false,
+      "artifact": "gate-reuse-and-removal",
+      "field": "gate_activation_count",
+      "name": "gate_activation_count"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "gate-reuse-and-removal",
+      "field": "gate_capture_state",
+      "name": "gate_capture_state"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ownership-and-participants",
+      "field": "gate_owner",
+      "name": "gate_owner"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "gate-reuse-and-removal",
+      "field": "gate_removal_state",
+      "name": "gate_removal_state"
+    },
+    {
+      "allow_absent": true,
+      "allow_deferred": false,
+      "artifact": "gate-reuse-and-removal",
+      "field": "gate_reuse_state",
+      "name": "gate_reuse_state"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "gate_record_geometry",
+      "name": "gate_record_geometry"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "g2dt_header_geometry",
+      "name": "g2dt_header_geometry"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "ownership-and-participants",
+      "field": "human_ai_identity",
+      "name": "human_ai_identity"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "landing-and-shot-context",
+      "field": "landing_result",
+      "name": "landing_result"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "malformed_fallback",
+      "name": "malformed_fallback"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "match-score-and-capture",
+      "field": "match_score",
+      "name": "match_score"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "nitrofs_close",
+      "name": "nitrofs_close"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "nitrofs_open",
+      "name": "nitrofs_open"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "nitrofs_read",
+      "name": "nitrofs_read"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "nitrofs_seek",
+      "name": "nitrofs_seek"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "original_bss_preservation",
+      "name": "original_bss_preservation"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "overlay_growth",
+      "name": "overlay_growth"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "authoring_schema",
+      "name": "authoring_schema"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "serializer",
+      "name": "serializer"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "landing-and-shot-context",
+      "field": "shot_condition",
+      "name": "shot_condition"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_ability_activation",
+      "name": "timing_ability_activation"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_ability_resolution",
+      "name": "timing_ability_resolution"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_battle_result",
+      "name": "timing_battle_result"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_battle_start",
+      "name": "timing_battle_start"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_gate_capture",
+      "name": "timing_gate_capture"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_gate_removal",
+      "name": "timing_gate_removal"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_match_reset",
+      "name": "timing_match_reset"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_post_battle_type",
+      "name": "timing_post_battle_type"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_post_gate",
+      "name": "timing_post_gate"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_pre_battle_type",
+      "name": "timing_pre_battle_type"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_pre_gate",
+      "name": "timing_pre_gate"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "effect-timing",
+      "field": "timing_round_reset",
+      "name": "timing_round_reset"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "loader-and-cache",
+      "field": "trailer_validation",
+      "name": "trailer_validation"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "system2-record-v1",
+      "field": "validator",
+      "name": "validator"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "match-score-and-capture",
+      "field": "victory_threshold",
+      "name": "victory_threshold"
+    },
+    {
+      "allow_absent": false,
+      "allow_deferred": false,
+      "artifact": "battle-history-and-rng",
+      "field": "weighted_rng",
+      "name": "weighted_rng"
+    }
+  ]
+}

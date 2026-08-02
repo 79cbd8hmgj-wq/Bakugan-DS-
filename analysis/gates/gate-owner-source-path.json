@@ -1,0 +1,118 @@
+{
+  "confidence_boundary": "The source path and battle-object owner field are confirmed for the observed clean-launch tutorial/story battle path. Normal non-tutorial and alternate scripted paths still require separate lifecycle confirmation before Task 2 can mark Gate ownership globally confirmed.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
+  },
+  "battle_context_fields": [
+    {
+      "access": "battle object + 0x04",
+      "confidence": "confirmed_for_observed_path",
+      "meaning": "active Gate card ID",
+      "runtime_address_in_capture": "0x022E58E4",
+      "value": 21,
+      "width_bits": 16
+    },
+    {
+      "access": "battle object + 0x06",
+      "confidence": "confirmed_for_observed_path",
+      "meaning": "active Gate owner participant index",
+      "runtime_address_in_capture": "0x022E58E6",
+      "value": 1,
+      "width_bits": 8
+    }
+  ],
+  "derivation_path": [
+    {
+      "step": 1,
+      "operation": "Load the central battle-session pointer through global holder 0x020D433C."
+    },
+    {
+      "step": 2,
+      "operation": "Use the selected-combatant descriptor for the fixed second participant slot to read an arena-placement entry index from session + 0x8D + participant_index * 20."
+    },
+    {
+      "step": 3,
+      "operation": "Index the arena-placement table at session + 0x1C + arena_entry_index * 8."
+    },
+    {
+      "step": 4,
+      "operation": "Read placement byte +0 as the owner's Gate-slot index and placement byte +1 as the Gate-owner participant index."
+    },
+    {
+      "step": 5,
+      "operation": "Store the owner participant index into battle object +0x06."
+    },
+    {
+      "step": 6,
+      "operation": "Select the owner participant object through session +0x0C + owner_index * 4."
+    },
+    {
+      "step": 7,
+      "operation": "Read the active Gate ID from owner participant object +0x54 + gate_slot_index * 4 and store it into battle object +0x04."
+    }
+  ],
+  "instruction_evidence": [
+    {
+      "confidence": "confirmed",
+      "purpose": "constructor zero-initializes active Gate ID and owner fields",
+      "runtime_address": "0x0223CFFC",
+      "runtime_end": "0x0223D008",
+      "sha256": "48056f416ede78a8143047327f081a052fe73fde331f5dbd27141999de752faa"
+    },
+    {
+      "confidence": "confirmed",
+      "purpose": "derive owner and Gate ID from arena-placement and participant objects",
+      "runtime_address": "0x0223D194",
+      "runtime_end": "0x0223D1D0",
+      "sha256": "e719c28e6b0d077dded6eb111dd02f8bfe42cc769a77af09c63aa2d642cd9301"
+    },
+    {
+      "confidence": "confirmed",
+      "purpose": "literal reference to central session pointer holder 0x020D433C",
+      "runtime_address": "0x0223D3F0",
+      "runtime_end": "0x0223D3F4",
+      "sha256": "cb013da4cc1b28194e3cbdf1829bb6b1aea08af978235b1cd5a2781de8f15a1f"
+    }
+  ],
+  "runtime_capture": {
+    "active_gate_card_id": 21,
+    "arena_entry_index": 0,
+    "arena_placement_entry": {
+      "gate_owner_participant_index": 1,
+      "gate_slot_index": 0,
+      "session_access": "+0x1C + 0 * 8"
+    },
+    "battle_object": "0x022E58E0",
+    "battle_object_header_sha256": "f59ce8c2442cafd30cea4c9254d92d175f61a0fa8c01424e10f871e8fd22b135",
+    "owner_participant_gate_slots": [21, 59, 93],
+    "owner_participant_gate_slots_sha256": "5bb02ea95cfab8ee73a5ecc3749afbff36eca9bf1e773a0d31ca35943603becb",
+    "owner_participant_index": 1,
+    "owner_participant_object": "0x022E2640",
+    "session": "0x0229FC80",
+    "session_arena_record_sha256": "d5cca548aeb1d5e430e67877d5a0753861b537b277217b55b3b8d4c6be10cd91",
+    "session_descriptor_sha256": "148974bc6545c4c85687df3705e14a6382cc651f9aa61d17de1ba05bc82bc484"
+  },
+  "supported_conclusions": [
+    "The active Gate owner is not encoded by session +0x28D/+0x28E.",
+    "The authoritative owner source for the observed path is arena-placement entry byte +1.",
+    "Battle object +0x06 is the battle-local copy of that owner participant index.",
+    "Battle object +0x04 is the battle-local active Gate ID derived from the owner's Gate-slot table.",
+    "Gate ownership can be resolved without scanning both participants' complete Gate inventories once the battle object has been constructed.",
+    "The owner field is initialized to zero at constructor entry and assigned before any Gate bonus lookup occurs."
+  ],
+  "unresolved": [
+    "Whether normal non-tutorial battles use the same arena-placement table and battle-object +0x06 field",
+    "Whether scripted battles can directly override battle object +0x04 or +0x06",
+    "The mutation and reset behavior of the arena-placement owner byte before battle construction",
+    "Whether battle object +0x06 remains valid through Gate capture and result processing",
+    "The exact semantics of session +0x28D/+0x28E beyond fixed participant/combatant ordering"
+  ],
+  "next_checkpoint": {
+    "id": "2B.4",
+    "objective": "Confirm owner-field lifetime and reset behavior through result/capture, and verify that normal or alternate scripted construction does not bypass the arena-placement owner path."
+  }
+}

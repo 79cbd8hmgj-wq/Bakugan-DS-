@@ -167,8 +167,9 @@ bakugan-ds gate report-context work/bakugan \
 ```
 
 See [the legacy Gate system documentation](docs/gate-card-legacy-system.md) and
-[the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md). The first
-experimental System 2.0 Gate is deferred to a separately reviewed Milestone 6B.
+[the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md). Milestone 6B now
+completes all required runtime discovery except arena ID; the first experimental
+System 2.0 Gate is deferred to a separately reviewed Milestone 6C.
 
 ## Build the runtime debugger
 

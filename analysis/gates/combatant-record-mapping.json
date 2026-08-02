@@ -1,0 +1,174 @@
+{
+  "confidence_boundary": "This checkpoint confirms descriptor-to-combatant and participant-to-record mapping. It does not yet establish why the game chooses a particular descriptor order, whether record 0 is always the Gate owner, or which record is the challenger in every scenario.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "size": 467360
+  },
+  "confirmed_fields": [
+    {
+      "access": "session +0x28D",
+      "confidence": "confirmed",
+      "initialization": "Written by paired setter 0x02262A64 and by setup paths before battle-object construction.",
+      "lifetime": "Read during battle-object construction; the selected descriptor identity is copied into the live battle object and combatant records.",
+      "meaning": "descriptor index used to construct combatant record 0",
+      "reset": "Session setup rewrites the pair before a new battle setup.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "session +0x28E",
+      "confidence": "confirmed",
+      "initialization": "Written by paired setter 0x02262A68 and by setup paths before battle-object construction.",
+      "lifetime": "Read during battle-object construction; the selected descriptor identity is copied into the live battle object and combatant records.",
+      "meaning": "descriptor index used to construct combatant record 1",
+      "reset": "Session setup rewrites the pair before a new battle setup.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "session +0x7C + descriptor_index * 20 + 0x0F, low nibble",
+      "confidence": "confirmed",
+      "initialization": "Populated in the selected-combatant descriptor before battle construction.",
+      "lifetime": "Consumed by constructor 0x0223CFE8 to choose the participant object for the corresponding record.",
+      "meaning": "participant object index for the selected combatant descriptor",
+      "reset": "Descriptor setup replaces the value for the next battle selection.",
+      "signed": false,
+      "width_bits": 4
+    },
+    {
+      "access": "battle object +0x0C through +0x1F",
+      "confidence": "confirmed",
+      "initialization": "Constructed from the descriptor selected by session +0x28D.",
+      "lifetime": "Valid for the live battle-object lifetime.",
+      "meaning": "combatant record 0, 20-byte record",
+      "reset": "A new battle object reconstructs the record; destruction ends validity.",
+      "signed": false,
+      "width_bits": 160
+    },
+    {
+      "access": "battle object +0x20 through +0x33",
+      "confidence": "confirmed",
+      "initialization": "Constructed from the descriptor selected by session +0x28E.",
+      "lifetime": "Valid for the live battle-object lifetime.",
+      "meaning": "combatant record 1, 20-byte record",
+      "reset": "A new battle object reconstructs the record; destruction ends validity.",
+      "signed": false,
+      "width_bits": 160
+    }
+  ],
+  "mapping_algorithm": [
+    "Read descriptor_index_0 from session +0x28D.",
+    "Read descriptor_index_1 from session +0x28E.",
+    "Resolve descriptor 0 at session +0x7C + descriptor_index_0 * 20.",
+    "Resolve descriptor 1 at session +0x7C + descriptor_index_1 * 20.",
+    "For each descriptor, extract the low nibble of byte +0x0F as the participant object index.",
+    "Resolve the participant object through session +0x0C + participant_index * 4.",
+    "Populate combatant record 0 from descriptor 0 and its participant object.",
+    "Populate combatant record 1 from descriptor 1 and its participant object.",
+    "Run the Gate lookup loop first with record base battle_object +0x00, whose G fields begin at +0x0C, then with record base battle_object +0x14, whose G fields begin at +0x20."
+  ],
+  "instruction_evidence": [
+    {
+      "address": "0x0223D014",
+      "end": "0x0223D0C0",
+      "purpose": "read the two descriptor indices, resolve 20-byte descriptors, extract participant indices, and resolve participant objects",
+      "sha256": "11c916277dde4bb5fc922e83c84f78b9ea1827c993ca608df7df3455df2700c9"
+    },
+    {
+      "address": "0x0223D1D0",
+      "end": "0x0223D298",
+      "purpose": "iterate the two 20-byte combatant records, apply the Gate lookup, and store target totals",
+      "sha256": "eff61f0a94034c5f88d453acf1acbf11ab78bfd6756772a746bcd8ce06563b83"
+    },
+    {
+      "address": "0x02262A64",
+      "end": "0x02262A70",
+      "purpose": "paired setter for session +0x28D/+0x28E",
+      "sha256": "68fc36d3a7306f85753596faf93959f1256b7649afd519ba64f356d08275ada4"
+    }
+  ],
+  "runtime_control": {
+    "active_gate": {
+      "gate_card_id": 21,
+      "owner_participant_index": 1
+    },
+    "session": {
+      "descriptor_index_0_at_0x28D": 0,
+      "descriptor_index_1_at_0x28E": 1,
+      "descriptor_array": [
+        {
+          "descriptor_index": 0,
+          "participant_index_from_low_nibble_0x0F": 1
+        },
+        {
+          "descriptor_index": 1,
+          "participant_index_from_low_nibble_0x0F": 0
+        }
+      ],
+      "participant_pointer_table": [
+        {
+          "participant_index": 0,
+          "runtime_address": "0x022E24E0"
+        },
+        {
+          "participant_index": 1,
+          "runtime_address": "0x022E2640"
+        }
+      ],
+      "runtime_address": "0x0229FC80"
+    },
+    "combatant_records": [
+      {
+        "attribute_id_at_gate_lookup": 2,
+        "base_g": 230,
+        "descriptor_index": 0,
+        "gate_bonus_g": 180,
+        "participant_index": 1,
+        "record_index": 0,
+        "record_runtime_address": "0x022E58EC",
+        "target_total_g": 410
+      },
+      {
+        "attribute_id_at_gate_lookup": 0,
+        "base_g": 190,
+        "descriptor_index": 1,
+        "gate_bonus_g": 100,
+        "participant_index": 0,
+        "record_index": 1,
+        "record_runtime_address": "0x022E5900",
+        "target_total_g": 290
+      }
+    ],
+    "battle_object_runtime_address": "0x022E58E0"
+  },
+  "local_capture_hashes": {
+    "battle_object_result_snapshot_source": "ff96ec4a4dcd1b8fb9e106c65d252116fc19620a25844ded20407f236251c285",
+    "descriptor_array_capture": "528e263d73e2bac9aa3e969be2048a156ef2e8a81a89d0d19d0dd1b110ef3fb9",
+    "first_gate_lookup_registers": "fd328bb503211664cc2be674ce4f52e148e802961d7e2ab0ccd02b3546f2ebfe",
+    "participant_field_capture": "2ddef64517be101bc152a431747d2e520e8df7f0a6eb204159b0b94b3090a88f",
+    "participant_pointer_table_capture": "b3d09809278f7c43d51519da63363cfe4b1374318634349a854076b63a10c9b0",
+    "second_gate_lookup_registers": "1de0af8012882a280c87fd3d6bd863601291e8e40ab2c33bfe0e2a20c1732d44"
+  },
+  "supported_conclusions": [
+    "Session +0x28D and +0x28E must not be exposed to System 2.0 as participant IDs.",
+    "The actual participant identity for a combatant is obtained from the low nibble of the selected descriptor's byte +0x0F.",
+    "Combatant record 0 is generated from the descriptor selected by +0x28D, and combatant record 1 is generated from the descriptor selected by +0x28E.",
+    "In the AI-owned control, descriptor order 0,1 resolves to participant order 1,0; therefore descriptor order and participant order are distinct concepts.",
+    "The two combatant records share the same construction and Gate-calculation loop, with a 20-byte stride."
+  ],
+  "unresolved": [
+    "Whether record order is owner-first, landing-order, initiator-first, or controlled by another battle setup policy",
+    "The canonical challenging participant derivation",
+    "Whether scripted battle setup can choose descriptor order differently while preserving the same mapping mechanism",
+    "Human-versus-AI identity, which is reserved for checkpoint 2D",
+    "Effect-target semantics, which are reserved for checkpoint 2E"
+  ],
+  "next_checkpoint": {
+    "id": "2C.2",
+    "objective": "Determine the policy that orders the two selected descriptors and identify the canonical challenging participant independently of record index."
+  }
+}

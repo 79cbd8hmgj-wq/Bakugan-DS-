@@ -1,0 +1,175 @@
+{
+  "alternate_path_validation": {
+    "battle_constructor": "0x0223CFE8",
+    "confidence": "confirmed",
+    "direct_call_count_in_overlay_7": 1,
+    "direct_call_sites": [
+      "0x0223E334"
+    ],
+    "evidence": "A complete ARM branch scan of decoded overlay 7 found one direct BL to the battle constructor. The tutorial built-in skip was exercised after the normal constructor and Gate calculation, and the owner fields remained intact through skip completion.",
+    "post_constructor_field_writes": {
+      "active_gate_id": [],
+      "gate_owner_participant_index": []
+    },
+    "scripted_behavior": "The built-in tutorial skip does not bypass owner derivation. No alternate overlay-7 constructor or later overwrite of battle object +0x04/+0x06 was found."
+  },
+  "battle_object_fields": [
+    {
+      "access": "+0x04",
+      "confidence": "confirmed",
+      "initialization": "Zeroed at 0x0223CFFC, then assigned from the owner participant's Gate slot at 0x0223D1CC.",
+      "lifetime": "Valid from constructor assignment through battle result and final scene state; invalid after battle-object destruction.",
+      "meaning": "active Gate card ID",
+      "reset": "The deleting destructor releases the object without clearing this field. A new constructor zeroes it before deriving the next active Gate.",
+      "signed": false,
+      "width_bits": 16
+    },
+    {
+      "access": "+0x06",
+      "confidence": "confirmed",
+      "initialization": "Zeroed at 0x0223D000, then assigned from arena-placement entry byte +1 at 0x0223D1B0.",
+      "lifetime": "Valid from constructor assignment through battle result and final scene state; invalid after battle-object destruction.",
+      "meaning": "active Gate owner participant index",
+      "reset": "The deleting destructor releases the object without clearing this field. A new constructor zeroes it before deriving the next owner.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "complete_runtime_capture_committed": false,
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "size": 467360
+  },
+  "destruction": {
+    "confidence": "confirmed",
+    "deleting_destructor": {
+      "address": "0x0223D478",
+      "end": "0x0223D504",
+      "instruction_sha256": "c83ce2d872eaeac669a6c367bf46d34000392a9c49d462fcd6cd152ccf80b4cf"
+    },
+    "destructor": {
+      "address": "0x0223D3F4",
+      "end": "0x0223D474",
+      "instruction_sha256": "b39e9c3281e8916fbec867aa38be2595d1e6a00e4dfcbe1d453481a59d6d83c9"
+    },
+    "evidence": "The class vtable points to the two cleanup functions. They destroy fourteen child entries, release the objects at +0x6C and +0x70, and the deleting form releases the battle object itself. Neither function rewrites +0x04 or +0x06.",
+    "validity_rule": "Memory contents may remain visible after scene completion, but they are stale once the object is destroyed and must not be used as live context."
+  },
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "address": "0x0223CFFC",
+      "end": "0x0223D008",
+      "purpose": "zero active Gate ID and owner fields during construction",
+      "sha256": "48056f416ede78a8143047327f081a052fe73fde331f5dbd27141999de752faa"
+    },
+    {
+      "address": "0x0223D194",
+      "end": "0x0223D1D0",
+      "purpose": "derive owner and Gate ID from arena placement and participant data",
+      "sha256": "e719c28e6b0d077dded6eb111dd02f8bfe42cc769a77af09c63aa2d642cd9301"
+    },
+    {
+      "address": "0x0223E328",
+      "end": "0x0223E33C",
+      "purpose": "allocate the 116-byte battle object and invoke its sole overlay-7 constructor call",
+      "sha256": "99a6237e127bcd62d77a2ab9aa4455708cd09be5f690e8834639de453b08f1c2"
+    },
+    {
+      "address": "0x0223E334",
+      "end": "0x0223E338",
+      "purpose": "unique direct BL to 0x0223CFE8",
+      "sha256": "9d23f3a61b81a92821c62b35aa53371b27c4c4dfb4e505ee4d4db769cb78322d"
+    },
+    {
+      "address": "0x0223ED00",
+      "end": "0x0223ED04",
+      "purpose": "call the battle-result state",
+      "sha256": "8b5d2fe84ad1603e69dd9733c6e09693e97a8451ee30a0e1880c6b1965977764"
+    },
+    {
+      "address": "0x0223EEDC",
+      "end": "0x0223EF00",
+      "purpose": "final state marks the owning scene complete without rewriting Gate ID or owner",
+      "sha256": "92cdcbd82872910cd4181a062e0732abaebcbc07b0d0f533141d50859762a116"
+    }
+  ],
+  "local_capture_hashes": {
+    "arena_record_at_final_state": "02313236737562d0085151f3e414263e2fe133109e993174c56d71499fe1cb85",
+    "arena_record_at_result_state": "dce60bbbcd50e78f92f85a6501efc76cc695b8cf115132d97a05705abca8cea5",
+    "arena_record_at_skip_completion": "02313236737562d0085151f3e414263e2fe133109e993174c56d71499fe1cb85",
+    "battle_header_at_final_state": "bcadc1f207e4b47d8dd676b810afe683648dcdbb0e0454ac6de54636ab6fac8a",
+    "battle_header_at_result_state": "c5b23576a1f2faeff8f5fdeb3119edb13fb816007d81f76a046936cf0ead86f0",
+    "battle_header_at_skip_completion": "89e8d3734e1897c966f9e2fbc1fcbf8f6e1ecec139a5b8c62fa82adcd90db3a2",
+    "final_state_registers": "4175a2f359564015194486b0757b695566637c7007b5547f5ef5be36a4d3e0dd",
+    "result_state_registers": "d7afd2f21ab3acd028c3f741b96c3efdde31a825671baa36427698a7f9e5964e",
+    "skip_completion_registers": "c43b526a8d1a5a7b74564d5fec4da91da90f2dd9da0bb3410bd2475ca6475288"
+  },
+  "profile_id": "b6re_rev0",
+  "runtime_observations": [
+    {
+      "arena_placement": {
+        "gate_owner_participant_index": 1,
+        "gate_slot_index": 0,
+        "transient_state_bytes": [1, 6, 4, 2]
+      },
+      "battle_object": {
+        "active_gate_card_id": 21,
+        "gate_owner_participant_index": 1
+      },
+      "phase": "Gate calculation complete"
+    },
+    {
+      "arena_placement": {
+        "gate_owner_participant_index": 1,
+        "gate_slot_index": 0,
+        "transient_state_bytes": [1, 6, 4, 2]
+      },
+      "battle_object": {
+        "active_gate_card_id": 21,
+        "gate_owner_participant_index": 1
+      },
+      "phase": "battle-result state entry at 0x0223ED00"
+    },
+    {
+      "arena_placement": {
+        "gate_owner_participant_index": 1,
+        "gate_slot_index": 0,
+        "transient_state_bytes": [0, 6, 4, 0]
+      },
+      "battle_object": {
+        "active_gate_card_id": 21,
+        "gate_owner_participant_index": 1
+      },
+      "phase": "final state entry at 0x0223EEDC"
+    },
+    {
+      "arena_placement": {
+        "gate_owner_participant_index": 1,
+        "gate_slot_index": 0,
+        "transient_state_bytes": [0, 6, 4, 0]
+      },
+      "battle_object": {
+        "active_gate_card_id": 21,
+        "gate_owner_participant_index": 1
+      },
+      "phase": "built-in tutorial skip completion dialogue"
+    }
+  ],
+  "supported_conclusions": [
+    "Battle object +0x06 is stable for the full live battle-object lifetime and remains valid through result processing and final scene state.",
+    "Battle object +0x04 remains paired with the same owner and Gate throughout that lifetime.",
+    "The arena-placement owner byte remains stable while separate transient placement-state bytes are cleared during final processing.",
+    "The built-in tutorial skip occurs downstream of normal owner derivation and does not bypass or replace the owner fields.",
+    "Overlay 7 has one battle-object construction call, and no later class-code write changes +0x04 or +0x06.",
+    "Reset is constructor-based: the next battle object is zero-initialized before owner derivation. Destruction ends validity rather than zeroing stale memory."
+  ],
+  "unresolved": [
+    "The challenger-to-combatant mapping and fixed semantics of session +0x28D/+0x28E",
+    "Human-versus-AI identity representation",
+    "Effect-target resolution for owner, challenger, winner, loser, self, opponent, and both",
+    "Physical Gate capture, removal, and reuse bookkeeping, which belongs to Task 4"
+  ]
+}

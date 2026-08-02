@@ -274,11 +274,13 @@ def test_gate_documentation_defines_legacy_and_6b_contracts() -> None:
         assert required in legacy
 
     for required in (
-        "No System 2.0 gameplay effect is implemented",
+        "No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B",
+        "Milestone 6B — complete System 2.0 discovery",
         "4,152-byte `G2DT` trailer",
         "0x0228BC20\u20130x02293C20",
-        "fixed-point percentage of compressed core G",
-        "Every other Gate retains original",
-        "Milestone 6G",
+        "Candidate or probable evidence blocks Milestone 6C",
+        "Arena ID is the only allowed unresolved context field",
+        "Milestone 6C — engine and first prototype",
+        "Milestone 6H — optional adaptive difficulty",
     ):
         assert required in roadmap

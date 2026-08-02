@@ -24,7 +24,7 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2D — human and AI identity**.
+Current checkpoint: **2E — effect targeting rules**.
 
 Task 2 checkpoints:
 
@@ -37,7 +37,7 @@ Task 2 checkpoints:
 3. 2C — challenger and combatant mapping: complete
    - 2C.1 — descriptor-to-combatant mapping: complete
    - 2C.2 — challenger ordering policy: complete
-4. 2D — human and AI identity: pending
+4. 2D — human and AI identity: complete
 5. 2E — effect targeting rules: pending
 6. 2F — normalized artifact, tests, CI, and task completion: pending
 
@@ -97,4 +97,31 @@ Confirmed behavior:
 
 A fresh live collision-call capture was attempted but the GDB stream reset before producing a valid snapshot. That failed attempt was not used as evidence. Confidence comes from the exhaustive direct-call audit and the previously committed runtime controls.
 
-Gate owner, combatant identity, and challenging participant are now confirmed for Task 2. Human/AI identity remains pending in checkpoint 2D.
+Gate owner, combatant identity, and challenging participant are now confirmed for Task 2.
+
+### Checkpoint 2D result
+
+Human and AI control identity is stored in `analysis/gates/human-ai-identity.json` at commit `4b10ae990a6dc8bba85ff9064c3d112426db1b1d`.
+
+Confirmed behavior:
+
+- participant object `+0xC8` is the authoritative AI-controller pointer;
+- a null pointer identifies a human-controlled participant;
+- a non-null pointer identifies an AI-controlled participant;
+- participant construction clears `+0xC8`, uses a one-participant human prefix in ordinary local modes, and allocates AI controllers for later participants;
+- modes 6 and 7 replace the fixed prefix with the active multiplayer-slot count returned by ARM9 helper `0x0202F134`;
+- AI-specific battle setup and shot planning explicitly branch on the presence of `+0xC8`;
+- AI state reset preserves the identity pointer;
+- the pointer remains stable until the participant and its controller are destroyed;
+- the clean tutorial/story runtime control independently maps participant 0 to P1/player and participant 1 to the P2/AI opponent, matching the constructor policy;
+- participant `+0xF2` remains a team/slot remap and is not used as the human/AI flag.
+
+The System 2.0 context contract is:
+
+```text
+is_ai = read_u32(participant + 0xC8) != 0
+```
+
+The pointer may be tested only while the participant object is live and must never be persisted in Gate data or exposed as a stable controller-object ABI.
+
+Gate owner, challenger/defender mapping, combatant participant identity, and human/AI identity are now confirmed. Checkpoint 2E will derive the exact participant sets for owner, challenger, defender, self, opponent, both combatants, human, and AI effect targets.

@@ -40,5 +40,7 @@ def test_validation_summary_does_not_overstate_progression_or_evolution() -> Non
     text = Path("docs/gpower-runtime-validation.md").read_text(encoding="utf-8")
     assert "general mutable-modifier routine" in text
     assert "Probable:" in text
+    assert "0x0222D154" in text
+    assert "0x0222B500" in text
     assert "Candidate:" in text
     assert "evolution selecting" in text

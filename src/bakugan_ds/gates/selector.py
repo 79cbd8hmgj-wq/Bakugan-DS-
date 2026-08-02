@@ -96,17 +96,17 @@ class BattleTypeSelectorEvidence:
         if not self.types:
             raise WorkspaceError("selector must define at least one battle type")
         type_ids: set[int] = set()
-        for item in self.types:
-            item.validate()
-            if item.type_id in type_ids:
-                raise WorkspaceError(f"duplicate battle type ID: {item.type_id}")
-            type_ids.add(item.type_id)
+        for battle_type in self.types:
+            battle_type.validate()
+            if battle_type.type_id in type_ids:
+                raise WorkspaceError(f"duplicate battle type ID: {battle_type.type_id}")
+            type_ids.add(battle_type.type_id)
         input_names: set[str] = set()
-        for item in self.inputs:
-            item.validate()
-            if item.name in input_names:
-                raise WorkspaceError(f"duplicate selector input name: {item.name}")
-            input_names.add(item.name)
+        for selector_input in self.inputs:
+            selector_input.validate()
+            if selector_input.name in input_names:
+                raise WorkspaceError(f"duplicate selector input name: {selector_input.name}")
+            input_names.add(selector_input.name)
         for rng_call in self.rng_calls:
             rng_call.validate()
         if self.random_range is not None:

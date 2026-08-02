@@ -85,6 +85,19 @@ def _require_bool(value: object, label: str) -> bool:
     return value
 
 
+def _parse_integer(value: object, label: str) -> int:
+    if isinstance(value, bool):
+        raise WorkspaceError(f"{label} must be an integer")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value, 0)
+        except ValueError as exc:
+            raise WorkspaceError(f"{label} must be an integer") from exc
+    raise WorkspaceError(f"{label} must be an integer")
+
+
 def load_context_fields(path: Path) -> tuple[BattleContextField, ...]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -98,7 +111,7 @@ def load_context_fields(path: Path) -> tuple[BattleContextField, ...]:
         try:
             field = BattleContextField(
                 name=str(item["name"]),
-                width_bits=int(item["width_bits"]),
+                width_bits=_parse_integer(item["width_bits"], f"fields[{index}].width_bits"),
                 signed=_require_bool(item["signed"], f"fields[{index}].signed"),
                 owner_structure=str(item["owner_structure"]),
                 access=str(item["access"]),

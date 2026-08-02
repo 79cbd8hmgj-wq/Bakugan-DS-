@@ -1,0 +1,85 @@
+{
+  "rom_profile": "b6re_rev0",
+  "confidence": "confirmed",
+  "scenario": {
+    "mode": "battle_tutorial",
+    "player_bakugan": "Serpenoid",
+    "player_attribute": "Pyrus",
+    "player_level": 1,
+    "controlled_change": "Pyrus Gate Card bonus"
+  },
+  "record_layout": {
+    "record_container_offset": 12,
+    "stride_bytes": 20,
+    "fields": {
+      "0x00": "animated_current_g",
+      "0x02": "target_total_g",
+      "0x04": "base_snapshot_g",
+      "0x06": "gate_attribute_bonus_g"
+    },
+    "address_note": "The record allocation address changes between runs; field offsets and stride remained stable."
+  },
+  "controlled_records": [
+    {
+      "side": "player",
+      "example_record_address": "0x022E5900",
+      "values": {
+        "animated_current_g": 290,
+        "target_total_g": 290,
+        "base_snapshot_g": 190,
+        "gate_attribute_bonus_g": 100
+      },
+      "equation": "190 + 100 = 290"
+    },
+    {
+      "side": "opponent",
+      "example_record_address": "0x022E58EC",
+      "values": {
+        "animated_current_g": 410,
+        "target_total_g": 410,
+        "base_snapshot_g": 230,
+        "gate_attribute_bonus_g": 180
+      },
+      "equation": "230 + 180 = 410"
+    }
+  ],
+  "formula": {
+    "constructor_address": "0x0223CFE8",
+    "initial_base_snapshot": "source_u16_04 + source_u16_06",
+    "initial_base_instructions": [
+      "0x0223D0F0 ldrh r2, [r1, #4]",
+      "0x0223D0F4 ldrh r1, [r1, #6]",
+      "0x0223D0F8 add r1, r2, r1",
+      "0x0223D0FC strh r1, [r6, #12]"
+    ],
+    "gate_attribute_bonus": "lookup(card_id, attribute_id) * 10",
+    "target_total": "base_snapshot_g + gate_attribute_bonus_g",
+    "target_total_instructions": [
+      "0x0223D278 ldrh r2, [r5, #12]",
+      "0x0223D27C ldrh r1, [r5, #18]",
+      "0x0223D288 add r0, r2, r1",
+      "0x0223D28C strh r0, [r5, #14]"
+    ],
+    "display_tween_address": "0x0223DDAC",
+    "display_animation_step": 3
+  },
+  "confidence_boundaries": {
+    "source_u16_04": {
+      "confidence": "probable",
+      "interpretation": "species or stored base G-Power component"
+    },
+    "source_u16_06": {
+      "confidence": "probable",
+      "interpretation": "growth, level, or evolution contribution"
+    },
+    "record_u16_0A": {
+      "confidence": "candidate",
+      "interpretation": "later temporary battle adjustment used by the state function at 0x0221A7D0"
+    }
+  },
+  "excluded_false_positive": {
+    "address": "0x02007EB8",
+    "reason": "The watchpoint fired while overlay decompression reused the same RAM; disassembly identifies a BLZ decode loop rather than G-Power logic."
+  },
+  "repository_boundary": "RAM dumps, screenshots, save states, ROM bytes, and copied guide tables are local evidence and are not committed."
+}

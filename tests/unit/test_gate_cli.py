@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from argparse import Namespace
+import json
 from pathlib import Path
 
 import pytest
@@ -62,13 +63,56 @@ def test_export_rejects_source_controlled_output(
     gate_cli.ensure_local_output(root / "work/reports/gates/full-table.json")
 
 
-def test_report_context_fails_until_task_8(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_report_context_writes_included_and_excluded_fields(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     monkeypatch.setattr(gate_cli, "validate_workspace_profile", lambda workspace: None)
+    evidence = tmp_path / "context.json"
+    evidence.write_text(
+        """{
+          "fields": [
+            {
+              "name": "gate_bonus_g",
+              "width_bits": 16,
+              "signed": false,
+              "owner_structure": "record",
+              "access": "+0x12",
+              "lifetime": "gate",
+              "initialization": "constructor",
+              "reset": "record discarded",
+              "safe_for_hook": true,
+              "confidence": "confirmed",
+              "evidence": "confirmed field",
+              "exclusion_reason": ""
+            },
+            {
+              "name": "gate_owner",
+              "width_bits": 8,
+              "signed": false,
+              "owner_structure": "candidate",
+              "access": "+0x18",
+              "lifetime": "gate",
+              "initialization": "candidate constructor",
+              "reset": "candidate reset",
+              "safe_for_hook": false,
+              "confidence": "candidate",
+              "evidence": "candidate field",
+              "exclusion_reason": "not canonical"
+            }
+          ]
+        }""",
+        encoding="utf-8",
+    )
+    output = tmp_path / "report.json"
     arguments = Namespace(
         gate_command="report-context",
         workspace=Path("w"),
-        output=Path("o"),
-        evidence=Path("e"),
+        output=output,
+        evidence=evidence,
     )
-    with pytest.raises(WorkspaceError, match="Task 8"):
-        gate_cli.run_gate_command(arguments)
+
+    assert gate_cli.run_gate_command(arguments) == 0
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert [item["name"] for item in payload["included"]] == ["gate_bonus_g"]
+    assert [item["name"] for item in payload["excluded"]] == ["gate_owner"]

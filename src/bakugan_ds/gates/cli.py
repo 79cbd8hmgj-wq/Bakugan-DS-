@@ -7,7 +7,8 @@ import sys
 from typing import Any
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.io import load_json_object
+from bakugan_ds.gates.context import context_report, load_context_fields
+from bakugan_ds.gates.io import load_json_object, write_evidence
 from bakugan_ds.gates.legacy import (
     LegacyGateRecord,
     export_legacy_table,
@@ -132,7 +133,9 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
         return 0
     if arguments.gate_command == "report-context":
         validate_workspace_profile(arguments.workspace)
-        raise WorkspaceError(
-            "Gate battle-context reporting is unavailable until Task 8 evidence is confirmed"
-        )
+        output = ensure_local_output(arguments.output)
+        fields = load_context_fields(arguments.evidence)
+        write_evidence(output, context_report(fields))
+        print(f"Wrote confirmed Gate battle-context report: {output}")
+        return 0
     raise WorkspaceError(f"unknown Gate command: {arguments.gate_command}")

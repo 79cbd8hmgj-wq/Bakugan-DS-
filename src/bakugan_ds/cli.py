@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from collections.abc import Sequence
 from pathlib import Path
-import sys
 
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
+from bakugan_ds.gates.cli import add_gate_parser, run_gate_command
 from bakugan_ds.inspection import inspect_rom
 from bakugan_ds.patches.apply import apply_patch_set
 from bakugan_ds.profile import load_profile
@@ -51,6 +52,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     patch_parser.add_argument("workspace", type=Path)
     patch_parser.add_argument("patch_file", type=Path)
+
+    add_gate_parser(subparsers)
     return parser
 
 
@@ -71,6 +74,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_usage(sys.stderr)
         return 2
     try:
+        if arguments.command == "gate":
+            return run_gate_command(arguments)
         if arguments.command == "inspect":
             profile = load_profile(arguments.profile)
             inspection = inspect_rom(
@@ -97,7 +102,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if arguments.command == "rebuild":
             profile = load_profile(arguments.profile)
             output = arguments.output.expanduser().resolve()
-            report = rebuild_rom(
+            build_report = rebuild_rom(
                 arguments.rom,
                 profile,
                 arguments.workspace,
@@ -105,17 +110,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             report_path = output.with_suffix(output.suffix + ".build.json")
             print(
-                f"Rebuilt ROM {output} ({len(report.changes)} changes, "
-                f"sha256 {report.output_sha256}); report: {report_path}"
+                f"Rebuilt ROM {output} ({len(build_report.changes)} changes, "
+                f"sha256 {build_report.output_sha256}); report: {report_path}"
             )
             return 0
         if arguments.command == "patch":
             workspace = arguments.workspace.expanduser().resolve()
             patch_file = arguments.patch_file.expanduser().resolve()
-            report = apply_patch_set(workspace, patch_file)
+            patch_report = apply_patch_set(workspace, patch_file)
             report_path = workspace / "manifests" / f"patch-{patch_file.stem}.json"
             print(
-                f"Applied {len(report.applied)} patches to {workspace}; report: {report_path}"
+                f"Applied {len(patch_report.applied)} patches to {workspace}; "
+                f"report: {report_path}"
             )
             return 0
     except UnsupportedRomError as exc:

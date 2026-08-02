@@ -1,0 +1,4 @@
+card_id,label,card_class,asset_code,confidence,evidence_id
+19,Juggernoid,gold,119,confirmed,gate-id-019
+20,Robotallion,gold,120,confirmed,gate-id-020
+22,Serpenoid,gold,122,confirmed,gate-id-022

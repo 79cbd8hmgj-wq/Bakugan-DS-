@@ -1,0 +1,100 @@
+{
+  "comparison_cases": [
+    {"card_id": 19, "label": "Juggernoid", "metadata_record": [0, 0, 0, 1], "selected_type_id": 0, "selected_type_label": "Scratch"},
+    {"card_id": 34, "label": "Warius", "metadata_record": [0, 0, 3, 1], "selected_type_id": 3, "selected_type_label": "Spin"},
+    {"card_id": 40, "label": "Fire Pit", "metadata_record": [0, 1, 1, 0], "selected_type_id": 1, "selected_type_label": "Timing"},
+    {"card_id": 63, "label": "The Spires", "metadata_record": [0, 1, 2, 0], "selected_type_id": 2, "selected_type_label": "Pop"},
+    {"card_id": 73, "label": "Heavy Load", "metadata_record": [0, 2, 5, 2], "selected_type_id": 5, "selected_type_label": "Bound"},
+    {"card_id": 85, "label": "Lockdown", "metadata_record": [0, 2, 4, 0], "selected_type_id": 4, "selected_type_label": "Trace"}
+  ],
+  "complete_card_metadata_committed": false,
+  "dispatch": {
+    "component": "overlay_0007",
+    "component_offset": 164860,
+    "component_offset_hex": "0x000283FC",
+    "instruction_sha256": "535872d7c9cb5b45582ae4c85e4aff7a4e3ea460dde7931ae4d97a6784fea2cd",
+    "runtime_address": 35919932,
+    "runtime_address_hex": "0x0224183C",
+    "type_constructors": [
+      {"branch_address": "0x02241864", "constructor": "0x0221D4D8", "type_id": 0},
+      {"branch_address": "0x02241880", "constructor": "0x0221E3B8", "type_id": 1},
+      {"branch_address": "0x0224189C", "constructor": "0x0221F730", "type_id": 2},
+      {"branch_address": "0x022418B8", "constructor": "0x02220060", "type_id": 3},
+      {"branch_address": "0x022418D4", "constructor": "0x02220CC8", "type_id": 4},
+      {"branch_address": "0x022418F0", "constructor": "0x022222EC", "type_id": 5}
+    ]
+  },
+  "forced_paths": [
+    {
+      "confidence": "confirmed",
+      "evidence": "Overlay-7 switch at 0x022417A8 reads battle-data byte +0x07 and overwrites battle object +0x20 for codes 1-6. Block SHA-256 34399a322bd869f4e39db181bedc97302db52767f9f7a9ea9ee2ebbc0662f60b.",
+      "mapping": {"1": 0, "2": 3, "3": 1, "4": 2, "5": 4, "6": 5},
+      "name": "battle_override_code",
+      "source": "battle data byte +0x07"
+    }
+  ],
+  "forced_path_details": {
+    "code_0": "preserve the existing selected type",
+    "code_7": "preserve the existing selected type",
+    "code_8": "call 0x0223E180, which averages two halfwords, then preserve the selected type",
+    "explicit_constructor_argument": "When the constructor type argument is not -1, 0x0223E344 stores it directly instead of calling the metadata selector."
+  },
+  "format_version": 1,
+  "inputs": [
+    {"confidence": "confirmed", "evidence": "ARM9 accessor 0x02065C0C receives global card ID and computes card_id * 4.", "influence": "indexes the four-byte global card metadata record", "name": "card_id", "source": "selected Gate/global card ID"},
+    {"confidence": "confirmed", "evidence": "Selector 0x022433AC calls accessor 0x02065C0C with field index 2 and returns that byte unchanged.", "influence": "direct fixed battle-type ID", "name": "metadata_field_2", "source": "ARM9 table 0x020A1258 + card_id * 4 + 2"},
+    {"confidence": "confirmed", "evidence": "Constructor block 0x0223E338 stores the explicit argument at 0x0223E344 when it is not -1; otherwise it stores the helper result at 0x0223E354.", "influence": "direct override of normal metadata selection", "name": "explicit_type_argument", "source": "battle-object constructor argument"},
+    {"confidence": "confirmed", "evidence": "Switch block beginning 0x022417A8 maps override codes 1-6 to fixed type IDs and writes object +0x20.", "influence": "scripted fixed override after normal selection", "name": "battle_override_code", "source": "battle data byte +0x07"}
+  ],
+  "metadata_accessor": {
+    "component": "arm9",
+    "field_index": 2,
+    "function_sha256": "0f358105cee373f7021ce8513b5e3bec5283f66fe7cbc32d669089374fc0dcbc",
+    "record_count": 213,
+    "record_stride": 4,
+    "runtime_address": 33971212,
+    "runtime_address_hex": "0x02065C0C",
+    "table_address": 34214488,
+    "table_address_hex": "0x020A1258",
+    "table_sha256": "af35b1e955f4a61c81be7ac336fa42b1e87681de2d111688ccdbc0d037b2608c"
+  },
+  "normal_influence": {
+    "attribute_id": {"confidence": "confirmed_absent", "evidence": "The selector signature and metadata index use only card ID and fixed field index 2; attribute ID is not read."},
+    "bakugan_id": {"confidence": "confirmed_absent", "evidence": "The normal selector and metadata accessor do not receive a Bakugan ID."},
+    "gate_card": {"confidence": "confirmed", "evidence": "Different selected card IDs read different fixed field-2 values; six selected examples cover all type IDs."}
+  },
+  "profile_id": "b6re_rev0",
+  "random_range": null,
+  "result_storage": {
+    "component": "overlay_0007",
+    "component_offset": 151316,
+    "confidence": "confirmed",
+    "evidence": "Fallback selector result is stored to battle object byte +0x20 at 0x0223E354. The same constructor block stores an explicit input at 0x0223E344. Block SHA-256 b1fb46f46149a2cca760289f5d8cdb1d653010736dc2d861ee56e5ab68cfd56e.",
+    "runtime_address": 35906388
+  },
+  "rng_calls": [],
+  "selection_mode": "fixed_metadata",
+  "selector": {
+    "component": "overlay_0007",
+    "component_offset": 171884,
+    "confidence": "confirmed",
+    "evidence": "Function 0x022433AC obtains the selected card ID, calls ARM9 accessor 0x02065C0C with field index 2, and returns the byte. Function SHA-256 a2ca7b7b527814153df7c077fe02fa3b0617a7c51c808def3c3c6fccc5247e3c.",
+    "runtime_address": 35926956
+  },
+  "type_distribution_all_global_ids": {"0": 129, "1": 16, "2": 16, "3": 20, "4": 16, "5": 16},
+  "type_label_source": {
+    "id_assignment": "ROM metadata and six-way dispatch",
+    "labels": "selected user-supplied Gate Card reference rows cross-checked against ROM-indexed card names and metadata",
+    "complete_reference_table_committed": false
+  },
+  "types": [
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 0 dispatches through case 0; Juggernoid is a selected labeled cross-check.", "label": "Scratch", "type_id": 0},
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 1 dispatches through case 1; Fire Pit is a selected labeled cross-check.", "label": "Timing", "type_id": 1},
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 2 dispatches through case 2; The Spires is a selected labeled cross-check.", "label": "Pop", "type_id": 2},
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 3 dispatches through case 3; Warius is a selected labeled cross-check.", "label": "Spin", "type_id": 3},
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 4 dispatches through case 4; Lockdown is a selected labeled cross-check.", "label": "Trace", "type_id": 4},
+    {"confidence": "confirmed", "evidence": "Metadata field 2 value 5 dispatches through case 5; Heavy Load is a selected labeled cross-check.", "label": "Bound", "type_id": 5}
+  ],
+  "unobserved_inputs": ["difficulty", "arena", "AI identity", "story state"],
+  "uses_rng_in_normal_path": false
+}

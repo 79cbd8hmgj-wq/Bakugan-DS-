@@ -1,0 +1,151 @@
+{
+  "ai_path": {
+    "confidence": "confirmed",
+    "evidence": "The same overlay-7 constructor at 0x0223CFE8 creates Gate-adjusted records for both opponent and player; normalized runtime captures observed 230 + 180 = 410 and 190 + 100 = 290 in one battle.",
+    "shared": true
+  },
+  "complete_runtime_capture_committed": false,
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "reuse_supported": false,
+  "scripted_paths": [
+    {
+      "bypass": "The built-in skip bypasses natural minigame completion after the normal Gate calculation.",
+      "confidence": "confirmed",
+      "evidence": "A clean rebuilt ROM completed the tutorial, showed 230 + 180 = 410 and 190 + 100 = 290, reached completion dialogue, returned to park story, and accepted input.",
+      "name": "tutorial_builtin_skip",
+      "shared_normal_path_through_battle_started": true
+    }
+  ],
+  "state_machine": {
+    "component": "overlay_0007",
+    "component_base": "0x02219440",
+    "dispatcher_address": "0x0223EA60",
+    "dispatcher_address_hex": "0x0223EA60",
+    "dispatcher_component_offset": "0x00025620",
+    "dispatcher_instruction_sha256": "38945413b73b5cad918c0019a18ed6a396d3ea0ec579169c1567a6c3e2e1534e",
+    "state_field_offset": 12,
+    "state_range": [0, 8]
+  },
+  "transitions": [
+    {
+      "address": "0x022433AC",
+      "card_id_source": "Candidate selected-Gate lookup derived from battle object +0x38 halfword +0x04 through ARM9 helper 0x02065C0C; exact field name remains unresolved.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x00029F6C",
+      "confidence": "candidate",
+      "evidence": "Function 0x022433AC reads the battle object's shared data, invokes helper 0x02065C0C with selector 2, returns one byte, and the constructor stores it at object +0x20 when no explicit selector was supplied. Instruction-range SHA-256 a2ca7b7b527814153df7c077fe02fa3b0617a7c51c808def3c3c6fccc5247e3c.",
+      "from_state": "placed",
+      "owner_source": "Battle object participant context; the exact Gate-owner field is not yet confirmed.",
+      "scenario": "normal_shared_battle",
+      "sequence": 0,
+      "to_state": "selected",
+      "trigger": "Fallback active-Gate selection during battle-object construction"
+    },
+    {
+      "address": "0x0223E334",
+      "card_id_source": "Gate card ID passed to ARM9 helper 0x02065BF4 during the called constructor; the upstream owning field remains unnamed.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x00024EF4",
+      "confidence": "confirmed",
+      "evidence": "At 0x0223E334 the battle object calls confirmed G-Power constructor 0x0223CFE8. Runtime watchpoints prove that constructor reaches the Gate lookup for both combatants. Call instruction SHA-256 9d23f3a61b81a92821c62b35aa53371b27c4c4dfb4e505ee4d4db769cb78322d.",
+      "from_state": "selected",
+      "owner_source": "Shared opponent/player combatant records produced by 0x0223CFE8.",
+      "scenario": "normal_shared_battle",
+      "sequence": 1,
+      "to_state": "activated",
+      "trigger": "Construct battle records and evaluate the selected Gate"
+    },
+    {
+      "address": "0x0223D288",
+      "card_id_source": "ARM9 Gate lookup result stored in combatant record +0x12 before the target-total store.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x00023E48",
+      "confidence": "confirmed",
+      "evidence": "0x0223D288 adds compressed base snapshot and Gate bonus; 0x0223D28C stores target total. Runtime captures observed both opponent and player equations. Instruction SHA-256 8caaf927c5702aa9c1041697d0c2f8000ca0c64f9cc9c9a810ce36a08783ac38.",
+      "from_state": "activated",
+      "owner_source": "Combatant record identity and side within the shared 20-byte record array.",
+      "scenario": "normal_shared_battle",
+      "sequence": 2,
+      "to_state": "battle_started",
+      "trigger": "Commit Gate-adjusted target G for both combatants"
+    },
+    {
+      "address": "0x0223ED00",
+      "card_id_source": "Selected Gate remains associated with the battle object; result processing consumes the completed battle rather than re-reading the table.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x000258C0",
+      "confidence": "confirmed",
+      "evidence": "State 4 of dispatcher 0x0223EA60 calls 0x0223F918 and advances only when it returns nonzero. Earlier progression analysis independently identifies 0x0223F918 as the battle-result state. Instruction SHA-256 05f49fcb446e85cc7d8b00b803484f341db5695c1ee6872f32432839dd2d98b3.",
+      "from_state": "battle_started",
+      "owner_source": "Battle result object shared by the two combatants.",
+      "scenario": "normal_shared_battle",
+      "sequence": 3,
+      "to_state": "resolved",
+      "trigger": "Battle-result state reports completion"
+    },
+    {
+      "address": "0x0223EEDC",
+      "card_id_source": "No new Gate lookup occurs; the completed battle object is marked finished.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x00025A9C",
+      "confidence": "probable",
+      "evidence": "State 8 writes completion halfword 1 through the owner chain and sets object done byte +0x04. Static control flow proves completion, while the higher-level semantic label reset remains probable. Instruction SHA-256 92cdcbd82872910cd4181a062e0732abaebcbc07b0d0f533141d50859762a116.",
+      "from_state": "resolved",
+      "owner_source": "Owning scene object reached through battle object +0x08.",
+      "scenario": "normal_shared_battle",
+      "sequence": 4,
+      "to_state": "reset",
+      "trigger": "Final battle state marks the scene object complete"
+    },
+    {
+      "address": "0x02271450",
+      "card_id_source": "Cut-in event type byte +0x19; event type 4 indexes cutin_gate_card_get. The individual Gate ID is not consumed by this cut-in constructor.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x00058010",
+      "confidence": "probable",
+      "evidence": "Generic cut-in constructor stores event type at +0x19 and calls 0x022716E8. Table 0x0227C02C maps index 4 to string cutin_gate_card_get; table SHA-256 9ad7766f4b0a49d48023b7b5bb1c1bdb553592965ca3c2d67141e1edcf2a15d4. Constructor-range SHA-256 15d1434807f92b4660ce71b977c2730e76cc2750dc54646e2b322ee062dbe41c.",
+      "from_state": "resolved",
+      "owner_source": "Cut-in actor slot byte +0x18; interpreting it as the capturing participant remains probable.",
+      "scenario": "gate_capture_cutin",
+      "sequence": 0,
+      "to_state": "captured",
+      "trigger": "Event type 4 creates the Gate-card-get result cut-in"
+    },
+    {
+      "address": "0x0227160C",
+      "card_id_source": "Gate-card-get event object; no individual Gate ID lookup occurs during completion.",
+      "component": "overlay_0007",
+      "component_base": "0x02219440",
+      "component_offset": "0x000581CC",
+      "confidence": "probable",
+      "evidence": "Cut-in state 3 either sets the object done byte or writes the owning scene completion halfword and then marks done. Instruction SHA-256 30a8b6b230a4ce417b0090e3b2b450cb9f33c99a37b229f4837f0a09f1c11763.",
+      "from_state": "captured",
+      "owner_source": "Owning cut-in scene object reached through object +0x08 when completion propagation is enabled.",
+      "scenario": "gate_capture_cutin",
+      "sequence": 1,
+      "to_state": "reset",
+      "trigger": "Gate-card-get cut-in finishes and releases its scene"
+    }
+  ],
+  "unresolved": [
+    {
+      "reason": "No evidence yet distinguishes physical Gate removal from scene-object cleanup or capture bookkeeping.",
+      "state": "removed"
+    },
+    {
+      "reason": "No confirmed activation counter or repeated-use transition was found in the current tutorial/static evidence.",
+      "state": "reused"
+    },
+    {
+      "field": "gate_owner",
+      "reason": "The shared battle and cut-in paths expose side/actor fields, but the canonical Gate-owner field is not yet semantically confirmed."
+    }
+  ]
+}

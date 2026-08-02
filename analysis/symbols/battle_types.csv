@@ -1,0 +1,6 @@
+component,runtime_address,component_offset,name,confidence,evidence
+arm9,0x02065C0C,0x00065C0C,GetCardMetadataByte,confirmed,Reads one byte from 0x020A1258 + card_id * 4 + field_index.
+overlay_0007,0x022433AC,0x00029F6C,SelectGateBattleType,confirmed,Calls GetCardMetadataByte with field index 2 and returns the fixed type ID.
+overlay_0007,0x0223E354,0x00024F14,StoreSelectedBattleType,confirmed,Stores fallback selector result to battle object byte +0x20.
+overlay_0007,0x022417A8,0x00028368,ApplyBattleTypeOverride,confirmed,Maps battle-data override codes 1-6 to fixed type IDs.
+overlay_0007,0x0224183C,0x000283FC,DispatchBattleType,confirmed,Validates type 0-5 and dispatches to one of six minigame constructors.

@@ -1,0 +1,89 @@
+name: Python CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test, lint, and type-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project and development tools
+        run: python -m pip install --upgrade pip && python -m pip install -e '.[dev]'
+
+      - name: Collect changed Python files
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --name-only --diff-filter=ACMRT \
+              "origin/$BASE_REF...HEAD" -- '*.py' > changed-python.txt
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --name-only --diff-filter=ACMRT HEAD^ HEAD -- '*.py' > changed-python.txt
+          else
+            git ls-files '*.py' > changed-python.txt
+          fi
+          grep '^src/bakugan_ds/.*\.py$' changed-python.txt > changed-source.txt || true
+          cat changed-python.txt
+
+      - name: Compile Python sources
+        run: python -m compileall -q src tests tools
+
+      - name: Run Ruff on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -s changed-python.txt ]]; then
+            xargs python -m ruff check < changed-python.txt
+          fi
+
+      - name: Run mypy on changed package files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -s changed-source.txt ]]; then
+            xargs python -m mypy < changed-source.txt
+          fi
+
+      - name: Run test suite
+        run: python -m pytest -v
+
+      - name: Check changed-file whitespace
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --check "origin/$BASE_REF...HEAD"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            git diff --check --cached
+          fi

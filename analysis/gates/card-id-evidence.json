@@ -1,0 +1,155 @@
+{
+  "attribute_source": {
+    "confidence": "confirmed",
+    "decoded_sha256": "323e99f7ac4f86ca30468ac96affd862fe2eb428e57293625afa4bb719167da4",
+    "entry_count": 12,
+    "file_id": 2708,
+    "index_semantics": "entries 0 through 5 name attribute IDs 0 through 5",
+    "path": "font/mes_Bakugan.mes",
+    "raw_sha256": "b74a7cfdf1f34c2a5b8b02796a4beffc2c2506fb4c7bc1f23b19b187d4619cd7"
+  },
+  "attributes": [
+    {
+      "attribute_id": 0,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-0",
+      "name": "pyrus"
+    },
+    {
+      "attribute_id": 1,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-1",
+      "name": "aquos"
+    },
+    {
+      "attribute_id": 2,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-2",
+      "name": "subterra"
+    },
+    {
+      "attribute_id": 3,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-3",
+      "name": "haos"
+    },
+    {
+      "attribute_id": 4,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-4",
+      "name": "darkus"
+    },
+    {
+      "attribute_id": 5,
+      "confidence": "confirmed",
+      "evidence_id": "attribute-message-5",
+      "name": "ventus"
+    }
+  ],
+  "card_name_source": {
+    "confidence": "confirmed",
+    "decoded_sha256": "5a30adeb411f205ff90ad2e22d3f0adb78db5662cfbbbb2f4ff06a16ba262392",
+    "entry_count": 213,
+    "file_id": 2762,
+    "index_semantics": "message entry index is the canonical global card ID",
+    "path": "font/mes_CardName.mes",
+    "raw_sha256": "76a03522a5031762eb51d07b72a19331bc06a5b6dc0eab60e227a199466d4c4e"
+  },
+  "complete_name_table_committed": false,
+  "external_reference": {
+    "id_assignment": "forbidden",
+    "role": "column-label and selected-value cross-check only",
+    "sha256": "d0711ec8fcb3c7904fd164ac276330f544b3fedce1ebe9c1628a583744dcca6e"
+  },
+  "format_version": 1,
+  "guide_order_used_for_ids": false,
+  "mappings": [
+    {
+      "card_id": 19,
+      "confidence": "confirmed",
+      "evidence_id": "gate-id-019",
+      "label": "Juggernoid",
+      "runtime_case": "global-card-domain-message-index-19"
+    },
+    {
+      "card_id": 20,
+      "confidence": "confirmed",
+      "evidence_id": "gate-id-020",
+      "label": "Robotallion",
+      "runtime_case": "global-card-domain-message-index-20"
+    },
+    {
+      "card_id": 22,
+      "confidence": "confirmed",
+      "evidence_id": "gate-id-022",
+      "label": "Serpenoid",
+      "runtime_case": "global-card-domain-message-index-22"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "selected_rows": [
+    {
+      "attribute_order": [
+        "pyrus",
+        "aquos",
+        "subterra",
+        "haos",
+        "darkus",
+        "ventus"
+      ],
+      "bonuses_g": [80, 160, 70, 100, 70, 40],
+      "card_id": 19,
+      "evidence_id": "gate-id-019",
+      "graphic_asset": {
+        "code": 119,
+        "file_id": 6004,
+        "path": "Game/Card/Graphic/Large/card_l_119.nce_ncg1D.bin",
+        "sha256": "d071333b5ce22c6fcf1b2db99a23437d7ee0a6cdcf33b6e4083dbaeb440fb595"
+      },
+      "label": "Juggernoid",
+      "raw_values": [8, 16, 7, 10, 7, 4]
+    },
+    {
+      "attribute_order": [
+        "pyrus",
+        "aquos",
+        "subterra",
+        "haos",
+        "darkus",
+        "ventus"
+      ],
+      "bonuses_g": [160, 110, 90, 120, 90, 40],
+      "card_id": 20,
+      "evidence_id": "gate-id-020",
+      "graphic_asset": {
+        "code": 120,
+        "file_id": 6007,
+        "path": "Game/Card/Graphic/Large/card_l_120.nce_ncg1D.bin",
+        "sha256": "475dbb1c0d98641d78efd15232111e572b5ce43bc619de16206d5366a652818e"
+      },
+      "label": "Robotallion",
+      "raw_values": [16, 11, 9, 12, 9, 4]
+    },
+    {
+      "attribute_order": [
+        "pyrus",
+        "aquos",
+        "subterra",
+        "haos",
+        "darkus",
+        "ventus"
+      ],
+      "bonuses_g": [180, 60, 90, 140, 130, 50],
+      "card_id": 22,
+      "evidence_id": "gate-id-022",
+      "graphic_asset": {
+        "code": 122,
+        "file_id": 6013,
+        "path": "Game/Card/Graphic/Large/card_l_122.nce_ncg1D.bin",
+        "sha256": "397a043dcde6448f6b445de3ffafc638721a88de023afa9143932911fb7b6e9d"
+      },
+      "label": "Serpenoid",
+      "raw_values": [18, 6, 9, 14, 13, 5]
+    }
+  ]
+}

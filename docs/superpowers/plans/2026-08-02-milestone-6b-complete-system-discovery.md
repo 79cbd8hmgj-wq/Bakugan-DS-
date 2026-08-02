@@ -28,6 +28,7 @@
 - Clean executable launches are required for final runtime observations; executable save states are not final evidence.
 - Failed analysis, instrumentation, serialization, or patch preparation must leave the workspace unchanged.
 - Milestone 6B ends with no live System 2.0 gameplay effect.
+- Follow `.github/workflows/ci.yml`: compile and test the complete repository, run Ruff on Python files changed from `main`, run strict mypy on changed package source files, and run `git diff --check`.
 
 ## File Map
 
@@ -146,7 +147,7 @@ def test_readiness_allows_only_arena_id_to_be_deferred() -> None:
 - [ ] **Step 3: Run `python -m pytest tests/unit/test_gate_discovery.py tests/unit/test_gate_readiness.py -v`; confirm imports fail.**
 - [ ] **Step 4: Implement strict immutable models and deterministic loaders.** Reject missing lifecycle fields, unsupported widths, empty evidence, deferred non-arena fields, and confirmed-absent fields without replacement-state plans.
 - [ ] **Step 5: Commit the exact requirement manifest.** It must list these mandatory keys: `gate_owner`, `challenging_participant`, `combatant_identity`, `human_ai_identity`, `effect_target`, `match_score`, `captured_gate_count`, `victory_threshold`, `gate_activation_count`, `gate_reuse_state`, `gate_capture_state`, `gate_removal_state`, `battle_type_history`, `weighted_rng`, `ability_available`, `ability_selected`, `ability_used`, `ability_resolved`, `landing_result`, `shot_condition`, `difficulty`, every effect timing phase, loader operations, cache lifecycle, and version-1 record geometry. It must list only `arena_id` with `allow_deferred: true`.
-- [ ] **Step 6: Run focused tests, compileall, Ruff, and mypy.**
+- [ ] **Step 6: Run focused tests, compileall, changed-file Ruff, and changed-source mypy.**
 - [ ] **Step 7: Commit:** `git commit -m "feat: add Gate discovery readiness schema"`.
 
 ---
@@ -475,7 +476,7 @@ def test_gate_record_v1_is_exactly_40_bytes() -> None:
 - [ ] **Step 3: Validate Q8.8 percentage bounds and six-element signed attribute/unsigned weight vectors.** Reject unsupported IDs, flags, target modes, phases, and nonzero reserved fields.
 - [ ] **Step 4: Generate `analysis/gates/system2-record-v1.json` from the exact layout and readiness-confirmed enum domains.** Arena-dependent condition/effect IDs must be absent from version 1.
 - [ ] **Step 5: Document all offsets, scaling, CRC coverage, fallback behavior, and versioning rules.**
-- [ ] **Step 6: Run record tests, compileall, Ruff, and mypy.**
+- [ ] **Step 6: Run record tests, compileall, changed-file Ruff, and changed-source mypy.**
 - [ ] **Step 7: Commit:** `git commit -m "feat: define Gate System 2 record format"`.
 
 ---
@@ -549,7 +550,7 @@ def test_readiness_command_fails_when_non_arena_field_is_probable(tmp_path: Path
 - [ ] **Step 4: Require `deferred == ["arena_id"]` and zero failures.** Missing arena evidence is not acceptable; it must be explicitly present as the allowed deferred field.
 - [ ] **Step 5: Validate all committed artifacts and generate `analysis/gates/milestone-6c-readiness.json`.** Do not manually set readiness to true; it must be produced by the validator.
 - [ ] **Step 6: Add artifact tests prohibiting raw bytes, RAM dumps, save states, screenshots, complete original tables, and debugger logs.**
-- [ ] **Step 7: Run CLI, readiness, artifact, compileall, Ruff, and mypy checks.**
+- [ ] **Step 7: Run CLI, readiness, artifact, compileall, changed-file Ruff, and changed-source mypy checks.**
 - [ ] **Step 8: Commit:** `git commit -m "feat: add Gate discovery readiness gate"`.
 
 ---
@@ -571,9 +572,15 @@ def test_readiness_command_fails_when_non_arena_field_is_probable(tmp_path: Path
 
 ```bash
 python -m compileall -q src tests tools
-python -m ruff check src tests tools
-python -m mypy src/bakugan_ds
 python -m pytest -v
+CHANGED_PYTHON="$(git diff --name-only --diff-filter=ACMRT main...HEAD -- '*.py')"
+if [ -n "$CHANGED_PYTHON" ]; then
+  printf '%s\n' "$CHANGED_PYTHON" | xargs python -m ruff check
+fi
+CHANGED_SOURCE="$(printf '%s\n' "$CHANGED_PYTHON" | grep '^src/bakugan_ds/.*\.py$' || true)"
+if [ -n "$CHANGED_SOURCE" ]; then
+  printf '%s\n' "$CHANGED_SOURCE" | xargs python -m mypy
+fi
 BAKUGAN_DS_ROM="$BAKUGAN_DS_ROM" \
 BAKUGAN_DS_RUNTIME_ARM9="$BAKUGAN_DS_RUNTIME_ARM9" \
 python -m pytest -m integration -v

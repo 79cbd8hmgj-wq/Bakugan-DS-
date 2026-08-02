@@ -1,5 +1,7 @@
 {
+  "format_version": 1,
   "rom_profile": "b6re_rev0",
+  "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
   "confidence": "confirmed",
   "scenario": {
     "mode": "battle_tutorial",
@@ -7,6 +9,11 @@
     "player_attribute": "Pyrus",
     "player_level": 1,
     "controlled_change": "Pyrus Gate Card bonus"
+  },
+  "component": {
+    "name": "overlay_0007",
+    "load_address": "0x02219440",
+    "decoded_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
   },
   "record_layout": {
     "participant_entry_stride_bytes": 20,
@@ -45,22 +52,71 @@
       "equation": "190 + 100 = 290"
     }
   ],
+  "stat_source_capture": {
+    "breakpoint_pc": "0x0223D0F0",
+    "first_record": {
+      "runtime_address": "0x022E264C",
+      "raw_hex": "00004000e60000001c020117",
+      "u16_04_form_base_g": 230,
+      "u16_06_progression_bonus_g": 0
+    },
+    "second_record": {
+      "runtime_address": "0x022E24EC",
+      "raw_hex": "00000100be00000016000113",
+      "u16_04_form_base_g": 190,
+      "u16_06_progression_bonus_g": 0
+    }
+  },
   "formula": {
     "constructor_address": "0x0223CFE8",
+    "constructor_end": "0x0223D3E8",
+    "caller_address": "0x0223E334",
     "initial_base_snapshot": "source_u16_04 + source_u16_06",
     "initial_base_instructions": [
-      "0x0223D0F0 ldrh r2, [r1, #4]",
-      "0x0223D0F4 ldrh r1, [r1, #6]",
-      "0x0223D0F8 add r1, r2, r1",
-      "0x0223D0FC strh r1, [r6, #12]"
+      {
+        "address": "0x0223D0F0",
+        "word": "0xE1D120B4",
+        "assembly": "ldrh r2, [r1, #4]"
+      },
+      {
+        "address": "0x0223D0F4",
+        "word": "0xE1D110B6",
+        "assembly": "ldrh r1, [r1, #6]"
+      },
+      {
+        "address": "0x0223D0F8",
+        "word": "0xE0821001",
+        "assembly": "add r1, r2, r1"
+      },
+      {
+        "address": "0x0223D0FC",
+        "word": "0xE1C610BC",
+        "assembly": "strh r1, [r6, #12]"
+      }
     ],
-    "gate_attribute_bonus": "lookup(card_id, attribute_id) * 10",
+    "gate_attribute_bonus": "gate_table[card_id * 6 + attribute_id] * 10",
     "target_total": "base_snapshot_g + gate_attribute_bonus_g",
     "target_total_instructions": [
-      "0x0223D278 ldrh r2, [r5, #12]",
-      "0x0223D27C ldrh r1, [r5, #18]",
-      "0x0223D288 add r0, r2, r1",
-      "0x0223D28C strh r0, [r5, #14]"
+      {
+        "address": "0x0223D278",
+        "word": "0xE1D520BC",
+        "assembly": "ldrh r2, [r5, #12]"
+      },
+      {
+        "address": "0x0223D27C",
+        "word": "0xE1D511B2",
+        "assembly": "ldrh r1, [r5, #18]"
+      },
+      {
+        "address": "0x0223D288",
+        "word": "0xE0820001",
+        "assembly": "add r0, r2, r1"
+      },
+      {
+        "address": "0x0223D28C",
+        "word": "0xE1C500BE",
+        "assembly": "strh r0, [r5, #14]"
+      }
     ],
     "display_tween_address": "0x0223DDAC",
     "display_animation_step": 3
@@ -100,13 +156,15 @@
     "helper_address": "0x02065BF4",
     "table_address": "0x020A15AC",
     "helper_confidence": "confirmed",
+    "table_confidence": "confirmed",
+    "row_width": 6,
+    "value_scale": 10,
     "confirmed_code_behavior": "The helper indexes a six-byte-per-card table with card_id * 6 + attribute_id and returns one unsigned byte; overlay 7 multiplies it by 10 before storage."
   },
   "source_components": {
     "0x04": {
       "name": "form_base_g",
       "functional_confidence": "confirmed",
-      "tutorial_value": 190,
       "reference_role": "published level-1 G-Power"
     },
     "0x06": {
@@ -133,13 +191,13 @@
       "confidence": "confirmed_function_probable_semantics",
       "interpretation": "additive progression bonus; level-growth meaning is probable until a nonzero leveled sample is captured"
     },
-    "record_u16_0A": {
-      "confidence": "candidate",
-      "interpretation": "later temporary battle adjustment used by the state function at 0x0221A7D0"
-    },
     "evolution_representation": {
       "confidence": "probable",
       "interpretation": "evolution selects a different form/base entry rather than populating source +0x06; not directly observed"
+    },
+    "later_battle_modifier": {
+      "confidence": "candidate",
+      "interpretation": "participant field +0x0A is used by later target rewrites, but its Ability Card/minigame semantics are unresolved"
     }
   },
   "excluded_false_positive": {

@@ -1,8 +1,42 @@
 # Milestone 6A Verification Record
 
-## Fresh verification completed
+## GitHub Actions verification
 
-The focused Gate Card System 2.0 foundation harness produced:
+Pull request #14 now runs the repository's Python verification workflow on Ubuntu 24.04 with Python 3.11.
+
+Workflow run `30747686566` completed successfully against branch head `4f99a12c380a55bf0d4dd416738a9a7b9b69930f`.
+
+Passed checks:
+
+- editable installation with the declared development dependencies;
+- `python -m compileall -q src tests tools`;
+- Ruff on every Python file changed by the pull request;
+- strict mypy on all 13 changed package source files;
+- the complete repository pytest suite;
+- `git diff --check` against `main`.
+
+The test result was:
+
+```text
+237 collected
+226 passed
+11 skipped
+0 failed
+```
+
+The eleven skips are expected environment-gated checks requiring a user-supplied ROM, runtime-decompressed ARM9 image, decoded overlay 7, or other local reverse-engineering input. No integration test failed.
+
+During CI enablement, the workflow found and the branch corrected:
+
+- changed-file Ruff formatting findings;
+- eleven strict typing defects in new Gate evidence parsers and CLI variables;
+- one stale core-G validation test that still expected an older evidence schema.
+
+The corrected core-G test now validates the current clean tutorial exit, responsive story return, high-G constructor cases, preserved mutable modifiers, and unscaled Gate bonuses.
+
+## Focused Gate verification
+
+Before full CI was available, the focused Gate Card System 2.0 harness produced:
 
 ```text
 63 passed
@@ -10,15 +44,12 @@ The focused Gate Card System 2.0 foundation harness produced:
 0 failed
 ```
 
-The four skipped tests require the repository's complete historical workspace extractor. The focused execution harness intentionally contains only a stub for that older subsystem, so setting the exact-ROM environment variables produces `NotImplementedError` during fixture setup rather than exercising the branch code.
+It also confirmed:
 
-The following checks passed in the focused harness:
-
-- Python compilation for the new Gate package and focused tests;
-- `bakugan-ds gate --help` with `inspect`, `export-legacy`, and `report-context`;
-- parsing and final-newline validation for all six committed `analysis/gates/*.json` artifacts;
-- placeholder scan for `TODO`, `TBD`, and `FIXME`;
-- all Gate unit and artifact tests.
+- `bakugan-ds gate --help` exposes `inspect`, `export-legacy`, and `report-context`;
+- all six committed `analysis/gates/*.json` artifacts parse and end with a newline;
+- the placeholder scan for `TODO`, `TBD`, and `FIXME` is empty;
+- all Gate unit and artifact tests pass.
 
 ## Direct exact-ROM verification
 
@@ -35,17 +66,15 @@ A separate direct verifier used the user-supplied supported ROM, runtime-decompr
 - raw-LZ10 trailer append leaves native decoded card-name messages byte-identical;
 - overlay-7 RAM/BSS metadata and the original battle-arena boundary literal.
 
-The verifier completed with:
+The direct verifier completed with:
 
 ```text
 exact ROM/runtime verification passed
 gate_table_records=213 selector_cases=6 hook_sites=4 card_names=213
 ```
 
-## Unavailable checks
+## Verification boundary
 
-`ruff` and `mypy` are not installed in the execution container, so no success is claimed for those commands.
+Public CI cannot contain or download the copyrighted ROM or extracted runtime binaries. The corresponding integration tests therefore remain environment-gated and are supplemented by the direct exact-ROM verification above.
 
-A complete checkout of the repository could not be obtained because direct GitHub cloning and archive download failed DNS resolution in the execution container. The available GitHub connector can read and write repository files but cannot start a fresh workflow run. Therefore, the full pre-existing repository suite has not been rerun for this branch.
-
-The pull request remains draft until the complete repository suite, configured Ruff checks, and configured mypy checks are run in a normal checkout or CI environment.
+Milestone 6A is ready for normal pull-request review. It does not implement or claim a System 2.0 gameplay effect; the first prototype remains assigned to Milestone 6B.

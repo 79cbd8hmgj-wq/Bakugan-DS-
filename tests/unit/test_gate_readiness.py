@@ -4,19 +4,19 @@ import json
 from pathlib import Path
 
 import pytest
+
+from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.discovery import (
     DiscoveryArtifact,
     Presence,
     RuntimeFieldEvidence,
 )
+from bakugan_ds.gates.model import Confidence
 from bakugan_ds.gates.readiness import (
     Requirement,
     evaluate_readiness,
     load_requirements,
 )
-
-from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.model import Confidence
 
 
 def field(

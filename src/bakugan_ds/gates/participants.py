@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.model import Confidence, SUPPORTED_PROFILE_ID
+from bakugan_ds.gates.model import SUPPORTED_PROFILE_ID, Confidence
 
 _MAX_PARTICIPANT_INDEX = 15
 _UNRESOLVED_WINNER = -1
@@ -122,9 +122,13 @@ class TargetRule:
         ):
             _require_text(value, f"target mode {self.mode} {label}")
         if type(self.requires_source) is not bool:
-            raise WorkspaceError(f"target mode {self.mode} requires_source must be boolean")
+            raise WorkspaceError(
+                f"target mode {self.mode} requires_source must be boolean"
+            )
         if type(self.requires_result) is not bool:
-            raise WorkspaceError(f"target mode {self.mode} requires_result must be boolean")
+            raise WorkspaceError(
+                f"target mode {self.mode} requires_result must be boolean"
+            )
         if self.mode in (TargetMode.SELF, TargetMode.OPPONENT) and not self.requires_source:
             raise WorkspaceError(f"target mode {self.mode} must require an explicit source")
         if self.mode in (TargetMode.WINNER, TargetMode.LOSER) and not self.requires_result:
@@ -166,7 +170,9 @@ class ParticipantModel:
                 "participant model is missing target modes: " + ", ".join(missing_modes)
             )
 
-        if not self.scripted_paths or any(not value.strip() for value in self.scripted_paths):
+        if not self.scripted_paths or any(
+            not value.strip() for value in self.scripted_paths
+        ):
             raise WorkspaceError("participant model scripted paths must be nonempty")
         if len(set(self.scripted_paths)) != len(self.scripted_paths):
             raise WorkspaceError("participant model scripted paths must be unique")

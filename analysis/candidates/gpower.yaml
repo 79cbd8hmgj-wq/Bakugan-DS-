@@ -73,6 +73,7 @@ runtime_confirmation:
     gate_attribute_bonus_g_offset: 0x06
   confirmed_arithmetic:
     initial_base_snapshot: source_u16_04 + source_u16_06
+    gate_attribute_bonus: lookup(card_id, attribute_id) * 10
     target_total: base_snapshot_g + gate_attribute_bonus_g
   watchpoint_hits:
     - side: opponent
@@ -89,12 +90,23 @@ runtime_confirmation:
       equation: 190 + 100 = 290
   gate_bonus_source:
     helper_address: 0x02065BF4
-    helper_confidence: probable
-    confirmed_code_behavior: helper result is multiplied by 10 on the ordinary branch before storage
-    semantic_boundary: exact card table and attribute-argument meanings are not runtime-confirmed
+    helper_confidence: confirmed
+    table_address: 0x020A15AC
+    table_confidence: confirmed
+    confirmed_code_behavior: card_id * 6 + attribute_id selects an unsigned byte; overlay 7 multiplies it by 10
+  source_u16_04_role: form_base_g
+  source_u16_04_confidence: confirmed
+  source_u16_06_role: progression_bonus_g
+  source_u16_06_functional_confidence: confirmed
+  source_u16_06_semantic_interpretation: level_growth_g
+  source_u16_06_semantic_confidence: probable
+  reference_crosscheck:
+    forms_checked: 38
+    unique_max_minus_min_values: [250]
   confidence_boundaries:
-    - source_u16_04 is probably the species or stored base G-Power component.
-    - source_u16_06 is probably a growth, level, or evolution contribution.
+    - source_u16_04 matches the active form's published level-1 G-Power.
+    - source_u16_06 is functionally an additive progression component; a nonzero leveled runtime sample is still required to confirm the level-growth name absolutely.
+    - Evolution is expected to change the selected form/base entry, but that representation remains probable rather than directly observed.
     - participant field +0x0A remains a candidate temporary battle modifier.
   rejected_false_positive:
     address: 0x02007EB8

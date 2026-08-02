@@ -1,0 +1,101 @@
+{
+  "checkpoint": "3D",
+  "confidence_boundary": "This checkpoint confirms participant +0xEE as the authoritative Gate-battle victory score used by the match-over predicate. In standard non-team mode, a participant wins when +0xEE is at least 3. In team mode, the checker sums the participant score and the partner score selected by participant +0xF2, then applies the same threshold of 3. This does not yet establish score lifetime, all reset paths, or every scripted-mode bypass; those remain assigned to checkpoint 3E.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "What threshold is applied to participant +0xEE, and how does that comparison drive the match-ending path?",
+  "runtime_capture": {
+    "caller_after_return": {
+      "address": "0x0223E838",
+      "return_value_r0": 1,
+      "summary": "The victory predicate returned true after observing an aggregate score of 3."
+    },
+    "caller_branch": {
+      "branch_instruction": "0x0223E83C: bne 0x0223E8D4",
+      "branch_target_reached": "0x0223E8D4",
+      "summary": "The caller took its terminal/result-transition branch when the predicate returned 1."
+    },
+    "comparison": {
+      "address": "0x02263194",
+      "aggregate_register": "r12",
+      "aggregate_value": 3,
+      "instruction": "cmp r12, #3",
+      "participant_0_score": 2,
+      "participant_0_pointer": "0x022E24E0",
+      "participant_1_score": 3,
+      "participant_1_pointer": "0x022E2640"
+    },
+    "mode_context": {
+      "participant_count": 2,
+      "participant_count_field": "global 0x020D433C +0x97",
+      "team_aggregation_enabled": false,
+      "team_aggregation_flag_field": "global 0x020D433C +0x98"
+    },
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "scenario": "Clean standalone Battle tutorial result immediately after participant 1 advanced from score 2 to score 3."
+  },
+  "static_evidence": {
+    "call_sites": [
+      {
+        "address": "0x0223723C",
+        "instruction_range": "0x02237238..0x02237248",
+        "instruction_range_sha256": "661052c3bc0487aceb2db724949a058db023ecf0a57e914a40d2d53ac78259da",
+        "summary": "Battle-result state handling calls the predicate and selects a terminal state when it returns nonzero."
+      },
+      {
+        "address": "0x0223E530",
+        "instruction_range": "0x0223E52C..0x0223E53C",
+        "instruction_range_sha256": "8358b97cd4d85740b51a4121ac702fd77603311756863f9a779014fdf6c80edb",
+        "summary": "A result/presentation state machine calls the same predicate and branches on a true result."
+      },
+      {
+        "address": "0x0223E834",
+        "instruction_range": "0x0223E830..0x0223E840",
+        "instruction_range_sha256": "397d8db8b67368966faf9a1ca3de2f46ca4a22630424f0ad245c37e054e3b54f",
+        "summary": "The runtime-observed caller branches to 0x0223E8D4 when the predicate returns nonzero."
+      },
+      {
+        "address": "0x022618C4",
+        "instruction_range": "0x022618C0..0x022618E0",
+        "instruction_range_sha256": "8e63cb92103c412c261c96725ebe19bf7b9feda82ac6d5b6bc46edb44aeaaf1c",
+        "summary": "An arena/session state machine selects state 29 when the predicate is true and state 26 otherwise."
+      }
+    ],
+    "predicate": {
+      "address": "0x02263150",
+      "instruction_range": "0x02263150..0x022631B8",
+      "instruction_range_sha256": "a2944e3e3fdab1afc64676a2bee8089c10146253a704c04168d65aa19a087096",
+      "logic": [
+        "Read participant count from global 0x020D433C +0x97.",
+        "Read team-aggregation flag from global 0x020D433C +0x98.",
+        "For each participant, load participant +0xEE as the initial score.",
+        "When team aggregation is enabled, read partner participant index from participant +0xF2 and add that partner's +0xEE.",
+        "Compare the individual or team aggregate against constant 3.",
+        "Return 1 immediately when aggregate >= 3; otherwise continue scanning and return 0."
+      ],
+      "threshold": 3
+    }
+  },
+  "supported_conclusions": [
+    "Participant +0xEE is the authoritative Gate-battle victory score, not merely result-presentation state.",
+    "The standard individual-match victory condition is participant +0xEE >= 3.",
+    "The observed runtime transition from 2 to 3 caused the predicate to return 1 and its caller to take the terminal/result-transition branch.",
+    "Team mode does not use a different threshold; it sums the participant and partner +0xEE values, then compares the aggregate against 3.",
+    "Participant +0xF4 remains a separate capture-history ledger count and is not consulted by the victory predicate.",
+    "System 2.0 owner-behind and match-state conditions should use +0xEE, with team aggregation through +0xF2 only when the confirmed team flag is enabled."
+  ],
+  "system2_contract": {
+    "individual_match_over": "participant[+0xEE] >= 3",
+    "match_score_access": "participant +0xEE",
+    "partner_index_access": "participant +0xF2",
+    "team_match_over": "participant[+0xEE] + partner[+0xEE] >= 3",
+    "team_mode_flag_access": "global 0x020D433C +0x98",
+    "victory_threshold": 3
+  },
+  "unresolved": [
+    "Whether every scripted battle calls the common victory predicate or can terminate through a separate forced-state path.",
+    "Whether participant +0xEE persists across all round transitions and exactly where normal match teardown resets or destroys it.",
+    "Whether special modes alter score updates before this common predicate is called.",
+    "The complete initialization, lifetime, and reset behavior assigned to checkpoint 3E."
+  ]
+}

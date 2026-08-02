@@ -99,13 +99,13 @@ Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace 
 
 **Status:** in progress.
 
-Current checkpoint: **4C — reuse, alternate/scripted paths, lifetime, and reset**.
+Current checkpoint: **4D — activation-counter presence or confirmed absence and replacement storage**.
 
 Task 4 checkpoints:
 
 1. 4A — static Gate-state and mutation-path inventory: complete
 2. 4B — runtime normal capture and arena-removal transition: complete
-3. 4C — reuse, alternate/scripted paths, lifetime, and reset: pending
+3. 4C — reuse, alternate/scripted paths, lifetime, and reset: complete
 4. 4D — activation-counter presence or confirmed absence and replacement storage: pending
 5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: pending
 
@@ -144,4 +144,17 @@ non-owner Gate-slot entries: unchanged
 
 This confirms the arena-record presence byte, the corresponding board-grid reference clear, and `session +0x294` as an active arena-placement count for the observed table and path. It also rejects the narrow interpretation that participant Gate-slot value `2` uniquely means “captured” or “removed”: in the tutorial scenario, the active owner slot already contained `2` before removal, so the helper's write of `2` was idempotent.
 
-Checkpoint 4C must now determine the Gate-slot values' lifecycle in normal and alternate/scripted paths, whether state `2` can return to `0`, and the exact session and participant reset boundaries.
+### Checkpoint 4C
+
+`analysis/gates/gate-state-lifecycle.json` at commit `5c009b2f8d20fd9fa6f86cfc0148ba9912689086` confirms the Gate-slot state machine, ordinary transfer behavior, scripted overrides, and reset boundaries.
+
+- State `0` is the ordinary selectable or unassigned state. Participant construction clears the Gate-slot entries, and the ordinary selector at `0x0226A5E8` counts and chooses only zero-state slots.
+- State `1` is assigned to an active arena placement. Allocation writes `1`; active-placement transfer writes `1` to the replacement slot.
+- State `2` is unavailable to ordinary placement selection, but is not uniquely captured or removed. Arena removal writes `2`, while multiple scripted setup paths also write `2` before battle.
+- Active-placement transfer at `0x02262714` returns the old slot to `0`, changes the arena entry's owner and slot identity, and marks the replacement slot `1` without changing active-placement count.
+- No dedicated decoded-overlay-7 path was found that restores a removed state-2 Gate after its arena record is cleared.
+- Participant construction initializes Gate slots to zero and `+0xF8` from configured Gate count. Session construction clears arena records, board-grid state, and `+0x294`.
+- Scripted setup at `0x0226A48C` directly overrides Gate-slot values and writes `+0xF8 = 0`; it can make the cache diverge from a simple count of zero-state slots.
+- Destruction ends object validity without clearing Gate state in place. New construction is the authoritative reset boundary.
+
+Checkpoint 4D will perform the bounded exhaustive activation-state audit and determine whether System 2.0 must allocate a new activation counter.

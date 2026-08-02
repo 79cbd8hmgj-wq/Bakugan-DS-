@@ -102,7 +102,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if arguments.command == "rebuild":
             profile = load_profile(arguments.profile)
             output = arguments.output.expanduser().resolve()
-            report = rebuild_rom(
+            build_report = rebuild_rom(
                 arguments.rom,
                 profile,
                 arguments.workspace,
@@ -110,17 +110,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             report_path = output.with_suffix(output.suffix + ".build.json")
             print(
-                f"Rebuilt ROM {output} ({len(report.changes)} changes, "
-                f"sha256 {report.output_sha256}); report: {report_path}"
+                f"Rebuilt ROM {output} ({len(build_report.changes)} changes, "
+                f"sha256 {build_report.output_sha256}); report: {report_path}"
             )
             return 0
         if arguments.command == "patch":
             workspace = arguments.workspace.expanduser().resolve()
             patch_file = arguments.patch_file.expanduser().resolve()
-            report = apply_patch_set(workspace, patch_file)
+            patch_report = apply_patch_set(workspace, patch_file)
             report_path = workspace / "manifests" / f"patch-{patch_file.stem}.json"
             print(
-                f"Applied {len(report.applied)} patches to {workspace}; report: {report_path}"
+                f"Applied {len(patch_report.applied)} patches to {workspace}; "
+                f"report: {report_path}"
             )
             return 0
     except UnsupportedRomError as exc:

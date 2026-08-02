@@ -24,16 +24,16 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2B.4 — owner lifetime, reset, and alternate-path validation**.
+Current checkpoint: **2C — challenger and combatant mapping**.
 
 Task 2 checkpoints:
 
 1. 2A — static candidate inventory: complete
-2. 2B — canonical Gate owner: in progress
+2. 2B — canonical Gate owner: complete
    - 2B.1 — player-owned Gate capture: complete
    - 2B.2 — reverse-owner control: complete
    - 2B.3 — trace canonical Gate-owner source: complete
-   - 2B.4 — owner lifetime, reset, and alternate-path validation: pending
+   - 2B.4 — owner lifetime, reset, and alternate-path validation: complete
 3. 2C — challenger and combatant mapping: pending
 4. 2D — human and AI identity: pending
 5. 2E — effect targeting rules: pending
@@ -106,6 +106,22 @@ For the observed clean-launch battle path:
 - constructor entry clears `+0x04` and `+0x06` before assigning the derived values;
 - all assignments occur before the first Gate bonus lookup.
 
-The source path is confirmed for the observed tutorial/story path. Checkpoint 2B.4 must confirm lifetime through result/capture, reset behavior, and whether normal or alternate scripted construction bypasses this path.
+### Checkpoint 2B.4 result
 
-No Task 2 field is considered globally confirmed until the applicable runtime and lifecycle evidence is complete.
+The complete owner lifecycle is stored in `analysis/gates/gate-owner-lifecycle.json` at commit `5afb3f3a6ea83718e7e284c0184e256bba1907f3`.
+
+Confirmed behavior:
+
+- battle object `+0x04` remained Gate ID `21` and `+0x06` remained owner participant `1` at result-state entry `0x0223ED00`;
+- both fields remained unchanged at final-state entry `0x0223EEDC`;
+- both fields remained unchanged after the built-in tutorial skip reached its completion dialogue;
+- arena-placement bytes for Gate slot `0` and owner participant `1` remained stable while separate transient state bytes were cleared;
+- decoded overlay 7 contains one direct call to constructor `0x0223CFE8`, at `0x0223E334`;
+- no later write in the battle-object class code changes `+0x04` or `+0x06`;
+- the tutorial skip is downstream of normal construction and does not bypass owner derivation;
+- destructors `0x0223D3F4` and `0x0223D478` release child resources and the battle object without clearing those fields;
+- validity ends when the battle object is destroyed, and the next constructor resets both fields to zero before deriving the next Gate and owner.
+
+Gate ownership is therefore confirmed for Task 2. Physical Gate capture, removal, and reuse bookkeeping remains assigned to Task 4 and was not inferred from stale battle-object memory.
+
+No later Task 2 field is considered confirmed until its own runtime and lifecycle evidence is complete.

@@ -1,7 +1,7 @@
 # Milestone 6B Task Status
 
 - Task 1: complete
-- Task 2: in progress
+- Task 2: complete
 - Tasks 3–13: pending
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
@@ -24,104 +24,92 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2E — effect targeting rules**.
+**Status:** complete — awaiting user review before Task 3.
 
-Task 2 checkpoints:
+Task 2 confirmed the complete ownership and participant-targeting model required by Gate Card System 2.0.
 
-1. 2A — static candidate inventory: complete
-2. 2B — canonical Gate owner: complete
-   - 2B.1 — player-owned Gate capture: complete
-   - 2B.2 — reverse-owner control: complete
-   - 2B.3 — trace canonical Gate-owner source: complete
-   - 2B.4 — owner lifetime, reset, and alternate-path validation: complete
-3. 2C — challenger and combatant mapping: complete
-   - 2C.1 — descriptor-to-combatant mapping: complete
-   - 2C.2 — challenger ordering policy: complete
-4. 2D — human and AI identity: complete
-5. 2E — effect targeting rules: pending
-6. 2F — normalized artifact, tests, CI, and task completion: pending
+### Completed checkpoints
 
-### Checkpoint 2A result
+1. 2A — static candidate inventory
+2. 2B — canonical Gate owner
+   - player-owned Gate control
+   - reverse-owner AI control
+   - canonical owner source
+   - owner lifetime, reset, and alternate-path validation
+3. 2C — challenger and combatant mapping
+   - descriptor-to-combatant mapping
+   - challenger ordering policy
+4. 2D — human and AI identity
+5. 2E — effect targeting rules
+6. 2F — normalized artifact, resolver, tests, symbols, documentation, and exact-binary verification
 
-Candidate-only static evidence is stored in `analysis/gates/ownership-participant-candidates.json` at commit `54f32929704d87cec44555578111b07d820c2ad4`.
+### Confirmed runtime model
 
-It records the paired session fields, their setter and setup paths, their use by the battle constructor, candidate result-state readers, participant pointers, descriptor arrays, exact hashes, and unresolved semantics.
+- `battle object +0x06` is the canonical Gate-owner participant index.
+- `session +0x28D` selects the defender or stationary-target descriptor.
+- `session +0x28E` selects the challenger or active/thrown descriptor.
+- The low nibble of descriptor byte `+0x0F` is the actual participant index.
+- Combatant record 0 is the defender record at `battle object +0x0C..+0x1F`.
+- Combatant record 1 is the challenger record at `battle object +0x20..+0x33`.
+- `participant +0xC8 == NULL` identifies human control.
+- `participant +0xC8 != NULL` identifies AI control.
+- `battle-result controller +0x21` is a signed winner-record index:
+  - `-1` unresolved;
+  - `0` defender won;
+  - `1` challenger won.
+- The loser is derived as `winner_record_index XOR 1` after a valid result.
 
-### Checkpoint 2B result
+### System 2.0 targeting contract
 
-Canonical Gate ownership is confirmed across:
+The pure resolver supports:
 
-- player-owned and AI-owned runtime controls;
-- arena-placement source tracing;
-- battle object `+0x04` active Gate ID;
-- battle object `+0x06` Gate owner participant index;
-- result and final-state lifetime;
-- tutorial-skip behavior;
-- constructor reset and destructor validity boundaries.
+- owner
+- defender
+- challenger
+- self
+- opponent
+- both combatants
+- winner
+- loser
+- human combatants
+- AI combatants
 
-The final lifecycle artifact is `analysis/gates/gate-owner-lifecycle.json` at commit `5afb3f3a6ea83718e7e284c0184e256bba1907f3`.
+The resolver fails closed for unresolved results, equal-descriptor fallbacks, missing explicit self/opponent sources, noncombatant sources, and combatant-only owner effects when the Gate owner is not currently battling.
 
-### Checkpoint 2C.1 result
+### Main artifacts
 
-Combatant mapping is stored in `analysis/gates/combatant-record-mapping.json` at commit `d1b61fa629005c3d53e22c9e2c830cc8d2011fc7`.
+- `analysis/gates/ownership-and-participants.json`
+- `analysis/gates/effect-targeting-rules.json`
+- `analysis/gates/gate-owner-lifecycle.json`
+- `analysis/gates/combatant-record-mapping.json`
+- `analysis/gates/challenger-ordering.json`
+- `analysis/gates/human-ai-identity.json`
+- `analysis/symbols/gate_system2_context.csv`
+- `docs/gate-card-system-2-runtime-context.md`
+- `src/bakugan_ds/gates/participants.py`
 
-Confirmed behavior:
+### Verification
 
-- session `+0x28D` is the descriptor index used to build combatant record 0;
-- session `+0x28E` is the descriptor index used to build combatant record 1;
-- descriptors are 20 bytes at session `+0x7C + descriptor_index * 20`;
-- the low nibble of descriptor byte `+0x0F` is the actual participant object index;
-- participant objects resolve through session `+0x0C + participant_index * 4`;
-- record 0 occupies battle object `+0x0C..+0x1F` and record 1 occupies `+0x20..+0x33`;
-- in the AI-owned control, descriptor order `0,1` resolved to participant order `1,0`;
-- record 0 contained participant 1's `230 + 180 = 410` values;
-- record 1 contained participant 0's `190 + 100 = 290` values;
-- the Gate-calculation loop processes both records with a 20-byte stride.
-
-### Checkpoint 2C.2 result
-
-The challenger-ordering policy is stored in `analysis/gates/challenger-ordering.json` at commit `2a27761ac38275323ea0fde96813569a1dc807cf`.
-
-Confirmed behavior:
-
-- collision event `+0x16` stores the active or thrown Bakugan descriptor index;
-- collision event `+0x29` stores the selected standing target descriptor index, with `0xFF` meaning no target;
-- all seven direct overlay-7 callers of pair setter `0x02262A64` pass the active descriptor as `r2`, which is stored to session `+0x28E`;
-- when a distinct target exists, callers pass that target as `r1`, which is stored to session `+0x28D`;
-- session `+0x28D` therefore constructs combatant record 0 as the stationary target or defender;
-- session `+0x28E` constructs combatant record 1 as the active or thrown challenger;
-- the canonical challenging participant is the low nibble of descriptor byte `+0x0F` for the descriptor selected by `+0x28E`;
-- this ordering is independent of Gate ownership and human/AI identity;
-- two fallback call sites pass the same active descriptor for both arguments, so equal descriptor indices represent no distinct challenger/defender pair and must not be treated as a normal challenge;
-- the existing AI-owned runtime control agrees with the static call-site audit: participant 0 contested participant 1's Gate and appeared in combatant record 1.
-
-A fresh live collision-call capture was attempted but the GDB stream reset before producing a valid snapshot. That failed attempt was not used as evidence. Confidence comes from the exhaustive direct-call audit and the previously committed runtime controls.
-
-Gate owner, combatant identity, and challenging participant are now confirmed for Task 2.
-
-### Checkpoint 2D result
-
-Human and AI control identity is stored in `analysis/gates/human-ai-identity.json` at commit `4b10ae990a6dc8bba85ff9064c3d112426db1b1d`.
-
-Confirmed behavior:
-
-- participant object `+0xC8` is the authoritative AI-controller pointer;
-- a null pointer identifies a human-controlled participant;
-- a non-null pointer identifies an AI-controlled participant;
-- participant construction clears `+0xC8`, uses a one-participant human prefix in ordinary local modes, and allocates AI controllers for later participants;
-- modes 6 and 7 replace the fixed prefix with the active multiplayer-slot count returned by ARM9 helper `0x0202F134`;
-- AI-specific battle setup and shot planning explicitly branch on the presence of `+0xC8`;
-- AI state reset preserves the identity pointer;
-- the pointer remains stable until the participant and its controller are destroyed;
-- the clean tutorial/story runtime control independently maps participant 0 to P1/player and participant 1 to the P2/AI opponent, matching the constructor policy;
-- participant `+0xF2` remains a team/slot remap and is not used as the human/AI flag.
-
-The System 2.0 context contract is:
+Python CI at branch head `55c043482543d5a44ff5acf79ad45068b417b222` completed successfully:
 
 ```text
-is_ai = read_u32(participant + 0xC8) != 0
+254 passed
+12 expected environment-gated skips
+0 failed
 ```
 
-The pointer may be tested only while the participant object is live and must never be persisted in Gate data or exposed as a stable controller-object ABI.
+The following passed in the same run:
 
-Gate owner, challenger/defender mapping, combatant participant identity, and human/AI identity are now confirmed. Checkpoint 2E will derive the exact participant sets for owner, challenger, defender, self, opponent, both combatants, human, and AI effect targets.
+- Python compilation
+- Ruff on all changed Python files
+- strict mypy on changed package files
+- complete repository test suite
+- changed-file whitespace checks
+
+A separate local exact-binary verification against the supplied runtime ARM9 and decoded overlay 7 confirmed all nine guarded participant/result instruction regions and both expected component SHA-256 hashes.
+
+No Gate bonus, battle-type selection, Ability Card behavior, AI decision, match result, roster value, ROM payload, or save format was changed.
+
+## Next task
+
+Task 3 will reverse-engineer authoritative match score, captured-Gate counts, victory threshold, score updates, capture timing, and reset behavior. It has not started.

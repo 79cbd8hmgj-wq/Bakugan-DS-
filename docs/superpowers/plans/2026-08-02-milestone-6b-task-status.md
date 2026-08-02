@@ -24,14 +24,15 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2B.2 — reverse-owner control**.
+Current checkpoint: **2B.3 — trace canonical Gate-owner source**.
 
 Task 2 checkpoints:
 
 1. 2A — static candidate inventory: complete
 2. 2B — canonical Gate owner: in progress
    - 2B.1 — player-owned Gate capture: complete
-   - 2B.2 — reverse-owner control: pending
+   - 2B.2 — reverse-owner control: complete
+   - 2B.3 — trace canonical Gate-owner source: pending
 3. 2C — challenger and combatant mapping: pending
 4. 2D — human and AI identity: pending
 5. 2E — effect targeting rules: pending
@@ -73,6 +74,21 @@ The controlled clean-launch scenario established:
 - the active session pair is `+0x28D = 0`, `+0x28E = 1`;
 - the battle constructor reached the confirmed 190 + 100 = 290 and 230 + 180 = 410 totals.
 
-This proves ownership for that capture but does not yet prove that `+0x28D` is always the canonical owner field. A reverse-owner control must show `+0x28D = 1`, `+0x28E = 0` when participant index 1 owns the contested Gate. Until then, the field semantics remain probable.
+This proved ownership for that capture but did not prove that `+0x28D` was always the canonical owner field.
 
-No Task 2 field is considered globally confirmed until the applicable runtime and lifecycle evidence is complete.
+### Checkpoint 2B.2 result
+
+The reverse-owner control is stored in `analysis/gates/ownership-runtime-ai-owned-control.json` at commit `4483d8df8a8231cefdfbe85b99d89b23c2290ce8`.
+
+The controlled battle established:
+
+- P2/AI participant index 1 owned the contested Gate;
+- both Gate lookup calls entered `0x02065BF4` with global Gate ID 21;
+- Gate ID 21 is present in participant index 1's Gate slots and absent from participant index 0's Gate slots;
+- participant index 0 remained the 190 G P1/player object;
+- participant index 1 remained the 230 G P2/AI object;
+- session `+0x28D` and `+0x28E` remained `0, 1` instead of reversing.
+
+Therefore the interpretation of `+0x28D/+0x28E` as canonical Gate owner followed by challenger is rejected with confirmed evidence. The pair remains a probable fixed participant/combatant ordering only.
+
+Checkpoint 2B now continues by tracing the actual object or field that associates active Gate ID 21 with participant index 1. No Task 2 field is considered globally confirmed until that source's lifecycle and scripted behavior are documented.

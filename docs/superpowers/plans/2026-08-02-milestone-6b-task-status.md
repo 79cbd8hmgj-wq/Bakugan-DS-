@@ -3,7 +3,7 @@
 - Task 1: complete
 - Task 2: complete
 - Task 3: complete
-- Task 4: in progress
+- Task 4: complete
 - Tasks 5–13: pending
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
@@ -97,9 +97,7 @@ Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace 
 
 ## Task 4
 
-**Status:** in progress.
-
-Current checkpoint: **4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion**.
+**Status:** complete.
 
 Task 4 checkpoints:
 
@@ -107,71 +105,46 @@ Task 4 checkpoints:
 2. 4B — runtime normal capture and arena-removal transition: complete
 3. 4C — reuse, alternate/scripted paths, lifetime, and reset: complete
 4. 4D — activation-counter presence or confirmed absence and replacement storage: complete
-5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: pending
+5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: complete
 
-### Checkpoint 4A
+### Confirmed model
 
-`analysis/gates/gate-state-candidates.json` at commit `d84859fbf9ee696b49dce8b82226feb946b4b898` separates the original Gate-state mechanisms without promoting candidate names beyond the evidence.
+- Participant Gate-slot state `0` is selectable or unassigned in the ordinary placement path.
+- Gate-slot state `1` is assigned to an active arena placement.
+- Gate-slot state `2` is unavailable to ordinary placement selection, but is not a universal captured or removed Boolean because scripted setup may assign it before battle.
+- Participant `+0xF8` is an ordinary available-slot cache maintained when Gate-slot state crosses the zero/nonzero boundary; scripted setup may override it directly.
+- Physical Gate removal is the arena-entry occupied transition `1 -> 0`, the matching board-grid clear, and the decrement of session `+0x294`.
+- Capture is a composite result event: winner score `+0xEE`, capture-history ledger and count `+0xF4`, then physical arena removal and owner-slot unavailability.
+- Combatant descriptor cleanup is separate from arena removal and uses session `+0x295` plus arena-entry descriptor linkage.
+- Active-placement transfer restores the old owner slot to `0`, changes owner and Gate-slot identity, assigns the replacement slot state `1`, and leaves the arena entry occupied.
+- Participant and session construction are the authoritative reset boundaries; destruction invalidates object addresses without clearing every field in place.
+- The exact original Gate lifecycle contains no per-Gate activation counter.
+- Future System 2.0 activation state is `activation_count_by_arena_entry[12]`, reserved at offsets `0x2C..0x37` of the approved future 64-byte overlay-7 match-local BSS cache `0x02293C20..0x02293C60`. It is not implemented during Milestone 6B.
 
-Static evidence identifies:
+### Normalized implementation and evidence
 
-- `participant +0x56 + gate_slot_index * 4` as a three-value Gate-slot state byte. Arena allocation writes `1`, arena transfer writes old `0` and new `1`, and arena removal writes `2`.
-- `participant +0xF8` as a byte adjusted only when Gate slots enter or leave state `0`, making it the probable available-Gate-slot count.
-- `session +0x1C + arena_entry_index * 8 +0x02` as the probable arena-placement occupied byte.
-- `session +0x294` as the probable active arena-placement count.
-- `0x022626B8` as the arena-placement removal path and `0x02262828` as a separate combatant descriptor/scene cleanup path.
+- `src/bakugan_ds/gates/gate_state.py`
+- `analysis/gates/gate-reuse-and-removal.json`
+- `analysis/gates/gate-state-candidates.json`
+- `analysis/gates/gate-removal-runtime.json`
+- `analysis/gates/gate-state-lifecycle.json`
+- `analysis/gates/gate-activation-counter-audit.json`
+- `analysis/symbols/gate_system2_context.csv`
+- `docs/gate-card-runtime-lifecycle.md`
+- `tests/unit/test_gate_state.py`
+- `tests/test_gate_state_artifact.py`
+- `tests/integration/test_gate_state_reference.py`
 
-The normal result path increments score and capture history first, then removes the defender's arena placement, writes Gate-slot state `2`, clears the board reference, decrements the arena-placement count, and separately cleans both combatant descriptors.
+### Final verification
 
-No per-Gate activation increment appears in the audited placement, removal, transfer, result, and Gate-slot setter paths. This was resolved through the bounded exhaustive audit in Checkpoint 4D.
-
-### Checkpoint 4B
-
-`analysis/gates/gate-removal-runtime.json` at commit `66f8658e24721bd55c71c05a17f10bcbbfa09510` records a clean pre/post transition across the common result path's call to arena-placement removal `0x022626B8`.
-
-The runtime was paused at `0x02242498`, after winner score and capture-history bookkeeping but before board removal, and again at `0x022424B4`, immediately after the removal helper returned but before combatant descriptor cleanup.
-
-Confirmed transition:
+GitHub Python CI run `30769106006` completed successfully at branch commit `64a9d1f13736bb2438926fb48dc2c6a155acfcf8`:
 
 ```text
-arena record +0x02: 1 -> 0
-board-grid reference: 1 -> 0
-session +0x294: 1 -> 0
-owner Gate-slot state: 2 -> 2
-owner participant +0xF8: 0 -> 0
-non-owner Gate-slot entries: unchanged
+276 passed
+14 expected environment-gated skips
+0 failed
 ```
 
-This confirms the arena-record presence byte, the corresponding board-grid reference clear, and `session +0x294` as an active arena-placement count for the observed table and path. It also rejects the narrow interpretation that participant Gate-slot value `2` uniquely means “captured” or “removed”: in the tutorial scenario, the active owner slot already contained `2` before removal, so the helper's write of `2` was idempotent.
+Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace checks passed. The exact decoded-overlay and runtime-ARM9 Gate-lifecycle integration guard also passed locally, including all nine committed instruction-region hashes, all seven lifecycle direct-call inventories, and all 18 direct overlay-7 calls to the Gate-bonus accessor.
 
-### Checkpoint 4C
-
-`analysis/gates/gate-state-lifecycle.json` at commit `5c009b2f8d20fd9fa6f86cfc0148ba9912689086` confirms the Gate-slot state machine, ordinary transfer behavior, scripted overrides, and reset boundaries.
-
-- State `0` is the ordinary selectable or unassigned state. Participant construction clears the Gate-slot entries, and the ordinary selector at `0x0226A5E8` counts and chooses only zero-state slots.
-- State `1` is assigned to an active arena placement. Allocation writes `1`; active-placement transfer writes `1` to the replacement slot.
-- State `2` is unavailable to ordinary placement selection, but is not uniquely captured or removed. Arena removal writes `2`, while multiple scripted setup paths also write `2` before battle.
-- Active-placement transfer at `0x02262714` returns the old slot to `0`, changes the arena entry's owner and slot identity, and marks the replacement slot `1` without changing active-placement count.
-- No dedicated decoded-overlay-7 path was found that restores a removed state-2 Gate after its arena record is cleared.
-- Participant construction initializes Gate slots to zero and `+0xF8` from configured Gate count. Session construction clears arena records, board-grid state, and `+0x294`.
-- Scripted setup at `0x0226A48C` directly overrides Gate-slot values and writes `+0xF8 = 0`; it can make the cache diverge from a simple count of zero-state slots.
-- Destruction ends object validity without clearing Gate state in place. New construction is the authoritative reset boundary.
-
-### Checkpoint 4D
-
-`analysis/gates/gate-activation-counter-audit.json` at commit `b607f54c66fc30eec295991b1a8e5647f4db808f` confirms that the exact B6RE revision-0 Gate lifecycle contains no original per-Gate activation counter.
-
-The bounded exhaustive audit covered every direct decoded-overlay-7 caller of Gate-slot mutation, arena allocation/removal/transfer, descriptor attachment/detachment, and battle construction; the complete constructor, result, reset, scripted setup, and teardown regions; all 18 direct overlay-7 callers of ARM9 Gate-bonus accessor `0x02065BF4`; and every known adjacent participant, session, arena-record, battle-object, score, capture-history, placement-count, and descriptor-count candidate.
-
-Rejected activation-count candidates include:
-
-- `session +0x294`, confirmed as active arena-placement count;
-- `session +0x295` and arena entry `+0x21`, confirmed as descriptor/scene linkage state;
-- participant `+0xF8`, confirmed as an ordinary available-slot cache with scripted overrides;
-- participant `+0xEE` and `+0xF4`, already confirmed as match score and capture-history count;
-- Gate-slot state bytes, which hold enumerated lifecycle state rather than an incrementing count;
-- battle-local Gate ID/owner fields and the pure ARM9 Gate-bonus table accessor, neither of which mutates activation history.
-
-System 2.0 must allocate new match-local activation state. The safe contract reserves `activation_count_by_arena_entry[12]` as unsigned saturating bytes at offsets `0x2C..0x37` of the already approved future 64-byte overlay-7 BSS cache `0x02293C20..0x02293C60`. The array resets at session construction, initializes on arena allocation, increments once after canonical Gate identity is established during battle construction, resets when an active placement changes Gate identity, and clears when the placement is removed. No original object byte or save-data field is repurposed, and the cache is not implemented in Milestone 6B.
-
-Checkpoint 4E will consolidate the confirmed Gate state into the normalized artifact, validators, lifecycle documentation, exact-binary tests, and final Task 4 verification.
+Task 5 is the next pending task and has not started.

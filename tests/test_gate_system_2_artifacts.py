@@ -155,3 +155,35 @@ def test_battle_context_has_confirmed_hook_safe_core() -> None:
         "human_ai_identity",
     } <= unresolved
     assert FORBIDDEN_KEYS.isdisjoint(walk_keys(payload))
+
+
+def test_storage_strategy_selects_viable_primary_and_fallback() -> None:
+    from bakugan_ds.gates.storage import SYSTEM2_STORAGE_DECISION, validate_storage_decision
+
+    validate_storage_decision(SYSTEM2_STORAGE_DECISION)
+    assert SYSTEM2_STORAGE_DECISION.primary == "hybrid"
+    assert SYSTEM2_STORAGE_DECISION.fallback == "nitrofs"
+    candidates = {item.name: item for item in SYSTEM2_STORAGE_DECISION.candidates}
+    assert set(candidates) == {
+        "nitrofs",
+        "expanded_executable_overlay",
+        "dedicated_overlay",
+        "hybrid",
+    }
+    assert candidates["hybrid"].viable is True
+    assert candidates["nitrofs"].viable is True
+    assert candidates["expanded_executable_overlay"].viable is False
+    assert candidates["dedicated_overlay"].viable is False
+
+    document = Path("analysis/gates/expansion-strategy.md").read_text(encoding="utf-8")
+    for required in (
+        "4,152 bytes total",
+        "0x0228BC20",
+        "0x0228BC60",
+        "0x023E0000",
+        "72-byte stack buffer",
+        "Missing or malformed",
+        "Dedicated overlay",
+        "Expanded executable or overlay",
+    ):
+        assert required in document

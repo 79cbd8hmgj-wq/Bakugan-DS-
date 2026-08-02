@@ -1,0 +1,132 @@
+{
+  "checkpoint": "3D",
+  "confidence_boundary": "This checkpoint confirms the exact victory threshold and the normal comparison path for participant +0xEE. It confirms standard solo scoring and the helper's team aggregation logic. Scripted initialization, score lifetime, and reset behavior remain isolated to checkpoint 3E.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "What threshold is applied to participant +0xEE, and how does a successful comparison enter the match-complete path?",
+  "confirmed_model": {
+    "helper": "0x02263150",
+    "participant_count_source": "global match configuration +0x97",
+    "solo_score": "participant +0xEE",
+    "team_mode_flag_source": "global match configuration +0x98",
+    "team_score": "participant +0xEE + teammate participant +0xEE",
+    "teammate_index_source": "participant +0xF2",
+    "threshold": 3,
+    "comparison": "unsigned score >= 3",
+    "return_value": {
+      "0": "no participant or team reached the threshold",
+      "1": "at least one participant or team reached the threshold"
+    }
+  },
+  "runtime_capture": {
+    "scenario": "Clean standalone Battle tutorial process continued from checkpoints 3B and 3C after participant 1 reached +0xEE = 3.",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "mode_configuration": {
+      "participant_count": 2,
+      "team_mode_flag": 0,
+      "raw_memory_sha256": "92e06db98735845c78712764e606d46681f26181041c8da031c605683552d5c4"
+    },
+    "below_threshold_control": {
+      "pc": "0x02263194",
+      "participant_index": 0,
+      "participant_pointer": "0x022E24E0",
+      "score_register": "r12",
+      "score_value": 2,
+      "comparison_branch_taken": false,
+      "next_behavior": "The helper advanced to the next participant rather than returning success.",
+      "register_capture_sha256": "cfa01b647ca0b65d4e4f3c17ba6eae58d8f6b784ae5f40202e949147ae6b532e",
+      "score_memory_sha256": "5d06705a303f4a797cdca24ec452a35c92a04b75c9f55cb41e79fc217c0c910b"
+    },
+    "threshold_hit": {
+      "pc": "0x02263194",
+      "participant_index": 1,
+      "participant_pointer": "0x022E2640",
+      "score_register": "r12",
+      "score_value": 3,
+      "comparison_branch_taken": true,
+      "register_capture_sha256": "6245db6d3b7d094d8fd45f3d28580426ce19fc8456eb59e5227aad7815fd6e1e",
+      "score_memory_sha256": "7e7dce4037d77e47fd494f883d0e28e079bf62f93b37c8e5c432eb7e533b651c"
+    },
+    "helper_return": {
+      "caller": "0x0223E834",
+      "return_pc": "0x0223E838",
+      "return_register": "r0",
+      "return_value": 1,
+      "register_capture_sha256": "8b2c80c9b5eac7a64df0fd2471d9e15541352e73dce0ca6967b0c1bfa3e365af"
+    },
+    "caller_decision": {
+      "instructions": [
+        "0x0223E838: cmp r0, #0",
+        "0x0223E83C: bne 0x0223E8D4"
+      ],
+      "observed_target_pc": "0x0223E8D4",
+      "meaning": "The nonzero helper result followed the caller's match-complete route and skipped the below-threshold continuation.",
+      "register_capture_sha256": "477bb79ffde564437a87dd4676cc39c90e5594d85b1fdadc3546fd971a6fca72"
+    }
+  },
+  "static_evidence": {
+    "victory_helper": {
+      "runtime_start": "0x02263150",
+      "runtime_end": "0x022631B8",
+      "instruction_range_sha256": "a2944e3e3fdab1afc64676a2bee8089c10146253a704c04168d65aa19a087096",
+      "key_instructions": [
+        "load participant +0xEE",
+        "when team mode is enabled, resolve participant +0xF2 and add teammate +0xEE",
+        "0x02263194: cmp r12, #3",
+        "0x02263198: movhs r2, #1",
+        "0x0226319C: bhs 0x022631B0",
+        "return r2 as boolean"
+      ]
+    },
+    "call_sites": [
+      {
+        "call": "0x0223723C",
+        "decision_range": "0x02237238..0x02237248",
+        "instruction_range_sha256": "661052c3bc0487aceb2db724949a058db023ecf0a57e914a40d2d53ac78259da"
+      },
+      {
+        "call": "0x0223E530",
+        "decision_range": "0x0223E528..0x0223E53C",
+        "instruction_range_sha256": "0cae1120ab25e752747c8c2d1b72d6c982e6e0df4b2737019041f33a7f90be92"
+      },
+      {
+        "call": "0x0223E834",
+        "decision_range": "0x0223E82C..0x0223E840",
+        "instruction_range_sha256": "10f2956687a63e9509b6b63b165a481bae28b236cc71af647f70119bafe39c68",
+        "runtime_confirmed": true
+      },
+      {
+        "call": "0x022618C4",
+        "decision_range": "0x022618C0..0x022618E4",
+        "instruction_range_sha256": "1dbe19bca1677059260b2fa8a210f833ef10043edac170ecc07b981bbaf16abd"
+      }
+    ]
+  },
+  "supported_conclusions": [
+    "Participant +0xEE is the authoritative match-victory score used by the original game.",
+    "The exact victory threshold is 3, using an unsigned greater-than-or-equal comparison.",
+    "In solo mode, each participant's +0xEE is tested independently.",
+    "In team mode, the helper adds the participant's +0xEE to the teammate's +0xEE before applying the same threshold of 3.",
+    "The teammate relationship is obtained from participant +0xF2 rather than inferred from combatant order.",
+    "The same runtime call demonstrated both a below-threshold control at score 2 and a threshold hit at score 3.",
+    "A successful helper return entered a caller branch reserved for the match-complete path.",
+    "For standard Gate battles, +0xEE can now be exposed to System 2.0 as the captured-Gate match score; mode-specific seeding and reset behavior remain subject to checkpoint 3E."
+  ],
+  "system2_contract": {
+    "individual_score_access": "participant +0xEE",
+    "victory_threshold": 3,
+    "team_score_rule": "score(participant) + score(participant[+0xF2])",
+    "victory_rule": "effective score >= 3",
+    "capture_history_counter_is_not_score": "participant +0xF4"
+  },
+  "raw_capture_policy": {
+    "committed": false,
+    "reason": "Only selected register and memory hashes, exact addresses, values, and conclusions are committed."
+  },
+  "unresolved": [
+    "Whether scripted modes initialize +0xEE to nonzero values or bypass the normal winner increment.",
+    "The exact round-to-round and match-to-match lifetime of +0xEE.",
+    "The reset path after match completion.",
+    "Whether any special mode uses +0xEE as an abstract score while still sharing the threshold helper."
+  ]
+}

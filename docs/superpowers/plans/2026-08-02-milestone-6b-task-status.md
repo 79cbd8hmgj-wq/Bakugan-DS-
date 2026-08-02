@@ -2,7 +2,8 @@
 
 - Task 1: complete
 - Task 2: complete
-- Tasks 3–13: pending
+- Task 3: in progress
+- Tasks 4–13: pending
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
 
@@ -24,59 +25,11 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-**Status:** complete — awaiting user review before Task 3.
+**Status:** complete.
 
-Task 2 confirmed the complete ownership and participant-targeting model required by Gate Card System 2.0.
+Task 2 confirmed Gate ownership, defender/challenger ordering, combatant identity, human/AI identity, winner/loser mapping, effect targeting, lifecycle behavior, and exact-binary guards.
 
-### Completed checkpoints
-
-1. 2A — static candidate inventory
-2. 2B — canonical Gate owner
-   - player-owned Gate control
-   - reverse-owner AI control
-   - canonical owner source
-   - owner lifetime, reset, and alternate-path validation
-3. 2C — challenger and combatant mapping
-   - descriptor-to-combatant mapping
-   - challenger ordering policy
-4. 2D — human and AI identity
-5. 2E — effect targeting rules
-6. 2F — normalized artifact, resolver, tests, symbols, documentation, and exact-binary verification
-
-### Confirmed runtime model
-
-- `battle object +0x06` is the canonical Gate-owner participant index.
-- `session +0x28D` selects the defender or stationary-target descriptor.
-- `session +0x28E` selects the challenger or active/thrown descriptor.
-- The low nibble of descriptor byte `+0x0F` is the actual participant index.
-- Combatant record 0 is the defender record at `battle object +0x0C..+0x1F`.
-- Combatant record 1 is the challenger record at `battle object +0x20..+0x33`.
-- `participant +0xC8 == NULL` identifies human control.
-- `participant +0xC8 != NULL` identifies AI control.
-- `battle-result controller +0x21` is a signed winner-record index:
-  - `-1` unresolved;
-  - `0` defender won;
-  - `1` challenger won.
-- The loser is derived as `winner_record_index XOR 1` after a valid result.
-
-### System 2.0 targeting contract
-
-The pure resolver supports:
-
-- owner
-- defender
-- challenger
-- self
-- opponent
-- both combatants
-- winner
-- loser
-- human combatants
-- AI combatants
-
-The resolver fails closed for unresolved results, equal-descriptor fallbacks, missing explicit self/opponent sources, noncombatant sources, and combatant-only owner effects when the Gate owner is not currently battling.
-
-### Main artifacts
+The normalized implementation and evidence remain in:
 
 - `analysis/gates/ownership-and-participants.json`
 - `analysis/gates/effect-targeting-rules.json`
@@ -88,28 +41,68 @@ The resolver fails closed for unresolved results, equal-descriptor fallbacks, mi
 - `docs/gate-card-system-2-runtime-context.md`
 - `src/bakugan_ds/gates/participants.py`
 
-### Verification
+Python CI completed with 254 passed, 12 expected environment-gated skips, and 0 failures. Python compilation, Ruff, strict mypy, whitespace checks, and exact-binary participant/result-region verification passed.
 
-Python CI at branch head `55c043482543d5a44ff5acf79ad45068b417b222` completed successfully:
+## Task 3
+
+Current checkpoint: **3D — victory threshold and comparison path for participant `+0xEE`**.
+
+Task 3 checkpoints:
+
+1. 3A — static match-score candidate inventory: complete
+2. 3B — runtime score-changing result and no-change control: complete
+3. 3C — capture-history counter identity and relationship to score: complete
+4. 3D — victory threshold and comparison path: pending
+5. 3E — update timing, round lifetime, scripted behavior, and reset: pending
+6. 3F — normalized artifact, validators, symbols, tests, CI, and task completion: pending
+
+### Checkpoint 3A
+
+`analysis/gates/match-score-candidates.json` at commit `e61452d70f57785c3ac18a23c985b419131864cd` identified participant byte `+0xEE` as the strongest static participant match-progress candidate. It is constructor-cleared, incremented for the settled winner, and consumed outside immediate result presentation.
+
+### Checkpoint 3B
+
+The successful runtime retry is stored in `analysis/gates/match-score-runtime-winner-update.json` at commit `ce9327bf2eb91e2df3fd1aed7dae81b55e81dd1e`.
+
+Across `0x022423F0..0x0224242C` in a clean standalone Battle tutorial result:
 
 ```text
-254 passed
-12 expected environment-gated skips
-0 failed
+participant 1 (winner) +0xEE: 2 -> 3
+participant 0 (other)  +0xEE: 2 -> 2
+participant 1 (winner) +0xFE: 0 -> 1
+participant 0 (other)  +0xFE: 0 -> 0
 ```
 
-The following passed in the same run:
+This confirms `+0xEE` as authoritative participant-owned match-progress state incremented exactly for the settled winner. `+0xFE` remains semantically unnamed.
 
-- Python compilation
-- Ruff on all changed Python files
-- strict mypy on changed package files
-- complete repository test suite
-- changed-file whitespace checks
+### Checkpoint 3C
 
-A separate local exact-binary verification against the supplied runtime ARM9 and decoded overlay 7 confirmed all nine guarded participant/result instruction regions and both expected component SHA-256 hashes.
+`analysis/gates/capture-history-counter.json` at commit `3ecda0c3a2f6fa1132e477394170b144d5338e8c` separates participant `+0xF4` from match score.
 
-No Gate bonus, battle-type selection, Ability Card behavior, AI decision, match result, roster value, ROM payload, or save format was changed.
+The process was paused after the winner's `+0xEE` update and immediately before the capture-ledger block. At that boundary:
 
-## Next task
+```text
+winner +0xEE = 3
+winner +0xF4 = 0
+winner capture entry 0 = empty
+```
 
-Task 3 will reverse-engineer authoritative match score, captured-Gate counts, victory threshold, score updates, capture timing, and reset behavior. It has not started.
+After `0x0224242C..0x02242498`:
+
+```text
+winner +0xEE = 3       unchanged
+winner +0xF4 = 1       incremented
+winner entry 0 = be0000000000
+other  +0xF4 = 0       unchanged
+```
+
+The populated entry contains the losing combatant's 190 G base halfword and participant selector. Static evidence confirms:
+
+- `participant +0xF4` indexes six-byte entries at `participant +0x84 + index * 6`;
+- participant construction independently clears `+0xEE`, `+0xF4`, and the 36-byte six-entry ledger;
+- normal and alternate/scripted result paths append the same record geometry;
+- `+0xF4` is therefore a capture-history entry count, not the authoritative match-score field.
+
+System 2.0 must not substitute `+0xF4` for `+0xEE` when evaluating owner-behind, winner state, or match victory.
+
+Checkpoint 3D will determine the exact threshold applied to `+0xEE` and finalize whether it is specifically the captured-Gate count used to end the match or a mode-dependent abstract score.

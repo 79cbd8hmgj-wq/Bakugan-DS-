@@ -1,0 +1,70 @@
+{
+  "adjacent_fields_not_promoted": [
+    {
+      "access": "participant object +0xFE",
+      "reason": "The result path writes one immediately before incrementing +0xEE, but this checkpoint does not establish whether it is a capture flag, result flag, or other transient state."
+    },
+    {
+      "access": "participant object +0xF4",
+      "reason": "A later result-finalization block increments +0xF4 while copying descriptor-derived data. Its role is structurally distinct from the direct winning-participant +0xEE increment and is reserved for the captured-Gate counter checkpoint."
+    }
+  ],
+  "candidates": [
+    {
+      "access": "participant object +0xEE",
+      "confidence": "candidate",
+      "name": "participant_match_progress_byte",
+      "signed": false,
+      "static_evidence": [
+        {
+          "instruction_range_sha256": "9eae78629fdf7b323b22d2e04e38b40a8a8f829f6870e5ab0c57be0b444997e5",
+          "observation": "The participant constructor clears byte +0xEE to zero together with other participant-owned match state.",
+          "runtime_end": "0x02269714",
+          "runtime_start": "0x022696B4"
+        },
+        {
+          "instruction_range_sha256": "fe43b83582a4b84a1891f97ea76e3949580ddf19ad977801c79b6c64743dc6ec",
+          "observation": "Result finalization maps the settled winning combatant to its participant object, sets participant +0xFE, increments participant +0xEE by one, and stores the byte back.",
+          "runtime_end": "0x0224242C",
+          "runtime_start": "0x022423F0"
+        },
+        {
+          "instruction_range_sha256": "4eb108aa06439770fd6079a238c9a643485c044118ceb4ec1fb94a6862fd381c",
+          "observation": "A non-result consumer loads +0xEE from two participant objects and compares the values while selecting participant-related state.",
+          "runtime_end": "0x02222A24",
+          "runtime_start": "0x02222994"
+        },
+        {
+          "instruction_range_sha256": "466b84a0ecd62843bb7ff0861f133c067cf659a02504a258771e67f3526e71c1",
+          "observation": "Another non-result consumer loads +0xEE from two participant objects and combines them, showing that the byte is authoritative gameplay state rather than only a result-screen animation value.",
+          "runtime_end": "0x0224A054",
+          "runtime_start": "0x0224A014"
+        }
+      ],
+      "supported_candidate_conclusion": "Participant +0xEE is the strongest static candidate for a participant-owned match-progress or score counter because it is constructor-initialized, directly incremented for the resolved winner, and consumed outside the immediate result write path.",
+      "unresolved": [
+        "Whether +0xEE counts captured Gate Cards, abstract match points, or a mode-dependent team total.",
+        "Whether team modes aggregate multiple participant +0xEE values into one side score.",
+        "The exact victory threshold and comparison function.",
+        "Normal round-to-round lifetime and final match reset behavior.",
+        "A runtime score-changing capture and no-change control."
+      ],
+      "width_bits": 8
+    }
+  ],
+  "checkpoint": "3A",
+  "component": {
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "size": 467360
+  },
+  "confidence_boundary": "This checkpoint inventories static candidates only. No score, captured-Gate, threshold, update-lifetime, or reset semantic is promoted to confirmed without controlled runtime evidence and complete call-path validation.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "Which runtime fields are static candidates for the authoritative participant match-score counters?",
+  "rejected_interpretations": [
+    "battle-result controller +0x21 is not a score counter; it is the signed winning combatant-record index confirmed by Task 2.",
+    "battle-result controller +0x0E is not a score counter; it is a cached losing combatant-record index used by presentation."
+  ]
+}

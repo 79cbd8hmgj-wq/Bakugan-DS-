@@ -1,0 +1,52 @@
+{
+  "attempt": 1,
+  "checkpoint": "3B",
+  "confidence_boundary": "No runtime score observation was produced. Participant +0xEE remains candidate-only and no match-score, captured-Gate, threshold, lifetime, or reset semantic is promoted.",
+  "environment_observation": {
+    "active_desmume_process": false,
+    "active_gdb_connection": false,
+    "compatible_battery_save_present": false,
+    "compatible_save_state_present": false,
+    "desmume_executable_present": false,
+    "rom": {
+      "game_code": "B6RE",
+      "path_class": "user-provided local input",
+      "sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+      "title": "BAKUGAN W"
+    }
+  },
+  "format_version": 1,
+  "prior_durable_context": {
+    "candidate_artifact": "analysis/gates/match-score-candidates.json",
+    "candidate_field": "participant object +0xEE",
+    "candidate_update_range": "0x022423F0..0x0224242C",
+    "known_clean_session_participant_addresses_are_not_reused": [
+      "0x022E24E0",
+      "0x022E2640"
+    ],
+    "reason_not_reused": "Those addresses came from an earlier clean executable session. Runtime heap addresses must be re-derived in the new process rather than assumed stable."
+  },
+  "profile_id": "b6re_rev0",
+  "result": "bounded_negative",
+  "retry_capture_contract": {
+    "breakpoint": "0x022423F0",
+    "before_continue": [
+      "Read signed winner record index from the live battle-result controller +0x21.",
+      "Resolve defender and challenger participant indices using the already confirmed Task 2 mapping.",
+      "Resolve both live participant object pointers from the current session rather than using addresses from an earlier process.",
+      "Record both participants' +0xEE and adjacent +0xFE bytes."
+    ],
+    "continue_until": "0x0224242C or the first instruction after the candidate increment block",
+    "required_observation": [
+      "The participant mapped from the settled winner record changes +0xEE from N to N+1.",
+      "The other live combatant's +0xEE remains unchanged in the same result.",
+      "Record whether +0xFE changes for the winner without assigning semantics to it."
+    ],
+    "success_boundary": "This observation confirms only that +0xEE is an authoritative winner-updated participant match counter. It does not by itself prove that the counter specifically means captured Gate Cards or establish the victory threshold."
+  },
+  "searches_performed": [
+    "Checked active processes for DeSmuME and GDB-backed debugger sessions.",
+    "Checked /mnt/data and /tmp for desmume executables, .dsv battery saves, .ds0-.ds9 states, and game .sav files.",
+    "Searched available uploaded-file history for a reusable DeSmuME bundle or compatible save-state file; only textual handoff records were available."
+  ]
+}

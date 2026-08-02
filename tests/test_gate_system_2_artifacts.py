@@ -6,6 +6,11 @@ from pathlib import Path
 
 EVIDENCE = Path("analysis/gates/card-id-evidence.json")
 SYMBOLS = Path("analysis/symbols/gate_cards.csv")
+LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
+LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
+SELECTOR = Path("analysis/gates/battle-type-selector.json")
+BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
+CONTEXT = Path("analysis/gates/battle-context.json")
 FORBIDDEN_KEYS = {"raw_bytes", "ram_dump", "save_state", "screenshot", "complete_gate_table"}
 
 
@@ -55,10 +60,6 @@ def test_gate_symbol_csv_matches_selected_mappings() -> None:
     assert all(row["confidence"] == "confirmed" for row in rows)
 
 
-LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
-LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
-
-
 def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
     payload = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
     transitions = payload["transitions"]
@@ -76,10 +77,6 @@ def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
     assert "0x0223EA60" in document
     assert "Resolved to reset" in document
     assert "Reused" in document
-
-
-SELECTOR = Path("analysis/gates/battle-type-selector.json")
-BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
 
 
 def test_battle_type_selector_is_fixed_and_complete() -> None:
@@ -123,9 +120,6 @@ def test_battle_type_symbol_csv_has_required_columns() -> None:
         "DispatchBattleType",
     }
     assert all(row["confidence"] == "confirmed" for row in rows)
-
-
-CONTEXT = Path("analysis/gates/battle-context.json")
 
 
 def test_battle_context_has_confirmed_hook_safe_core() -> None:
@@ -212,3 +206,79 @@ def test_hook_feasibility_has_all_purposes_and_reversible_instrumentation() -> N
     assert payload["instrumentation"]["raw_debugger_log_committed"] is False
     assert payload["code_layout"]["module_start"] == "0x0228BC20"
     assert payload["code_layout"]["module_end"] == "0x02293C20"
+
+
+def test_all_gate_json_artifacts_are_normalized_and_safe() -> None:
+    for path in sorted(Path("analysis/gates").glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert isinstance(payload, dict)
+        assert path.read_text(encoding="utf-8").endswith("\n")
+        assert FORBIDDEN_KEYS.isdisjoint(walk_keys(payload)), path
+
+
+def test_milestone_6a_success_criteria_are_documented() -> None:
+    legacy = json.loads(Path("analysis/gates/legacy-table-metadata.json").read_text())
+    assert legacy["confidence"] == "confirmed"
+    assert legacy["record_count"] == 213
+    assert legacy["record_stride"] == 6
+    assert legacy["element_width"] == 1
+    assert legacy["signed"] is False
+    assert legacy["attribute_order"] == [
+        "pyrus",
+        "aquos",
+        "subterra",
+        "haos",
+        "darkus",
+        "ventus",
+    ]
+
+    lifecycle = json.loads(Path("analysis/gates/activation-lifecycle.json").read_text())
+    assert any(item["to_state"] == "battle_started" for item in lifecycle["transitions"])
+    assert lifecycle["ai_path"]["shared"] is True
+
+    selector = json.loads(Path("analysis/gates/battle-type-selector.json").read_text())
+    assert selector["selection_mode"] == "fixed_metadata"
+    assert selector["forced_paths"]
+
+    context = json.loads(Path("analysis/gates/battle-context.json").read_text())
+    confirmed = {
+        item["name"]
+        for item in context["fields"]
+        if item["confidence"] == "confirmed" and item["safe_for_hook"]
+    }
+    assert "gate_card_id" in confirmed
+    assert "compressed_core_g" in confirmed
+    assert "battle_type_id" in confirmed
+
+    hooks = json.loads(Path("analysis/gates/hook-feasibility.json").read_text())
+    assert {item["purpose"] for item in hooks["sites"]} == {
+        "gate_bonus",
+        "battle_type_selector",
+        "context_access",
+        "expanded_data_lookup",
+    }
+    assert hooks["instrumentation"]["gameplay_result_changed"] is False
+
+
+def test_gate_documentation_defines_legacy_and_6b_contracts() -> None:
+    legacy = Path("docs/gate-card-legacy-system.md").read_text(encoding="utf-8")
+    roadmap = Path("docs/gate-card-system-2-roadmap.md").read_text(encoding="utf-8")
+
+    for required in (
+        "0x020A15AC",
+        "213",
+        "Pyrus",
+        "bakugan-ds gate export-legacy",
+        "Copyright and evidence boundary",
+    ):
+        assert required in legacy
+
+    for required in (
+        "No System 2.0 gameplay effect is implemented",
+        "4,152-byte `G2DT` trailer",
+        "0x0228BC20–0x02293C20",
+        "fixed-point percentage of compressed core G",
+        "Every other Gate retains original",
+        "Milestone 6G",
+    ):
+        assert required in roadmap

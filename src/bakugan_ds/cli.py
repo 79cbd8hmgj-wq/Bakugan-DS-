@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from collections.abc import Sequence
 from pathlib import Path
-import sys
 
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
 from bakugan_ds.gates.cli import add_gate_parser, run_gate_command

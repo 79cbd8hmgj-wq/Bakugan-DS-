@@ -5,6 +5,8 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+
+from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.discovery import (
     BehaviorCheck,
     DiscoveryArtifact,
@@ -12,8 +14,6 @@ from bakugan_ds.gates.discovery import (
     RuntimeFieldEvidence,
     load_discovery_artifact,
 )
-
-from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.model import Confidence
 
 

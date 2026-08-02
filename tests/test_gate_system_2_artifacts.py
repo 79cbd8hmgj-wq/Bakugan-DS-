@@ -8,6 +8,8 @@ EVIDENCE = Path("analysis/gates/card-id-evidence.json")
 SYMBOLS = Path("analysis/symbols/gate_cards.csv")
 LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
 LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
+SELECTOR = Path("analysis/gates/battle-type-selector.json")
+BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
 FORBIDDEN_KEYS = {"raw_bytes", "ram_dump", "save_state", "screenshot", "complete_gate_table"}
 
 
@@ -74,3 +76,46 @@ def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
     assert "0x0223EA60" in document
     assert "Resolved to reset" in document
     assert "Reused" in document
+
+
+def test_battle_type_selector_is_fixed_and_complete() -> None:
+    payload = json.loads(SELECTOR.read_text(encoding="utf-8"))
+    assert payload["selection_mode"] == "fixed_metadata"
+    assert payload["uses_rng_in_normal_path"] is False
+    assert payload["rng_calls"] == []
+    assert payload["random_range"] is None
+    assert [(item["type_id"], item["label"]) for item in payload["types"]] == [
+        (0, "Scratch"),
+        (1, "Timing"),
+        (2, "Pop"),
+        (3, "Spin"),
+        (4, "Trace"),
+        (5, "Bound"),
+    ]
+    assert len(payload["comparison_cases"]) == 6
+    assert {item["selected_type_id"] for item in payload["comparison_cases"]} == set(range(6))
+    assert payload["complete_card_metadata_committed"] is False
+    assert payload["type_label_source"]["complete_reference_table_committed"] is False
+    assert FORBIDDEN_KEYS.isdisjoint(walk_keys(payload))
+
+
+def test_battle_type_symbol_csv_has_required_columns() -> None:
+    with BATTLE_TYPE_SYMBOLS.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        assert reader.fieldnames == [
+            "component",
+            "runtime_address",
+            "component_offset",
+            "name",
+            "confidence",
+            "evidence",
+        ]
+    assert {row["name"] for row in rows} >= {
+        "GetCardMetadataByte",
+        "SelectGateBattleType",
+        "StoreSelectedBattleType",
+        "ApplyBattleTypeOverride",
+        "DispatchBattleType",
+    }
+    assert all(row["confidence"] == "confirmed" for row in rows)

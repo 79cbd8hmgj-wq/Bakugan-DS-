@@ -8,6 +8,8 @@ This document separates original Gate reuse eligibility, capture bookkeeping, ph
 
 The higher-level battle object remains driven by dispatcher `0x0223EA60`. Its state byte is battle-object offset `+0x0C`, and the original executable handles states `0` through `8`. This dispatcher coordinates battle construction, active battle processing, result handling, and completion; it is separate from the Gate-slot, arena-placement, capture-history, and descriptor state documented below.
 
+The historical lifecycle label **Resolved to reset** refers to that higher-level state-machine completion route. It does not mean that result completion clears participant or session Gate state in place; fresh participant and session construction remain the authoritative reset boundaries.
+
 ## Participant Gate-slot state
 
 Each participant owns Gate-slot records beginning at:

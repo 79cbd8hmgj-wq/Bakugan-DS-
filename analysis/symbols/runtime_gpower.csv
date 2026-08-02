@@ -1,0 +1,8 @@
+name,component,address,component_offset,confidence,evidence
+BattleGPowerRecord_Init,overlay_0007,0x0223CFE8,0x00023BA8,confirmed,"Runtime records match constructor writes for 230+180=410 and 190+100=290"
+BattleGPower_AddGateBonus,overlay_0007,0x0223D288,0x00023E48,confirmed,"Two write-watchpoint stops preserved r2 base, r1 bonus, and r0 sum"
+BattleGPower_StoreTarget,overlay_0007,0x0223D28C,0x00023E4C,confirmed,"Write watchpoints on both target fields stopped at post-store PC 0x0223D290"
+BattleGPower_DisplayTween,overlay_0007,0x0223DDAC,0x0002496C,confirmed,"Write watchpoint and disassembly show current moving toward target by three per frame"
+BattleGPower_AdjustState,overlay_0007,0x0221A7D0,0x00001390,probable,"Later state paths add record +0x0A and rewrite a target field; modifier semantics are not confirmed"
+GateAttributeBonus_Lookup,arm9,0x02065BF4,0x00065BF4,confirmed,"Live RAM disassembly indexes six bytes per card at 0x020A15AC using card_id * 6 + attribute_id"
+GateAttributeBonus_Table,arm9,0x020A15AC,0x000A15AC,confirmed,"Live GateAttributeBonus_Lookup loads one unsigned byte from card_id * 6 + attribute_id"

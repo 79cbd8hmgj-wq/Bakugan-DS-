@@ -1,26 +1,25 @@
 # G-Power Runtime Validation
 
-Static analysis cannot identify the final G-Power calculation with sufficient
-confidence. Runtime evidence is required.
+Milestone 4B is complete. See [`runtime-gpower-tracing.md`](runtime-gpower-tracing.md)
+and `analysis/runtime-observations/gpower_tutorial.json` for normalized evidence.
 
-1. Enter a controlled battle and record the displayed G-Power.
-2. Search emulator RAM for the value as both unsigned 16-bit and 32-bit data.
-3. Change exactly one input: Gate Card, level, evolution state, attribute, or an
-   Ability Card effect.
-4. Filter the candidate addresses using the new displayed value.
-5. Set a write breakpoint on the surviving live value.
-6. Repeat the action and record:
-   - writing instruction address;
-   - active executable component or overlay ID;
-   - source registers and memory operands;
-   - call stack or link-register chain;
-   - before and after values.
-7. Convert addresses to component-relative offsets:
-   - ARM9 offset = address minus `0x02000000`;
-   - overlay 7 offset = address minus `0x02219440`.
-8. Repeat with isolated changes to base Bakugan, level, evolution, Gate Card,
-   and attribute to identify where each contribution enters the pipeline.
+Confirmed results:
 
-The target deliverable is a verified function and input map for base G-Power,
-level growth, evolution, Gate bonus, attribute modifier, and final stored value.
-Only then should a guarded balance patch be designed.
+- adjacent 20-byte participant entries with G-Power fields at entry `+0x0C`;
+- constructor at `0x0223CFE8`;
+- initial base snapshot formed from source `+0x04 + +0x06`;
+- source `+0x04` confirmed as the form's level-1/base G value;
+- source `+0x06` confirmed as an additive progression component, with level growth the probable semantic role;
+- all 38 reference forms share a +250 G level-1-to-max range;
+- target addition at `0x0223D288` and store at `0x0223D28C`;
+- two write-watchpoint hits at post-store PC `0x0223D290`;
+- opponent operands `230 + 180 = 410`;
+- player operands `190 + 100 = 290`;
+- confirmed Gate/attribute helper at `0x02065BF4` and table at `0x020A15AC`;
+- Gate lookup indexed as `card_id * 6 + attribute_id`, then scaled by ten;
+- display tween at `0x0223DDAC`, separate from the formula.
+
+The next controlled runtime matrix should capture a nonzero progression value,
+an evolution transition, and one Ability Card effect independently. These are
+follow-up semantic checks; the central G-Power pipeline is confirmed. The later
+participant field `+0x0A` remains unresolved.

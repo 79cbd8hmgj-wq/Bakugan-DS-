@@ -1,0 +1,208 @@
+{
+  "format_version": 1,
+  "rom_profile": "b6re_rev0",
+  "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+  "confidence": "confirmed",
+  "scenario": {
+    "mode": "battle_tutorial",
+    "player_bakugan": "Serpenoid",
+    "player_attribute": "Pyrus",
+    "player_level": 1,
+    "controlled_change": "Pyrus Gate Card bonus"
+  },
+  "component": {
+    "name": "overlay_0007",
+    "load_address": "0x02219440",
+    "decoded_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
+  },
+  "record_layout": {
+    "participant_entry_stride_bytes": 20,
+    "gpower_fields_offset": 12,
+    "fields": {
+      "0x00": "animated_current_g",
+      "0x02": "target_total_g",
+      "0x04": "base_snapshot_g",
+      "0x06": "gate_attribute_bonus_g"
+    },
+    "address_note": "The owning container address changes between runs; field offsets and participant stride remained stable."
+  },
+  "controlled_records": [
+    {
+      "side": "opponent",
+      "example_entry_base": "0x022E58E0",
+      "example_gpower_fields": "0x022E58EC",
+      "values": {
+        "animated_current_g": 410,
+        "target_total_g": 410,
+        "base_snapshot_g": 230,
+        "gate_attribute_bonus_g": 180
+      },
+      "equation": "230 + 180 = 410"
+    },
+    {
+      "side": "player",
+      "example_entry_base": "0x022E58F4",
+      "example_gpower_fields": "0x022E5900",
+      "values": {
+        "animated_current_g": 290,
+        "target_total_g": 290,
+        "base_snapshot_g": 190,
+        "gate_attribute_bonus_g": 100
+      },
+      "equation": "190 + 100 = 290"
+    }
+  ],
+  "stat_source_capture": {
+    "breakpoint_pc": "0x0223D0F0",
+    "first_record": {
+      "runtime_address": "0x022E264C",
+      "raw_hex": "00004000e60000001c020117",
+      "u16_04_form_base_g": 230,
+      "u16_06_progression_bonus_g": 0
+    },
+    "second_record": {
+      "runtime_address": "0x022E24EC",
+      "raw_hex": "00000100be00000016000113",
+      "u16_04_form_base_g": 190,
+      "u16_06_progression_bonus_g": 0
+    }
+  },
+  "formula": {
+    "constructor_address": "0x0223CFE8",
+    "constructor_end": "0x0223D3E8",
+    "caller_address": "0x0223E334",
+    "initial_base_snapshot": "source_u16_04 + source_u16_06",
+    "initial_base_instructions": [
+      {
+        "address": "0x0223D0F0",
+        "word": "0xE1D120B4",
+        "assembly": "ldrh r2, [r1, #4]"
+      },
+      {
+        "address": "0x0223D0F4",
+        "word": "0xE1D110B6",
+        "assembly": "ldrh r1, [r1, #6]"
+      },
+      {
+        "address": "0x0223D0F8",
+        "word": "0xE0821001",
+        "assembly": "add r1, r2, r1"
+      },
+      {
+        "address": "0x0223D0FC",
+        "word": "0xE1C610BC",
+        "assembly": "strh r1, [r6, #12]"
+      }
+    ],
+    "gate_attribute_bonus": "gate_table[card_id * 6 + attribute_id] * 10",
+    "target_total": "base_snapshot_g + gate_attribute_bonus_g",
+    "target_total_instructions": [
+      {
+        "address": "0x0223D278",
+        "word": "0xE1D520BC",
+        "assembly": "ldrh r2, [r5, #12]"
+      },
+      {
+        "address": "0x0223D27C",
+        "word": "0xE1D511B2",
+        "assembly": "ldrh r1, [r5, #18]"
+      },
+      {
+        "address": "0x0223D288",
+        "word": "0xE0820001",
+        "assembly": "add r0, r2, r1"
+      },
+      {
+        "address": "0x0223D28C",
+        "word": "0xE1C500BE",
+        "assembly": "strh r0, [r5, #14]"
+      }
+    ],
+    "display_tween_address": "0x0223DDAC",
+    "display_animation_step": 3
+  },
+  "target_total_watchpoint_capture": {
+    "add_instruction": "0x0223D288",
+    "store_instruction": "0x0223D28C",
+    "post_store_pc": "0x0223D290",
+    "hits": [
+      {
+        "side": "opponent",
+        "watched_address": "0x022E58EE",
+        "stop_packet": "T06watch:ee85e220;",
+        "registers": {
+          "r0_result": 410,
+          "r1_bonus": 180,
+          "r2_base": 230,
+          "r5_entry_base": "0x022E58E0",
+          "r6_container_base": "0x022E58E0"
+        }
+      },
+      {
+        "side": "player",
+        "watched_address": "0x022E5902",
+        "stop_packet": "T06watch:2095e220;",
+        "registers": {
+          "r0_result": 290,
+          "r1_bonus": 100,
+          "r2_base": 190,
+          "r5_entry_base": "0x022E58F4",
+          "r6_container_base": "0x022E58E0"
+        }
+      }
+    ]
+  },
+  "gate_bonus_source": {
+    "helper_address": "0x02065BF4",
+    "table_address": "0x020A15AC",
+    "helper_confidence": "confirmed",
+    "table_confidence": "confirmed",
+    "row_width": 6,
+    "value_scale": 10,
+    "confirmed_code_behavior": "The helper indexes a six-byte-per-card table with card_id * 6 + attribute_id and returns one unsigned byte; overlay 7 multiplies it by 10 before storage."
+  },
+  "source_components": {
+    "0x04": {
+      "name": "form_base_g",
+      "functional_confidence": "confirmed",
+      "reference_role": "published level-1 G-Power"
+    },
+    "0x06": {
+      "name": "progression_bonus_g",
+      "functional_confidence": "confirmed",
+      "tutorial_value": 0,
+      "semantic_interpretation": "level_growth_g",
+      "semantic_confidence": "probable",
+      "evidence_boundary": "A nonzero leveled runtime sample has not yet been captured."
+    }
+  },
+  "reference_crosscheck": {
+    "source": "user-supplied Bakugan reference table; normalized summary only",
+    "forms_checked": 38,
+    "unique_max_minus_min_values": [250],
+    "interpretation": "Every listed form has a 250 G level-1-to-max progression range."
+  },
+  "confidence_boundaries": {
+    "source_u16_04": {
+      "confidence": "confirmed",
+      "interpretation": "form base G-Power matching the published level-1 value"
+    },
+    "source_u16_06": {
+      "confidence": "confirmed_function_probable_semantics",
+      "interpretation": "additive progression bonus; level-growth meaning is probable until a nonzero leveled sample is captured"
+    },
+    "evolution_representation": {
+      "confidence": "probable",
+      "interpretation": "evolution selects a different form/base entry rather than populating source +0x06; not directly observed"
+    },
+    "later_battle_modifier": {
+      "confidence": "candidate",
+      "interpretation": "participant field +0x0A is used by later target rewrites, but its Ability Card/minigame semantics are unresolved"
+    }
+  },
+  "excluded_false_positive": {
+    "address": "0x02007EB8",
+    "reason": "The watchpoint fired while overlay decompression reused the same RAM; disassembly identifies a BLZ decode loop rather than G-Power logic."
+  },
+  "repository_boundary": "RAM dumps, screenshots, save states, ROM bytes, and copied guide tables are local evidence and are not committed."
+}

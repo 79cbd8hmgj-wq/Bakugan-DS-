@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.discovery import DiscoveryArtifact, Presence

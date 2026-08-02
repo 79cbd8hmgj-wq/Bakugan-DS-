@@ -2,7 +2,7 @@
 
 ## Decision
 
-**Primary:** hybrid raw-NitroFS trailer plus a 64-byte overlay-7 BSS cache.
+**Primary:** hybrid raw-NitroFS trailer plus a guarded overlay-7 module and 64-byte BSS cache.
 
 **Fallback:** raw-NitroFS trailer read into a 72-byte stack buffer without persistent cache.
 
@@ -56,25 +56,36 @@ The trailer header must contain:
 
 Missing magic, unsupported version, incorrect geometry, invalid card ID, short reads, or checksum failure must select the original legacy Gate behavior.
 
-### Battle-local cache
+### Executable region and battle-local cache
 
-Reserve 64 bytes after overlay 7's existing BSS:
+Overlay 7 cannot simply grow into its existing BSS because original code contains absolute references to that BSS. The hybrid layout preserves those addresses by materializing the original `0x640` BSS bytes as zero-filled writable bytes in the expanded overlay payload, then appending the System 2.0 module.
 
-| Property | Original | System 2.0 |
+| Region | Original | System 2.0 |
 |---|---:|---:|
-| Overlay-7 BSS size | `0x640` | `0x680` |
-| Overlay-7 BSS end | `0x0228BC20` | `0x0228BC60` |
-| Battle-arena low boundary | `0x0228BC20` | `0x0228BC60` |
+| Overlay-7 `ram_size` | `0x721A0` | `0x7A7E0` |
+| Original BSS addresses | `0x0228B5E0–0x0228BC20` | preserved as zero-backed payload data |
+| System 2.0 code region | none | `0x0228BC20–0x02293C20` (`0x8000` bytes) |
+| Overlay-7 BSS size | `0x640` | `0x40` |
+| Selected-record cache | none | `0x02293C20–0x02293C60` |
+| Battle-arena low boundary | `0x0228BC20` | `0x02293C60` |
 | Battle-arena high boundary | `0x023E0000` | unchanged |
-| Arena capacity | 1,393,632 bytes | 1,393,568 bytes |
+| Arena capacity | 1,393,632 bytes | 1,360,800 bytes |
 
 ARM9 function `0x020061D8` returns `0x0228BC20` as the battle arena's low boundary. Its function SHA-256 is `61a85f352aeb7cd1ff1846cf109a3f46e063cee8ad409d335a0686208cec6802`. The four-byte literal at `0x02006264` is `20bc2802`, SHA-256 `7aff087442df57ce6203666128e65dc2b442f1ad3de1ba8e4c03282cf7b8d952`.
 
-The BSS size is stored at ROM offset `0x000718EC` as `40060000`. Overlay-table entry 7 has SHA-256 `6fe6eade1de5331451ff0e59ef7ad5634699fdf2d52476697da59fab4b0fbbf2`.
+Overlay-table entry 7 has SHA-256 `6fe6eade1de5331451ff0e59ef7ad5634699fdf2d52476697da59fab4b0fbbf2`. Its `ram_size` field is at ROM offset `0x000718E8`; its BSS field is at `0x000718EC`.
 
-Milestone 6B must update the overlay-7 BSS field and ARM9 arena-boundary literal atomically. Changing only one would create an overlap or leave the cache outside reserved memory.
+Milestone 6B must atomically:
 
-The cache stores one validated selected record, its card ID, format version, and a valid flag. Overlay loading zeroes the BSS. Battle completion clears the valid flag. Every consumer must fall back to legacy behavior if the cache is invalid.
+1. append `0x640` zero bytes that preserve the original BSS addresses;
+2. append an exactly `0x8000`-byte guarded System 2.0 module;
+3. change `ram_size` from `0x721A0` to `0x7A7E0`;
+4. change BSS from `0x640` to `0x40`;
+5. change the arena-low literal from `0x0228BC20` to `0x02293C60`.
+
+Changing only part of this set would overwrite original globals, leave code outside the loaded overlay, or overlap the battle arena.
+
+The new BSS stores one validated selected record, its card ID, format version, and a valid flag. Overlay loading zeroes the cache. Battle completion clears the valid flag. Every consumer must fall back to legacy behavior if the cache is invalid.
 
 ## Fallback: raw NitroFS without cache
 
@@ -94,9 +105,9 @@ It requires no heap allocation, BSS growth, overlay metadata change, or persiste
 | Candidate | Viable | Scope | Decision |
 |---|---|---|---|
 | NitroFS | Yes | Complete roster, slower fallback | Existing raw LZ10 trailer, 72-byte stack read, no new FNT entry |
-| Expanded executable or overlay | No | None | No confirmed full-roster region; ARM9 is BLZ-compressed; overlay growth is rejected |
+| Expanded executable or overlay | No | None | No confirmed standalone full-roster region; ARM9 is BLZ-compressed; uncoordinated overlay growth is unsafe |
 | Dedicated overlay | No | None | Nine fixed overlays, no tenth loader route, unresolved lifetime/addressing |
-| Hybrid | Yes | Complete roster, primary | Raw NitroFS trailer plus 64-byte BSS selected-record cache |
+| Hybrid | Yes | Complete roster, primary | Raw NitroFS trailer plus guarded 32 KiB overlay module and 64-byte selected-record cache |
 
 ### NitroFS-only requirements
 
@@ -115,17 +126,19 @@ Risk: filesystem reads are slower than memory and cannot be placed in per-frame 
 
 Confirmed constraints:
 
-- overlay 7 is fixed at 467,360 decoded bytes;
+- overlay 7 is fixed at 467,360 decoded bytes in the original ROM;
 - the current rebuilder requires changed overlays to retain `ram_size`;
 - ARM9 is BLZ-compressed and no deterministic BLZ compressor exists;
 - the 72 zero Gate-table bytes for global IDs `201–212` are insufficient for the complete roster.
 
-Unresolved and therefore non-viable:
+Unresolved and therefore non-viable as a standalone storage strategy:
 
-- safe code/data space;
-- relocation strategy;
+- safe in-place code/data space;
 - deterministic ARM9 recompression;
-- full-roster capacity.
+- full-roster capacity without the NitroFS data source;
+- uncoordinated overlay growth that preserves original BSS addresses and arena ownership.
+
+The selected hybrid strategy resolves the overlay-growth portion through one exact atomic layout rather than treating arbitrary executable expansion as generally safe.
 
 ### Dedicated overlay
 
@@ -157,13 +170,15 @@ Milestone 6B must add a narrow guarded raw-trailer operation rather than treatin
 
 For the primary, the rebuild must additionally guard and update:
 
-- overlay-7 BSS metadata `0x640 → 0x680` at ROM offset `0x000718EC`;
-- ARM9 arena-low literal `0x0228BC20 → 0x0228BC60` at runtime address `0x02006264`.
+- overlay-7 payload length `0x721A0 → 0x7A7E0`, including preserved BSS zeros and an exact `0x8000`-byte module;
+- overlay-7 `ram_size` metadata at ROM offset `0x000718E8`;
+- overlay-7 BSS metadata `0x640 → 0x40` at ROM offset `0x000718EC`;
+- ARM9 arena-low literal `0x0228BC20 → 0x02293C60` at runtime address `0x02006264`.
 
 ## Rejected assumptions
 
 - Adding a new named NitroFS file is not supported by the current fixed FNT/FAT rebuild.
 - Zero bytes are not automatically free executable space.
-- Increasing overlay BSS without moving the arena boundary is unsafe.
+- Growing overlay code or changing BSS without preserving original BSS addresses and moving the arena boundary atomically is unsafe.
 - The full System 2.0 table will not be loaded or cached in RAM.
 - Missing or malformed System 2.0 data will never disable the original Gate system.

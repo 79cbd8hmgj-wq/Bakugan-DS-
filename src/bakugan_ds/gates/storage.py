@@ -67,11 +67,11 @@ def validate_storage_decision(decision: StorageDecision) -> None:
         raise WorkspaceError("storage decision requires nonempty evidence")
 
     by_name: dict[str, StorageCandidate] = {}
-    for candidate in decision.candidates:
-        candidate.validate()
-        if candidate.name in by_name:
-            raise WorkspaceError(f"duplicate storage candidate: {candidate.name}")
-        by_name[candidate.name] = candidate
+    for storage_candidate in decision.candidates:
+        storage_candidate.validate()
+        if storage_candidate.name in by_name:
+            raise WorkspaceError(f"duplicate storage candidate: {storage_candidate.name}")
+        by_name[storage_candidate.name] = storage_candidate
 
     missing = sorted(REQUIRED_STORAGE_CANDIDATES - by_name.keys())
     if missing:
@@ -81,10 +81,10 @@ def validate_storage_decision(decision: StorageDecision) -> None:
         raise WorkspaceError(f"unknown storage candidates: {', '.join(extra)}")
 
     for role, name in (("primary", decision.primary), ("fallback", decision.fallback)):
-        candidate = by_name.get(name)
-        if candidate is None:
+        selected_candidate = by_name.get(name)
+        if selected_candidate is None:
             raise WorkspaceError(f"storage {role} references unknown candidate: {name}")
-        if not candidate.viable:
+        if not selected_candidate.viable:
             raise WorkspaceError(f"storage {role} candidate {name} is not viable")
 
 

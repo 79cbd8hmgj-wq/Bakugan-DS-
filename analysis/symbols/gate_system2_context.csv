@@ -1,0 +1,11 @@
+component,runtime_address,component_offset,name,confidence,evidence
+overlay_0007,0x02230F58,0x00017B18,ConstructAIController,confirmed,Initializes the participant-owned AI decision object stored at participant +0xC8.
+overlay_0007,0x0223CFE8,0x00023BA8,ConstructBattleObject,confirmed,Derives Gate owner and constructs the two 20-byte combatant records.
+overlay_0007,0x0223E238,0x00024DF8,ConstructBattleResultController,confirmed,Initializes signed winner index +0x21 to -1 and stores the linked battle object at +0x38.
+overlay_0007,0x0223F918,0x000264D8,AdvanceBattleResultState,confirmed,Resolves and consumes winner and loser combatant indices through result finalization.
+overlay_0007,0x02244440,0x0002B000,CalculateBattleWinnerIndex,confirmed,Evaluates the two combatant records and returns winner record index 0 or 1.
+overlay_0007,0x02262A64,0x00049624,SetCombatantDescriptorPair,confirmed,Stores defender descriptor at session +0x28D and challenger descriptor at +0x28E.
+overlay_0007,0x02269734,0x000502F4,InitializeParticipantControlIdentity,confirmed,Leaves participant +0xC8 null for human slots and allocates an AI controller for later slots.
+overlay_0007,0x0226B4AC,0x0005206C,BranchOnActiveParticipantAI,confirmed,Selects AI-specific battle setup when active participant +0xC8 is non-null.
+overlay_0007,0x0226E430,0x00054FF0,RunAIShotPlanner,confirmed,Returns for null +0xC8 and consumes the AI controller when non-null.
+arm9,0x0202F134,0x0002F134,CountActiveMultiplayerParticipantSlots,confirmed,Counts active multiplayer slots used as the human-controlled prefix in modes 6 and 7.

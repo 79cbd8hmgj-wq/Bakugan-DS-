@@ -45,14 +45,14 @@ Python CI completed with 254 passed, 12 expected environment-gated skips, and 0 
 
 ## Task 3
 
-Current checkpoint: **3D — victory threshold and comparison path for participant `+0xEE`**.
+Current checkpoint: **3E — update timing, score lifetime, scripted behavior, and reset**.
 
 Task 3 checkpoints:
 
 1. 3A — static match-score candidate inventory: complete
 2. 3B — runtime score-changing result and no-change control: complete
 3. 3C — capture-history counter identity and relationship to score: complete
-4. 3D — victory threshold and comparison path: pending
+4. 3D — victory threshold and comparison path: complete
 5. 3E — update timing, round lifetime, scripted behavior, and reset: pending
 6. 3F — normalized artifact, validators, symbols, tests, CI, and task completion: pending
 
@@ -96,13 +96,29 @@ winner entry 0 = be0000000000
 other  +0xF4 = 0       unchanged
 ```
 
-The populated entry contains the losing combatant's 190 G base halfword and participant selector. Static evidence confirms:
+Static evidence confirms that `participant +0xF4` indexes six-byte capture-history entries at `participant +0x84 + index * 6`. It is not the authoritative match-score field.
 
-- `participant +0xF4` indexes six-byte entries at `participant +0x84 + index * 6`;
-- participant construction independently clears `+0xEE`, `+0xF4`, and the 36-byte six-entry ledger;
-- normal and alternate/scripted result paths append the same record geometry;
-- `+0xF4` is therefore a capture-history entry count, not the authoritative match-score field.
+### Checkpoint 3D
 
-System 2.0 must not substitute `+0xF4` for `+0xEE` when evaluating owner-behind, winner state, or match victory.
+`analysis/gates/match-score-victory-threshold.json` at commit `c2dce8bf3bc77fce08d7c11ad69e19e466aad03e` confirms the exact victory helper and threshold.
 
-Checkpoint 3D will determine the exact threshold applied to `+0xEE` and finalize whether it is specifically the captured-Gate count used to end the match or a mode-dependent abstract score.
+The helper at `0x02263150`:
+
+- iterates the configured participant count from global match configuration `+0x97`;
+- reads participant `+0xEE`;
+- when team-mode flag `+0x98` is enabled, resolves the teammate through participant `+0xF2` and adds the teammate's `+0xEE`;
+- compares the resulting individual or team score against `3` with an unsigned `>=` test;
+- returns `1` when any participant or team reaches the threshold, otherwise `0`.
+
+A single runtime call supplied both controls:
+
+```text
+participant 0 +0xEE = 2: threshold branch not taken
+participant 1 +0xEE = 3: threshold branch taken
+helper return r0 = 1
+caller 0x0223E834 -> match-complete target 0x0223E8D4
+```
+
+This confirms participant `+0xEE` as the captured-Gate match score for standard Gate battles. Solo participants are tested individually; team mode sums the participant and teammate scores before applying the same victory threshold of three.
+
+Checkpoint 3E will determine score initialization outside constructor-only evidence, round-to-round persistence, scripted seeding or bypasses, match completion lifetime, and final reset.

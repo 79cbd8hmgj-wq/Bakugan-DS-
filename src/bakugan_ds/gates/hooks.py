@@ -123,6 +123,12 @@ def _require_array(value: object, label: str) -> list[object]:
     return value
 
 
+def _require_bool(value: object, label: str) -> bool:
+    if not isinstance(value, bool):
+        raise WorkspaceError(f"{label} must be a boolean")
+    return value
+
+
 def _parse_integer(value: object, label: str) -> int:
     try:
         if isinstance(value, bool):
@@ -149,7 +155,9 @@ def normalize_hook_capture(payload: dict[str, object]) -> tuple[HookSite, ...]:
                 component_offset=_parse_integer(
                     item["component_offset"], f"sites[{index}].component_offset"
                 ),
-                instruction_length=int(item["instruction_length"]),
+                instruction_length=_parse_integer(
+                    item["instruction_length"], f"sites[{index}].instruction_length"
+                ),
                 expected_bytes_sha256=str(item["expected_bytes_sha256"]),
                 calling_convention=str(item["calling_convention"]),
                 live_registers=tuple(
@@ -164,7 +172,9 @@ def normalize_hook_capture(payload: dict[str, object]) -> tuple[HookSite, ...]:
                     item["return_address"], f"sites[{index}].return_address"
                 ),
                 code_space_strategy=str(item["code_space_strategy"]),
-                core_g_compatible=item["core_g_compatible"],  # type: ignore[arg-type]
+                core_g_compatible=_require_bool(
+                    item["core_g_compatible"], f"sites[{index}].core_g_compatible"
+                ),
                 rollback=str(item["rollback"]),
                 confidence=Confidence(str(item["confidence"])),
                 evidence=str(item["evidence"]),

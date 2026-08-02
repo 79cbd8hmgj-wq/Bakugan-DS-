@@ -17,8 +17,10 @@ Confirmed:
 
 Probable:
 
-- two `+30` callsites are progression-related because they also increment byte
-  `+0xFD`; their exact level/experience/battle-count semantics remain unresolved.
+- `0x0222D154` is progression-related because it applies `+30` and increments
+  byte `+0xFD`; the counter's exact semantics remain unresolved.
+- `0x0222B500` is separately identified as a probable field G-Power Boost
+  pickup path; it applies `+30` without touching `+0xFD`.
 
 Candidate:
 

@@ -1,0 +1,312 @@
+{
+  "audit_boundary": {
+    "complete_direct_call_inventories": [
+      {
+        "call_addresses": [
+          "0x02262690",
+          "0x022626DC",
+          "0x02262740",
+          "0x02262760",
+          "0x02262B8C",
+          "0x02262B9C"
+        ],
+        "call_count": 6,
+        "target": "0x0226A404",
+        "target_role": "central participant Gate-slot state setter"
+      },
+      {
+        "call_addresses": [
+          "0x0223E334"
+        ],
+        "call_count": 1,
+        "target": "0x0223CFE8",
+        "target_role": "battle-object constructor"
+      },
+      {
+        "call_count": 15,
+        "target": "0x02262638",
+        "target_role": "arena-placement allocation"
+      },
+      {
+        "call_count": 5,
+        "target": "0x022626B8",
+        "target_role": "arena-placement removal"
+      },
+      {
+        "call_addresses": [
+          "0x022656D0"
+        ],
+        "call_count": 1,
+        "target": "0x02262714",
+        "target_role": "active arena-placement transfer"
+      },
+      {
+        "call_count": 13,
+        "target": "0x02262768",
+        "target_role": "combatant descriptor attachment"
+      },
+      {
+        "call_count": 16,
+        "target": "0x02262828",
+        "target_role": "combatant descriptor detachment"
+      }
+    ],
+    "scope": [
+      "The exact B6RE USA revision-0 decoded overlay-7 battle implementation.",
+      "Every direct overlay-7 caller of the central Gate-slot setter, arena allocation, arena removal, arena transfer, descriptor attachment, descriptor detachment, and battle constructor.",
+      "The complete battle-construction, result-finalization, participant Gate initialization, participant destruction, session reset, scripted Gate setup, and ordinary Gate-slot chooser regions.",
+      "All 18 direct overlay-7 calls to ARM9 Gate-bonus accessor 0x02065BF4 and the accessor body itself.",
+      "Known participant, session, arena-record, battle-object, score, capture-history, placement-count, and descriptor-count candidates adjacent to the confirmed Gate lifecycle."
+    ],
+    "scope_limit": "This confirms absence from the original Gate activation lifecycle for profile b6re_rev0. It does not claim that unrelated counters elsewhere in the ROM have no other purpose."
+  },
+  "binary": {
+    "decoded_overlay": 7,
+    "decoded_overlay_runtime_base": "0x02219440",
+    "decoded_overlay_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "runtime_arm9_base": "0x02000000",
+    "runtime_arm9_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e"
+  },
+  "candidate_rejections": [
+    {
+      "access": "session +0x294",
+      "confirmed_role": "active arena-placement count",
+      "reason_not_activation_count": "Initialized to zero, incremented only when an arena record is allocated, decremented only when that record is removed, and unchanged when a battle is constructed on an existing placement."
+    },
+    {
+      "access": "session +0x295",
+      "confirmed_role": "active combatant descriptor or scene-object count",
+      "reason_not_activation_count": "Incremented by descriptor attachment and decremented by descriptor detachment independently of Gate placement and battle construction."
+    },
+    {
+      "access": "arena placement record +0x21",
+      "confirmed_role": "descriptor link encoded as descriptor index plus one",
+      "reason_not_activation_count": "Written during descriptor attachment and cleared during descriptor detachment; it identifies a linked descriptor rather than accumulating activations."
+    },
+    {
+      "access": "arena placement record +0x22 and +0x23",
+      "confirmed_role": "not promoted",
+      "reason_not_activation_count": "Neither byte is mutated by the complete common allocation, battle-construction, result, removal, transfer, descriptor, or reset lifecycle. No increment/read-as-history pair was found."
+    },
+    {
+      "access": "participant +0xF8",
+      "confirmed_role": "ordinary available-Gate-slot cache with scripted overrides",
+      "reason_not_activation_count": "Changes only when Gate-slot state crosses the zero/nonzero boundary and can be directly forced to zero by scripted setup."
+    },
+    {
+      "access": "participant +0xEE",
+      "confirmed_role": "captured-Gate match score",
+      "reason_not_activation_count": "Incremented for the settled winner and consumed by the threshold-three match-victory helper."
+    },
+    {
+      "access": "participant +0xF4",
+      "confirmed_role": "capture-history ledger entry count",
+      "reason_not_activation_count": "Indexes six-byte capture-history records and increments after match score bookkeeping."
+    },
+    {
+      "access": "participant Gate-slot state bytes at +0x56 + slot * 4",
+      "confirmed_role": "selectable, active-placement-assigned, or unavailable state",
+      "reason_not_activation_count": "Stores an enumerated lifecycle state 0, 1, or 2; it is not incremented and scripted setup may preassign state 2."
+    },
+    {
+      "access": "participant Gate-slot padding bytes +0x57, +0x5B, and +0x5F",
+      "confirmed_role": "unassigned within the audited participant Gate subsystem",
+      "reason_not_activation_count": "No activation read/write path uses these bytes. They are not selected for replacement storage because subsystem-local nonuse does not establish a safe global ABI or future compatibility."
+    },
+    {
+      "access": "battle object Gate ID and owner fields +0x04 and +0x06",
+      "confirmed_role": "battle-local Gate identity",
+      "reason_not_activation_count": "Constructed once from the arena placement and preserved through result processing without an increment."
+    },
+    {
+      "access": "ARM9 Gate-bonus accessor 0x02065BF4",
+      "confirmed_role": "pure card-ID and attribute-indexed table lookup",
+      "reason_not_activation_count": "The 24-byte helper performs no store, and its 18 direct overlay-7 callers use the returned value for calculation or comparison rather than activation-history mutation."
+    }
+  ],
+  "checkpoint": "4D",
+  "confidence_boundary": "The exact B6RE revision-0 Gate lifecycle has no original per-Gate activation count. The conclusion is a confirmed bounded absence supported by complete direct-call inventories and exact instruction-region hashes. The replacement cache described here is a future System 2.0 storage contract only; no executable, save, ROM payload, or gameplay behavior is changed in this checkpoint.",
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "length": 24,
+      "purpose": "ARM9 Gate-bonus accessor; pure lookup with no mutation",
+      "runtime_end": "0x02065C0C",
+      "runtime_start": "0x02065BF4",
+      "sha256": "6537181b7873d7486e58993e3137a0129a2a515e13795dce3b1e481d51058945"
+    },
+    {
+      "length": 1036,
+      "purpose": "battle construction and canonical Gate identity/bonus initialization",
+      "runtime_end": "0x0223D3F4",
+      "runtime_start": "0x0223CFE8",
+      "sha256": "be136c387ed66b4b2351c464bb49518446092e1b50013dd35137bb40b2546935"
+    },
+    {
+      "length": 236,
+      "purpose": "normal result, score/capture bookkeeping, arena removal, and descriptor cleanup",
+      "runtime_end": "0x022424DC",
+      "runtime_start": "0x022423F0",
+      "sha256": "166b5c882d31a6d9a5c60df8a0f77ea28817d72fce9eabc16585ac6f4f780467"
+    },
+    {
+      "length": 444,
+      "purpose": "session construction and match-local reset",
+      "runtime_end": "0x0225FF18",
+      "runtime_start": "0x0225FD5C",
+      "sha256": "490bc7e93bc1c69408b29ee55eacaf200fd9d731138de9e0e071394e314c3143"
+    },
+    {
+      "length": 304,
+      "purpose": "arena allocation, removal, and active-placement transfer",
+      "runtime_end": "0x02262768",
+      "runtime_start": "0x02262638",
+      "sha256": "70a0d60c025b5397a2a218aca6b86819c1c105f11b675766d97436621de7a8c8"
+    },
+    {
+      "length": 376,
+      "purpose": "descriptor attachment and detachment",
+      "runtime_end": "0x022628E0",
+      "runtime_start": "0x02262768",
+      "sha256": "68450c107ac3c8e0425b66dc9cc275569ff35f14305018a47774d41f3761462d"
+    },
+    {
+      "length": 1300,
+      "purpose": "participant construction and Gate record initialization",
+      "runtime_end": "0x02269BC8",
+      "runtime_start": "0x022696B4",
+      "sha256": "ecd781540b86064b3c0f1335c991380d0eca817efead34fd606557ce43c869ab"
+    },
+    {
+      "length": 108,
+      "purpose": "participant destruction",
+      "runtime_end": "0x02269C94",
+      "runtime_start": "0x02269C28",
+      "sha256": "d79198da01f9bd6e15be8b06dd772814f870dfac32537e982244757ff6b12555"
+    },
+    {
+      "length": 756,
+      "purpose": "central Gate-slot setter, scripted setup, and ordinary zero-state chooser",
+      "runtime_end": "0x0226A6F8",
+      "runtime_start": "0x0226A404",
+      "sha256": "2061d140858bf8d5b4bf057fe54b5e5eb33294bfefd89595ec7223bbda6a15d7"
+    }
+  ],
+  "original_activation_count": {
+    "access": "none",
+    "confidence": "confirmed",
+    "evidence": "No incrementing or history-preserving field exists in the complete Gate lifecycle audit. Battle construction derives Gate identity and calculates its bonus without mutating activation state; the normal result then removes the arena placement after one battle.",
+    "initialization": "none",
+    "lifetime": "not present",
+    "mutations": [
+      "none"
+    ],
+    "owner_structure": "none in the original Gate lifecycle",
+    "presence": "absent",
+    "replacement_plan": "Reserve a 12-byte saturating activation_count_by_arena_entry array in the approved future 64-byte System 2.0 match-local overlay-7 BSS cache at 0x02293C20..0x02293C60. Reset it at session construction; initialize, increment, reset-on-transfer, and clear-on-removal using the canonical arena-entry index. Do not repurpose original participant, arena-record, battle-object, or save-data bytes.",
+    "reset": "none"
+  },
+  "profile_id": "b6re_rev0",
+  "question": "Does the original Gate lifecycle maintain a per-Gate activation count, and if not, what exact match-local replacement storage should System 2.0 use?",
+  "replacement_storage": {
+    "address_range": "0x02293C20..0x02293C60",
+    "cache_size": 64,
+    "implemented_in_this_checkpoint": false,
+    "layout": [
+      {
+        "offset_range": "0x00..0x27",
+        "purpose": "validated selected System 2.0 Gate record",
+        "size": 40
+      },
+      {
+        "offset_range": "0x28",
+        "purpose": "selected global Gate card ID",
+        "size": 1
+      },
+      {
+        "offset_range": "0x29",
+        "purpose": "G2DT format version",
+        "size": 1
+      },
+      {
+        "offset_range": "0x2A",
+        "purpose": "selected-record valid flag",
+        "size": 1
+      },
+      {
+        "offset_range": "0x2B",
+        "purpose": "selected arena-entry index; 0xFF means no selected entry",
+        "size": 1
+      },
+      {
+        "offset_range": "0x2C..0x37",
+        "purpose": "activation_count_by_arena_entry[12], unsigned saturating bytes",
+        "size": 12
+      },
+      {
+        "offset_range": "0x38..0x3F",
+        "purpose": "reserved zero bytes for later versioned match-local state",
+        "size": 8
+      }
+    ],
+    "owner_structure": "future System 2.0 overlay-7 match-local BSS cache",
+    "rationale": [
+      "The arena allocator scans exactly 12 arena entries and the canonical battle constructor already carries the arena-entry index used to derive Gate identity.",
+      "Arena-entry ownership survives independently of participant Gate-slot state and therefore handles owner transfers without overloading participant records.",
+      "The cache is match-local, automatically zero-backed on overlay load, outside original object layouts, and already part of the approved hybrid expansion strategy.",
+      "No persistent save compatibility change is required."
+    ],
+    "update_contract": [
+      {
+        "event": "session construction",
+        "hook_boundary": "after the original 652-byte session memset returns at 0x0225FE90",
+        "operation": "clear all 12 activation counters, clear selected-record valid flag, and set selected arena-entry index to 0xFF"
+      },
+      {
+        "event": "arena placement allocation",
+        "hook_boundary": "successful allocation path in 0x02262638 after the selected entry is established",
+        "operation": "initialize activation_count_by_arena_entry[entry] to 0"
+      },
+      {
+        "event": "Gate battle construction",
+        "hook_boundary": "after 0x0223D1CC has stored canonical Gate ID and owner and before Gate-bonus lookup",
+        "operation": "increment activation_count_by_arena_entry[entry] once, saturating at 255"
+      },
+      {
+        "event": "active placement transfer",
+        "hook_boundary": "0x02262714 after arena owner and Gate-slot identity are replaced",
+        "operation": "reset activation_count_by_arena_entry[entry] to 0 because the Gate identity changed"
+      },
+      {
+        "event": "arena placement removal",
+        "hook_boundary": "0x022626B8 after the placement is cleared",
+        "operation": "clear activation_count_by_arena_entry[entry] and invalidate the selected entry when it matches"
+      },
+      {
+        "event": "overlay or session teardown",
+        "hook_boundary": "existing object lifetime boundary",
+        "operation": "do not persist activation history; zero-backed overlay load or the next session-construction reset establishes a clean state"
+      }
+    ]
+  },
+  "supported_conclusions": [
+    "The original exact B6RE Gate lifecycle has no per-Gate activation counter.",
+    "Session +0x294 counts active arena placements, not activations.",
+    "Session +0x295 and arena entry +0x21 track descriptor attachment, not activations.",
+    "Participant +0xF8, +0xEE, +0xF4, and Gate-slot state bytes have separately confirmed roles and cannot serve as activation history.",
+    "Battle construction reads Gate identity and calculates bonuses without mutating an activation field.",
+    "Normal original behavior removes the Gate arena placement after the result, so repeated activation history is not required by the legacy flow.",
+    "System 2.0 requires new match-local sidecar state for fatigue or repeat-activation effects.",
+    "The safe replacement is a 12-byte per-arena-entry array inside the approved future 64-byte overlay-7 BSS cache, not an original object or save byte."
+  ],
+  "unresolved": [
+    "The activation-counter cache is a storage contract for Milestone 6C and is not implemented or runtime-tested in Milestone 6B.",
+    "Arena-dependent System 2.0 effects remain outside the first prototype until the separately deferred arena-ID requirement is resolved."
+  ],
+  "verification": {
+    "direct_call_inventory": "Fresh local parsing of /tmp/overlay7.asm matched all listed direct-call addresses and counts.",
+    "region_hashes": "Fresh SHA-256 calculation over /tmp/overlay7.bin and /tmp/bakugan_work/arm9.runtime.bin matched every committed expected region hash.",
+    "verification_result": "passed"
+  }
+}

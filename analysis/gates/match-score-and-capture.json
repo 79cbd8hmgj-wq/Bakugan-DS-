@@ -1,0 +1,155 @@
+{
+  "capture_counters": [
+    {
+      "access": "live player-side participant object +0xF4; indexes six-byte records at participant +0x84 + count * 6",
+      "confidence": "confirmed",
+      "evidence": "The normal result path changed only the winner-side +0xF4 from 0 to 1 after writing losing-combatant metadata into the first six-byte capture-history entry.",
+      "initial_value": 0,
+      "lifetime": "Participant object / match session; valid only while the participant object is live.",
+      "name": "player_capture_history_count",
+      "owner": "player",
+      "reset_function": "Participant constructor 0x022696B4 clears +0xF4 and the 36-byte ledger at +0x84.",
+      "update_function": "Normal append block 0x0224242C..0x02242498 and alternate append block 0x022613F4..0x02261450.",
+      "width_bits": 8
+    },
+    {
+      "access": "live opponent-side participant object +0xF4; indexes six-byte records at participant +0x84 + count * 6",
+      "confidence": "confirmed",
+      "evidence": "The non-winning participant +0xF4 and first capture-history record remained unchanged in the same controlled result.",
+      "initial_value": 0,
+      "lifetime": "Participant object / match session; valid only while the participant object is live.",
+      "name": "opponent_capture_history_count",
+      "owner": "opponent",
+      "reset_function": "Participant constructor 0x022696B4 clears +0xF4 and the 36-byte ledger at +0x84.",
+      "update_function": "The same winner-selected capture-history append paths update whichever participant won the settled result.",
+      "width_bits": 8
+    }
+  ],
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "Controlled result finalization changed only the settled winner's participant +0xEE from 2 to 3; the non-winner remained 2.",
+      "name": "winner_score_increment_and_nonwinner_control"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The winner score store completed before participant +0xF4 changed from 0 to 1 and before the first six-byte capture-history entry was populated.",
+      "name": "score_and_capture_history_separation"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Victory helper 0x02263150 skipped participant score 2, accepted score 3, returned 1, and caller 0x0223E834 entered the match-complete route.",
+      "name": "victory_threshold_runtime_control"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Team-mode logic resolves participant +0xF2, adds the teammate's +0xEE, and applies the same unsigned threshold of three.",
+      "name": "team_score_aggregation"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Terminal scores remained 2 and 3 after the match-complete branch into later tutorial UI; participant construction is the only decoded-overlay-7 direct clear of +0xEE.",
+      "name": "score_lifetime_and_reset"
+    }
+  ],
+  "domain": "match-score-and-capture",
+  "fields": [
+    {
+      "access": "live participant object +0xEE",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Runtime winner-only increment, score-2 no-change control, score-3 victory comparison, specialized writer audit, and constructor/destructor lifetime analysis.",
+      "initialization": "Participant constructor 0x022696B4 clears +0xEE to zero; mode or script setup may then seed the live score.",
+      "lifetime": "Participant object / match session, including result and post-result presentation while the object remains live.",
+      "mutations": [
+        "Settled normal and specialized result paths increment the selected winner by exactly one.",
+        "Confirmed mode/script setup blocks can increment both primary participant scores twice before ordinary play."
+      ],
+      "name": "match_score",
+      "owner_structure": "320-byte participant object",
+      "player_ai_behavior": "The representation and update rule are participant-relative and shared by human and AI sides; team aggregation is independent of control identity.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "A newly constructed participant starts at zero; destruction invalidates the old object without clearing the byte in place.",
+      "scripted_behavior": "Read the live score after setup because scripted modes may seed nonzero values; do not assume every match begins at zero.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "live participant object +0xF4, with records at participant +0x84 + index * 6",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Runtime boundary capture proved +0xF4 is independently incremented only after +0xEE and indexes a populated six-byte losing-combatant history entry.",
+      "initialization": "Participant constructor 0x022696B4 clears +0xF4 and the 36-byte capture-history ledger.",
+      "lifetime": "Participant object / match session.",
+      "mutations": [
+        "Normal and alternate capture append paths store one six-byte entry and increment +0xF4 for the winner."
+      ],
+      "name": "captured_gate_count",
+      "owner_structure": "320-byte participant object and its six-entry capture-history ledger",
+      "player_ai_behavior": "The same participant-relative ledger update is used for human and AI winners.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Participant construction clears the count and ledger; destruction ends validity.",
+      "scripted_behavior": "Specialized paths may update score without the common ledger append; System 2.0 must not substitute +0xF4 for match score.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "constant 3 in victory helper 0x02263150, compared at 0x02263194",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The same runtime call rejected aggregate score 2, accepted score 3, returned 1, and caused the caller's match-complete branch.",
+      "initialization": "Compile-time immediate in decoded overlay 7.",
+      "lifetime": "Stable for the exact decoded overlay-7 binary profile.",
+      "mutations": [
+        "No runtime mutation; the helper applies the constant to each solo or team aggregate."
+      ],
+      "name": "victory_threshold",
+      "owner_structure": "Gate match-victory predicate",
+      "player_ai_behavior": "The same threshold applies to human and AI participants and to team aggregates.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Not stateful; each helper call reevaluates the current live score against three.",
+      "scripted_behavior": "Scripted score seeding changes the input score, not the common threshold; forced transitions outside overlay 7 remain outside this field contract.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "result_timing": "Resolve the settled winner, set winner +0xFE, store winner +0xEE + 1, append capture history and increment +0xF4, then evaluate the common victory predicate later in the result state machine.",
+  "score_counters": [
+    {
+      "access": "live player-side participant object +0xEE",
+      "confidence": "confirmed",
+      "evidence": "Participant-relative runtime control and static writer inventory; logical player/opponent labels do not replace canonical participant-index resolution.",
+      "initial_value": 0,
+      "lifetime": "Participant object / match session; survives result and post-result presentation until session teardown.",
+      "name": "player_score",
+      "owner": "player",
+      "reset_function": "Participant constructor 0x022696B4 clears +0xEE; destruction frees the object without an in-place clear.",
+      "update_function": "Normal winner store 0x02242420..0x02242428 plus confirmed specialized result writers; scripted setup may seed both sides.",
+      "width_bits": 8
+    },
+    {
+      "access": "live opponent-side participant object +0xEE",
+      "confidence": "confirmed",
+      "evidence": "The same participant-relative storage and writer paths apply to the opposite logical side; controlled non-winner result left this counter unchanged.",
+      "initial_value": 0,
+      "lifetime": "Participant object / match session; survives result and post-result presentation until session teardown.",
+      "name": "opponent_score",
+      "owner": "opponent",
+      "reset_function": "Participant constructor 0x022696B4 clears +0xEE; destruction frees the object without an in-place clear.",
+      "update_function": "The winner-selected normal and specialized result writers increment whichever live participant wins; scripted setup may seed both sides.",
+      "width_bits": 8
+    }
+  ],
+  "scripted_paths": [
+    "Normal result finalization increments exactly one settled winner score before capture-history append and later victory evaluation.",
+    "Specialized result writers preserve one-point participant score increments; the alternate ledger path preserves score-before-ledger ordering.",
+    "Confirmed mode/script setup blocks can seed both primary participant scores by two after constructor initialization."
+  ],
+  "unresolved": [],
+  "victory_threshold": 3
+}

@@ -8,7 +8,13 @@ from typing import Any
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.io import load_json_object
-from bakugan_ds.gates.legacy import export_legacy_table, legacy_spec_from_dict, parse_legacy_table
+from bakugan_ds.gates.legacy import (
+    LegacyGateRecord,
+    export_legacy_table,
+    legacy_spec_from_dict,
+    parse_legacy_table,
+)
+from bakugan_ds.gates.model import LegacyGateTableSpec
 from bakugan_ds.gates.runtime_image import (
     load_runtime_arm9,
     load_workspace_arm9,
@@ -97,7 +103,7 @@ def ensure_local_output(path: Path) -> Path:
 
 def _load_verified_legacy(
     arguments: argparse.Namespace,
-):
+) -> tuple[dict[str, object], LegacyGateTableSpec, tuple[LegacyGateRecord, ...]]:
     validate_workspace_profile(arguments.workspace)
     payload = load_json_object(arguments.metadata)
     spec = legacy_spec_from_dict(payload)

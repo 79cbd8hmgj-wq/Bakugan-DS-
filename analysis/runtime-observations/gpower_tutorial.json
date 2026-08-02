@@ -1,5 +1,5 @@
 {
-  "format_version": 1,
+  "format_version": 2,
   "rom_profile": "b6re_rev0",
   "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
   "confidence": "confirmed",
@@ -15,6 +15,12 @@
     "load_address": "0x02219440",
     "decoded_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
   },
+  "local_evidence_hashes": {
+    "pre_calculation_savestate_sha256": "edfb5fed1edd1e46a9d77d3e0b86e8ef6952379cb404a3e82746dd65692bfa25",
+    "post_calculation_savestate_sha256": "8eda4e4110fce8843228006b66aabe1712f7473c37dd0167cef4b53ee12b1b2b",
+    "gate_bonus_initialization_capture_sha256": "10f926d860bcca281451602aa0f16501d5e87a524b1df910141c9dda8d08cb11",
+    "gate_bonus_final_capture_sha256": "efdbbf54efbaaea1d97d2f349ba0543a12d698a56eddebc6cf9403319478fc85"
+  },
   "record_layout": {
     "participant_entry_stride_bytes": 20,
     "gpower_fields_offset": 12,
@@ -24,7 +30,7 @@
       "0x04": "base_snapshot_g",
       "0x06": "gate_attribute_bonus_g"
     },
-    "address_note": "The owning container address changes between runs; field offsets and participant stride remained stable."
+    "address_note": "The owning heap address may change between runs; offsets and instructions are the stable identifiers."
   },
   "controlled_records": [
     {
@@ -52,26 +58,30 @@
       "equation": "190 + 100 = 290"
     }
   ],
-  "stat_source_capture": {
-    "breakpoint_pc": "0x0223D0F0",
-    "first_record": {
-      "runtime_address": "0x022E264C",
-      "raw_hex": "00004000e60000001c020117",
-      "u16_04_form_base_g": 230,
-      "u16_06_progression_bonus_g": 0
-    },
-    "second_record": {
-      "runtime_address": "0x022E24EC",
-      "raw_hex": "00000100be00000016000113",
-      "u16_04_form_base_g": 190,
-      "u16_06_progression_bonus_g": 0
-    }
+  "participant_source_records": {
+    "record_stride_bytes": 12,
+    "core_g_offset": 4,
+    "mutable_modifier_offset": 6,
+    "captured_records": [
+      {
+        "side": "opponent",
+        "runtime_address": "0x022E264C",
+        "core_g": 230,
+        "mutable_modifier": 0
+      },
+      {
+        "side": "player",
+        "runtime_address": "0x022E24EC",
+        "core_g": 190,
+        "mutable_modifier": 0
+      }
+    ]
   },
   "formula": {
     "constructor_address": "0x0223CFE8",
     "constructor_end": "0x0223D3E8",
     "caller_address": "0x0223E334",
-    "initial_base_snapshot": "source_u16_04 + source_u16_06",
+    "initial_base_snapshot": "source_core_g + source_mutable_modifier",
     "initial_base_instructions": [
       {
         "address": "0x0223D0F0",
@@ -121,6 +131,21 @@
     "display_tween_address": "0x0223DDAC",
     "display_animation_step": 3
   },
+  "gate_bonus_watchpoint_capture": {
+    "watched_address": "0x022E5906",
+    "length_bytes": 2,
+    "initialization_hit": {
+      "writer_instruction": "0x0223D12C",
+      "post_store_pc": "0x0223D130",
+      "value": 0
+    },
+    "final_hit": {
+      "writer_instruction": "0x0223D274",
+      "post_store_pc": "0x0223D278",
+      "source_register": "r1",
+      "source_value": 100
+    }
+  },
   "target_total_watchpoint_capture": {
     "add_instruction": "0x0223D288",
     "store_instruction": "0x0223D28C",
@@ -156,48 +181,80 @@
     "helper_address": "0x02065BF4",
     "table_address": "0x020A15AC",
     "helper_confidence": "confirmed",
-    "table_confidence": "confirmed",
+    "table_confidence": "confirmed_runtime_address",
     "row_width": 6,
     "value_scale": 10,
-    "confirmed_code_behavior": "The helper indexes a six-byte-per-card table with card_id * 6 + attribute_id and returns one unsigned byte; overlay 7 multiplies it by 10 before storage."
+    "confirmed_code_behavior": "The helper indexes card_id * 6 + attribute_id, loads one unsigned byte, and overlay 7 multiplies it by 10."
   },
-  "source_components": {
-    "0x04": {
-      "name": "form_base_g",
-      "functional_confidence": "confirmed",
-      "reference_role": "published level-1 G-Power"
-    },
-    "0x06": {
-      "name": "progression_bonus_g",
-      "functional_confidence": "confirmed",
-      "tutorial_value": 0,
-      "semantic_interpretation": "level_growth_g",
-      "semantic_confidence": "probable",
-      "evidence_boundary": "A nonzero leveled runtime sample has not yet been captured."
-    }
+  "mutable_modifier": {
+    "function_address": "0x0226A380",
+    "component_offset": "0x00050F40",
+    "functional_confidence": "confirmed",
+    "behavior": "Adds a signed delta to participant source-record offset +0x06, clamps the modifier to zero, and clamps core_g + modifier to 990.",
+    "maximum_combined_g": 990,
+    "known_callsites": [
+      {
+        "address": "0x0222B500",
+        "delta": 30,
+        "interpretation": "probable field G-Power Boost pickup",
+        "evidence": "Three-case field pickup handler; no +0xFD increment; documented field G-Power Boost value is +30."
+      },
+      {
+        "address": "0x0222D154",
+        "delta": 30,
+        "interpretation": "probable level-up or progression award",
+        "evidence": "Immediately followed by incrementing participant byte +0xFD up to 99."
+      },
+      {
+        "address": "0x02258CB4",
+        "delta": "signed runtime value",
+        "interpretation": "battle adjustment"
+      },
+      {
+        "address": "0x02267670",
+        "delta": "runtime value",
+        "interpretation": "unresolved"
+      },
+      {
+        "address": "0x02267688",
+        "delta": "runtime value",
+        "interpretation": "unresolved"
+      },
+      {
+        "address": "0x02274A2C",
+        "delta": "runtime value",
+        "interpretation": "unresolved"
+      }
+    ]
   },
   "reference_crosscheck": {
     "source": "user-supplied Bakugan reference table; normalized summary only",
     "forms_checked": 38,
-    "unique_max_minus_min_values": [250],
-    "interpretation": "Every listed form has a 250 G level-1-to-max progression range."
+    "unique_max_minus_min_values": [
+      250
+    ],
+    "interpretation": "Every listed form has a 250 G level-1-to-max range; this supports but does not prove the semantics of the +30 callsites or mutable modifier."
   },
   "confidence_boundaries": {
-    "source_u16_04": {
-      "confidence": "confirmed",
-      "interpretation": "form base G-Power matching the published level-1 value"
+    "source_core_g": {
+      "confidence": "confirmed_function",
+      "interpretation": "Starting core G used by the battle constructor; tutorial values match the published minimum values."
     },
-    "source_u16_06": {
-      "confidence": "confirmed_function_probable_semantics",
-      "interpretation": "additive progression bonus; level-growth meaning is probable until a nonzero leveled sample is captured"
+    "source_mutable_modifier": {
+      "confidence": "confirmed_function",
+      "interpretation": "General additive G channel used by progression and other gameplay paths; not exclusively a level-growth field."
+    },
+    "progression_callsites": {
+      "confidence": "probable",
+      "interpretation": "Only 0x0222D154 is a progression/level-up candidate because it pairs +30 G with a +0xFD counter increment. The separate 0x0222B500 +30 path is a field G-Power Boost pickup candidate and does not increment +0xFD."
     },
     "evolution_representation": {
-      "confidence": "probable",
-      "interpretation": "evolution selects a different form/base entry rather than populating source +0x06; not directly observed"
+      "confidence": "candidate",
+      "interpretation": "Evolved forms may select separate identity or source-stat records; this has not been observed at runtime."
     },
     "later_battle_modifier": {
       "confidence": "candidate",
-      "interpretation": "participant field +0x0A is used by later target rewrites, but its Ability Card/minigame semantics are unresolved"
+      "interpretation": "Participant field +0x0A is used by later target rewrites, but its Ability Card/minigame semantics are unresolved."
     }
   },
   "excluded_false_positive": {

@@ -25,89 +25,38 @@ findings:
         string_address: 0x0228A234
         string: gp_down
 interpretation:
-  - These functions are statically connected to GP pickup and GP-down effect resources.
-  - Their large switch/state-machine shapes make them useful battle-system entry points.
-  - They are not the runtime-confirmed initial total-G calculation path.
+  - These functions are statically connected to GP pickup and GP-down effects.
+  - They remain presentation-effect candidates, not the confirmed central formula.
 
 gate_bonus_candidate:
   component: arm9
-  encoding_hypothesis: six unsigned bytes equal to displayed attribute bonuses divided by 10
   start_address: 0x0205EFBA
   end_address: 0x0205F173
-  exact_reference_matches: 19
-  representative_matches:
-    - reference_name: Preyas's
-      address: 0x0205EFBA
-    - reference_name: Hydranoid
-      address: 0x0205EFD8
-    - reference_name: Fortress
-      address: 0x0205EFF6
-    - reference_name: Juggernoid
-      address: 0x0205F008
-    - reference_name: Stinglash
-      address: 0x0205F027
-    - reference_name: Manion
-      address: 0x0205F05C
   confidence: probable_data_region
-  caveats:
-    - The surrounding record schema, ordering, and seventh or later fields are not confirmed.
-    - Two all-equal bonus rows also match overlay 7 and are treated as likely low-specificity matches.
+  runtime_table_address: 0x020A15AC
+  source_region_relationship: not_confirmed
 
 runtime_confirmation:
-  formula_confidence: confirmed
+  evidence_file: analysis/runtime-observations/gpower_tutorial.json
   constructor_address: 0x0223CFE8
-  constructor_component_offset: 0x00023BA8
+  gate_bonus_store_address: 0x0223D274
   add_gate_bonus_address: 0x0223D288
-  add_gate_bonus_component_offset: 0x00023E48
   store_target_address: 0x0223D28C
-  store_target_component_offset: 0x00023E4C
-  watchpoint_post_store_pc: 0x0223D290
   display_tween_address: 0x0223DDAC
-  display_tween_component_offset: 0x0002496C
-  participant_entry_stride_bytes: 20
-  gpower_fields_offset: 0x0C
-  record_fields:
-    animated_current_g_offset: 0x00
-    target_total_g_offset: 0x02
-    base_snapshot_g_offset: 0x04
-    gate_attribute_bonus_g_offset: 0x06
+  participant_initialize_address: 0x022696B4
+  mutable_modifier_address: 0x0226A380
+  gate_lookup_address: 0x02065BF4
+  gate_runtime_table_address: 0x020A15AC
   confirmed_arithmetic:
-    initial_base_snapshot: source_u16_04 + source_u16_06
-    gate_attribute_bonus: lookup(card_id, attribute_id) * 10
+    base_snapshot: source_core_g + source_mutable_modifier
+    gate_bonus: lookup(card_id, attribute_id) * 10
     target_total: base_snapshot_g + gate_attribute_bonus_g
-  watchpoint_hits:
-    - side: opponent
-      watched_address: 0x022E58EE
-      base_register_r2: 230
-      bonus_register_r1: 180
-      result_register_r0: 410
-      equation: 230 + 180 = 410
-    - side: player
-      watched_address: 0x022E5902
-      base_register_r2: 190
-      bonus_register_r1: 100
-      result_register_r0: 290
-      equation: 190 + 100 = 290
-  gate_bonus_source:
-    helper_address: 0x02065BF4
-    helper_confidence: confirmed
-    table_address: 0x020A15AC
-    table_confidence: confirmed
-    confirmed_code_behavior: card_id * 6 + attribute_id selects an unsigned byte; overlay 7 multiplies it by 10
-  source_u16_04_role: form_base_g
-  source_u16_04_confidence: confirmed
-  source_u16_06_role: progression_bonus_g
-  source_u16_06_functional_confidence: confirmed
-  source_u16_06_semantic_interpretation: level_growth_g
-  source_u16_06_semantic_confidence: probable
-  reference_crosscheck:
-    forms_checked: 38
-    unique_max_minus_min_values: [250]
   confidence_boundaries:
-    - source_u16_04 matches the active form's published level-1 G-Power.
-    - source_u16_06 is functionally an additive progression component; a nonzero leveled runtime sample is still required to confirm the level-growth name absolutely.
-    - Evolution is expected to change the selected form/base entry, but that representation remains probable rather than directly observed.
-    - participant field +0x0A remains a candidate temporary battle modifier.
+    source_mutable_modifier: confirmed_general_additive_channel
+    progression_callsite_0x0222D154: probable
+    field_gpower_pickup_0x0222B500: probable
+    evolution_representation: candidate
+    participant_field_0x0A: candidate
   rejected_false_positive:
     address: 0x02007EB8
-    reason: overlay decompression reused the watched RAM after the battle
+    reason: BLZ decompression reused watched RAM after battle

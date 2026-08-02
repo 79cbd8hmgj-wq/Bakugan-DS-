@@ -2,41 +2,37 @@
 
 ## Result
 
-Milestone 4B confirms the initial battle G-Power record, the Gate Card
-attribute-bonus path, the final target-total calculation, and the separate UI
-counter animation for the exact `B6RE` USA revision 0 ROM.
+Milestone 4B confirms the initial battle G-Power record, Gate Card attribute
+lookup, final target-total calculation, and separate UI counter animation for
+the exact `B6RE` USA revision 0 ROM.
 
-A deterministic tutorial replay produced two adjacent 20-byte participant
-entries:
+A controlled Pyrus Serpenoid tutorial replay produced:
 
 - Opponent: **230 + 180 = 410**.
-- Player Serpenoid: **190 + 100 = 290**.
+- Player: **190 + 100 = 290**.
 
-The owning allocation moved between emulator runs, but the participant stride,
-field offsets, arithmetic instructions, and operands remained stable.
+Heap addresses may move between runs. Record offsets, component addresses,
+instructions, and captured operands are the stable evidence.
 
 ## Confirmed runtime record
 
-The G-Power fields begin at participant-entry offset `+0x0C`:
+The G-Power fields begin at participant-entry offset `+0x0C` within adjacent
+`0x14`-byte entries:
 
 | Field offset from `entry + 0x0C` | Confirmed role | Player value |
 | --- | --- | ---: |
-| `+0x00` | animated/current displayed G | 290 |
-| `+0x02` | target total G | 290 |
-| `+0x04` | base snapshot G | 190 |
+| `+0x00` | Animated/current displayed G | 290 |
+| `+0x02` | Target total G | 290 |
+| `+0x04` | Base snapshot G | 190 |
 | `+0x06` | Gate Card attribute bonus G | 100 |
 
-Participant entries use a `0x14` (20-byte) stride. One captured container began
-at `0x022E58E0`; the opponent G-Power fields began at `0x022E58EC` and the
-player fields at `0x022E5900`. These absolute RAM addresses are examples, not
-fixed symbols.
+One observed container began at `0x022E58E0`. The opponent fields began at
+`0x022E58EC`; the player fields began at `0x022E5900`.
 
-## Constructor and initial base snapshot
+## Constructor and starting snapshot
 
-The constructor begins at **`0x0223CFE8`** in overlay 7, component-relative
-offset `0x00023BA8`.
-
-The first participant's initial G value is formed at:
+Overlay 7 constructor **`0x0223CFE8`** forms each starting snapshot from a
+12-byte participant source record:
 
 ```text
 0x0223D0F0  ldrh r2, [r1, #4]
@@ -45,32 +41,21 @@ The first participant's initial G value is formed at:
 0x0223D0FC  strh  r1, [r6, #12]
 ```
 
-The second participant follows the same pattern at `0x0223D100` through
-`0x0223D10C`.
-
 Confirmed arithmetic:
 
 ```text
-initial_base_snapshot = source_u16_04 + source_u16_06
+base_snapshot_g = source_core_g + source_mutable_modifier
 ```
 
-The source fields can now be separated functionally:
+The tutorial records contain `230 + 0` and `190 + 0`. Function
+**`0x022696B4`** initializes normal core-G records from source values stored in
+tens and scales them by ten.
 
-- `source_u16_04` is the **form base G**. The active level-1 Serpenoid source
-  record stores `190` here, matching its published level-1 value. Other tutorial
-  roster records likewise store their published minimum values at `+0x04`.
-- `source_u16_06` is an **additive progression bonus**. The level-1 tutorial
-  records store `0` here, and the constructor adds it directly to the form base.
-
-A cross-check of all **38 forms** in the user-supplied Bakugan reference table
-found one universal progression range: every listed maximum is exactly **+250 G**
-above its level-1 value. This makes level growth the strongest semantic
-interpretation of `source_u16_06`.
-
-The field's additive function is confirmed, but the **level-growth interpretation remains probable**
-until a nonzero leveled runtime record is captured. Evolution is likewise
-expected to select a different form/base value rather than populate this field,
-but that representation has not yet been observed directly.
+The field at source-record `+0x06` must not be named as an exclusively
+level-growth field. Function **`0x0226A380`** applies signed changes to this
+field, clamps it to zero on the low end, and clamps `core_g + modifier` to 990.
+It is therefore a **general mutable G modifier** used by multiple gameplay
+paths.
 
 ## Confirmed Gate-bonus addition
 
@@ -81,67 +66,75 @@ The target total is calculated at:
 0x0223D27C  ldrh r1, [r5, #18]   ; Gate attribute bonus
 0x0223D288  add   r0, r2, r1
 0x0223D28C  strh  r0, [r5, #14]  ; target total
-0x0223D290  cmp   r4, #2
 ```
 
 Write watchpoints on both target fields stopped at post-store PC
-**`0x0223D290`** and preserved the operands:
+`0x0223D290`:
 
 - Opponent: `r2 = 230`, `r1 = 180`, `r0 = 410`.
 - Player: `r2 = 190`, `r1 = 100`, `r0 = 290`.
 
-Therefore the runtime-confirmed formula is:
-
-```text
-target_total_g = base_snapshot_g + gate_attribute_bonus_g
-```
+A narrower watchpoint on the player's Gate-bonus field at `0x022E5906` also
+captured initialization to zero at `0x0223D12C` and the real `100` assignment at
+`0x0223D274` with `r1 = 100`.
 
 ## Confirmed Gate Card attribute lookup
 
-Live ARM9 RAM disassembly confirms helper **`0x02065BF4`** indexes a table at
-**`0x020A15AC`**. The helper computes `card_id * 6 + attribute_id`, loads one
-unsigned byte, and returns it. Overlay 7 multiplies the result by ten before
-storing the participant's Gate bonus.
+ARM9 helper **`0x02065BF4`** indexes the runtime table at
+**`0x020A15AC`**:
 
 ```text
 gate_attribute_bonus_g = gate_table[card_id * 6 + attribute_id] * 10
+target_total_g = base_snapshot_g + gate_attribute_bonus_g
 ```
 
-The six-byte row width matches the game's six Bakugan attributes. This promotes
-the helper and table from probable static candidates to confirmed runtime
-symbols.
+The tutorial card row was `[10, 5, 18, 10, 5, 8]`. Pyrus selects column zero,
+so `10 * 10 = 100` and `190 + 100 = 290`.
+
+The earlier guide-matching ARM9 region `0x0205EFBA`–`0x0205F173` remains a
+probable source-data region. Its relationship to runtime table `0x020A15AC` has
+not been demonstrated.
 
 ## Display animation is separate
 
-The overlay 7 function at **`0x0223DDAC`**, component-relative offset
-`0x0002496C`, reads the current and target fields and moves the displayed value
-toward the target by three per frame. It is a presentation tween, not the
-total-G formula.
+Function **`0x0223DDAC`** moves displayed G toward target G by three per frame.
+It is a presentation tween, not the formula.
 
-## Later battle adjustments
+## Separated `+30` callsites
 
-The state function at `0x0221A7D0` contains later target writes at
-`0x0221B3F8`, `0x0221B40C`, and `0x0221B438`. Those paths use participant field
-`+0x0A`. Its exact Ability Card, minigame, or temporary-modifier meaning remains
-candidate evidence.
+The two `+30` callers are not the same system:
+
+- **`0x0222B500` — probable field G-Power Boost pickup.** It appears in a
+  three-case field-pickup handler, applies `+30` through `0x0226A380`, and does
+  not increment participant byte `+0xFD`. The game guide independently records
+  the yellow field G-Power Boost as `+30`.
+- **`0x0222D154` — probable level-up or progression award.** It applies `+30`
+  and immediately increments participant byte `+0xFD`, clamping that counter to
+  99. The game documents that leveling increases G-Power, but the exact role of
+  `+0xFD`—level, experience step, upgrade count, or another counter—has not yet
+  been observed at runtime.
+
+The user-supplied reference table contains 38 forms, each with a +250 G
+minimum-to-maximum range. That supports progression tuning but does not prove
+that each level uses a flat `+30` or identify the final-level adjustment.
+
+## Candidate evolution model
+
+Evolution is not yet runtime-confirmed. Evolved forms may select separate
+identity or source-stat records with their own core G values, but this remains a
+candidate until an evolution event or evolved save is traced through
+`0x022696B4`.
+
+Participant field `+0x0A`, used by later target rewrites, also remains a
+candidate temporary Ability Card, minigame, or battle modifier.
 
 ## Rejected false positive
 
-A prior watchpoint stopped at ARM9 `0x02007EB8` after the battle. The surrounding
-instructions identify overlay decompression reusing the same RAM, not G-Power
-logic.
+ARM9 `0x02007EB8` is a BLZ decompression loop that reused the watched heap after
+battle. It is not G-Power logic.
 
-## Evidence and repository boundary
+## Repository boundary
 
-The investigation used a user-supplied ROM, DeSmuME save states, screenshots,
-RAM captures, and disassembly. Those files are **not committed**. The repository
-stores only normalized addresses, operands, formulas, confidence labels, and
-tests.
-
-## Remaining confidence boundary
-
-Milestone 4B confirms the form-base plus progression sum, Gate/attribute lookup,
-final target total, record layout, and display tween. A later controlled matrix
-should capture a nonzero progression field, an evolution transition, and one
-Ability Card effect. These are follow-up semantic checks rather than blockers
-for the central G-Power pipeline. Participant field `+0x0A` remains unresolved.
+Only normalized observations, addresses, formulas, confidence labels, hashes,
+and tests are committed. ROM bytes, RAM dumps, screenshots, save states,
+disassembly captures, and copied guide tables remain local.

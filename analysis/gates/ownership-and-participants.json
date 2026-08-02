@@ -1,0 +1,351 @@
+{
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "Player-owned and AI-owned controls reversed Gate ownership while session +0x28D/+0x28E remained descriptor-order fields; battle object +0x06 followed the actual arena-placement owner in both cases.",
+      "name": "gate_owner_reverse_control"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "All seven direct overlay-7 pair-setter callers pass the standing target descriptor to +0x28D and the active or thrown descriptor to +0x28E; fallback equal-descriptor calls are explicitly excluded from normal challenge targeting.",
+      "name": "challenger_ordering_audit"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The AI-owned runtime control resolved descriptor order 0,1 to participant order 1,0 and constructed the two expected 20-byte records with 410 G and 290 G totals.",
+      "name": "combatant_runtime_control"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Participant construction clears +0xC8 for human-controlled slots and allocates an AI controller for later slots; AI battle setup and shot planning branch directly on the same null/non-null pointer.",
+      "name": "human_ai_constructor_and_consumers"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Result-controller +0x21 is initialized to signed -1, written only by the two settled-result paths as combatant index 0 or 1, and consumed by presentation, reward, and finalization paths. The loser is the opposite combatant index.",
+      "name": "winner_loser_result_index"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The System 2.0 resolver contract rejects unresolved results, equal-combatant fallbacks, implicit self/opponent sources, and combatant-only owner targets whose participant is not currently battling.",
+      "name": "effect_target_fail_closed"
+    }
+  ],
+  "domain": "ownership-and-participants",
+  "fields": [
+    {
+      "access": "battle object +0x06",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Arena-placement owner byte +1 is copied to battle object +0x06 and used with Gate-slot byte +0 to resolve active Gate ID at +0x04.",
+      "initialization": "Battle constructor 0x0223CFE8 clears the field and derives it from the selected arena-placement record.",
+      "lifetime": "Valid from battle construction through result processing and final-state completion while the battle object is live.",
+      "mutations": [
+        "Battle construction derives and stores the owner participant index."
+      ],
+      "name": "gate_owner",
+      "owner_structure": "battle object",
+      "player_ai_behavior": "Shared representation for human- and AI-owned Gates; ownership is independent of control identity.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "The next constructor clears and rederives the field; destruction ends validity without transferring ownership.",
+      "scripted_behavior": "The clean tutorial/story path executes the same owner derivation before its later skip path.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "session +0x28E -> descriptor at session +0x7C + index * 20 -> low nibble of descriptor +0x0F",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Collision event +0x16 supplies the active or thrown descriptor to every direct pair-setter caller, and the setter stores that descriptor index at session +0x28E.",
+      "initialization": "Collision and battle setup select the active descriptor before battle-object construction.",
+      "lifetime": "The session descriptor remains available through construction; the normalized challenger participant remains valid for the live battle context.",
+      "mutations": [
+        "A new collision or scripted battle setup may replace the selected descriptor pair before constructing the next battle."
+      ],
+      "name": "challenging_participant",
+      "owner_structure": "session descriptor selection and normalized battle context",
+      "player_ai_behavior": "The same descriptor-to-participant mapping is used whether the challenger is human or AI.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Session setup rewrites the pair for the next battle; battle destruction ends the copied context lifetime.",
+      "scripted_behavior": "Scripted setup may select descriptors directly but preserves the same low-nibble participant mapping.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "defender from session +0x28D descriptor; challenger from session +0x28E descriptor; each participant is the low nibble of descriptor byte +0x0F",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Constructor 0x0223CFE8 resolves both descriptors, selects participant objects, and constructs record 0 at battle +0x0C and record 1 at battle +0x20 with a 20-byte stride.",
+      "initialization": "The battle constructor derives both participant indices before filling the combatant records.",
+      "lifetime": "Both identities are valid for the live battle-object lifetime and may be copied into a hook-local normalized context.",
+      "mutations": [
+        "Combatant identities do not change inside a constructed battle object."
+      ],
+      "name": "combatant_identity",
+      "owner_structure": "battle object plus source session descriptors",
+      "player_ai_behavior": "Record order is defender then challenger and is independent of player/AI identity.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "A new battle reconstructs both records; destruction ends validity.",
+      "scripted_behavior": "Scripted descriptor choice may change which participants battle without changing the mapping algorithm.",
+      "signed": false,
+      "width_bits": 16
+    },
+    {
+      "access": "participant object +0xC8; null means human and non-null means AI",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Participant construction and multiple AI-specific gameplay consumers use the same pointer-presence test; participant +0xF2 is separately retained as a team/slot remap.",
+      "initialization": "Participant construction clears +0xC8, then allocates and stores an AI controller only outside the human-controlled participant prefix.",
+      "lifetime": "Stable for the participant-object session lifetime; valid only while the participant object is live.",
+      "mutations": [
+        "Construction clears the pointer.",
+        "AI-controlled participant construction stores the allocated controller.",
+        "AI state reset mutates controller contents but preserves the identity pointer."
+      ],
+      "name": "human_ai_identity",
+      "owner_structure": "320-byte participant object",
+      "player_ai_behavior": "Null is authoritative human control; non-null is authoritative AI control.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Controller and participant destruction end validity; a new participant constructor establishes the next identity.",
+      "scripted_behavior": "The clean tutorial/story path uses the standard one-human local constructor policy; modes 6 and 7 use the active multiplayer-slot count as the human prefix.",
+      "signed": false,
+      "width_bits": 32
+    },
+    {
+      "access": "System 2.0 target-mode resolver over gate_owner, defender, challenger, explicit source participant, participant +0xC8 control identity, and settled result-controller +0x21",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Each source field has confirmed semantics and lifecycle; the resolver defines deterministic owner, defender, challenger, self, opponent, both, winner, loser, human, and AI participant-index sets with explicit failure conditions.",
+      "initialization": "Computed per effect invocation after validating the timing-specific context requirements.",
+      "lifetime": "Immutable hook-local participant-index tuple valid only for the current effect invocation.",
+      "mutations": [
+        "No mutation; resolution produces a new ordered target tuple."
+      ],
+      "name": "effect_target",
+      "owner_structure": "System 2.0 hook-local normalized context",
+      "player_ai_behavior": "Human and AI filtering uses the same participant pointer test; no mode infers control identity from record order.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Discarded after the effect invocation; no runtime pointer or participant target is persisted in Gate data.",
+      "scripted_behavior": "Fail-closed validation applies equally to scripted contexts; missing or ambiguous required sources suppress the new effect and preserve legacy behavior.",
+      "signed": false,
+      "width_bits": 16
+    }
+  ],
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "roles": [
+    {
+      "access": "battle object +0x06",
+      "confidence": "confirmed",
+      "evidence": "Confirmed arena-placement to battle-owner path and reverse-owner runtime control.",
+      "identity_source": "canonical Gate owner participant index",
+      "initialization": "battle constructor",
+      "owner_structure": "battle object",
+      "reset": "next battle construction or object destruction",
+      "role": "gate_owner",
+      "transfer": "copied from arena placement into battle object +0x06"
+    },
+    {
+      "access": "session +0x28D descriptor low nibble +0x0F",
+      "confidence": "confirmed",
+      "evidence": "Exhaustive pair-setter caller audit identifies the standing target descriptor.",
+      "identity_source": "stationary target or defending combatant participant",
+      "initialization": "collision or scripted descriptor selection",
+      "owner_structure": "session descriptor array",
+      "reset": "next selected descriptor pair",
+      "role": "defender",
+      "transfer": "constructs combatant record 0"
+    },
+    {
+      "access": "session +0x28E descriptor low nibble +0x0F",
+      "confidence": "confirmed",
+      "evidence": "Exhaustive pair-setter caller audit identifies the active or thrown descriptor.",
+      "identity_source": "active or thrown challenging combatant participant",
+      "initialization": "collision or scripted descriptor selection",
+      "owner_structure": "session descriptor array",
+      "reset": "next selected descriptor pair",
+      "role": "challenger",
+      "transfer": "constructs combatant record 1"
+    },
+    {
+      "access": "battle object +0x0C..+0x1F, sourced from session +0x28D",
+      "confidence": "confirmed",
+      "evidence": "Constructor and runtime G-value control confirm the first 20-byte record.",
+      "identity_source": "defender combatant record",
+      "initialization": "battle constructor",
+      "owner_structure": "battle object",
+      "reset": "battle destruction",
+      "role": "combatant_0",
+      "transfer": "retains the selected defender descriptor and participant-derived battle values"
+    },
+    {
+      "access": "battle object +0x20..+0x33, sourced from session +0x28E",
+      "confidence": "confirmed",
+      "evidence": "Constructor and runtime G-value control confirm the second 20-byte record.",
+      "identity_source": "challenger combatant record",
+      "initialization": "battle constructor",
+      "owner_structure": "battle object",
+      "reset": "battle destruction",
+      "role": "combatant_1",
+      "transfer": "retains the selected challenger descriptor and participant-derived battle values"
+    },
+    {
+      "access": "participant +0xC8 == null",
+      "confidence": "confirmed",
+      "evidence": "Human participant construction leaves the controller pointer null and gameplay takes the non-AI paths.",
+      "identity_source": "human-control predicate",
+      "initialization": "participant constructor",
+      "owner_structure": "participant object",
+      "reset": "participant destruction and reconstruction",
+      "role": "human",
+      "transfer": "normalized to is_ai false"
+    },
+    {
+      "access": "participant +0xC8 != null",
+      "confidence": "confirmed",
+      "evidence": "AI participant construction stores a controller pointer consumed by AI battle and shot-planning paths.",
+      "identity_source": "AI-control predicate",
+      "initialization": "participant constructor",
+      "owner_structure": "participant object",
+      "reset": "participant and controller destruction",
+      "role": "ai",
+      "transfer": "normalized to is_ai true"
+    },
+    {
+      "access": "settled result-controller +0x21 mapped through combatant record index",
+      "confidence": "confirmed",
+      "evidence": "The signed field is initialized to -1, resolved to 0 or 1, and reused by winner presentation, rewards, and finalization.",
+      "identity_source": "winning combatant participant",
+      "initialization": "battle result resolution",
+      "owner_structure": "battle-result controller plus combatant mapping",
+      "reset": "next result-controller construction",
+      "role": "winner",
+      "transfer": "record index 0 maps to defender and index 1 maps to challenger"
+    },
+    {
+      "access": "settled winner index XOR 1 mapped through combatant record index",
+      "confidence": "confirmed",
+      "evidence": "The original result state caches exactly the opposite index at +0x0E after winner resolution and presents that record as the losing side.",
+      "identity_source": "losing combatant participant",
+      "initialization": "derived after battle result resolution",
+      "owner_structure": "battle-result controller plus combatant mapping",
+      "reset": "next result-controller construction",
+      "role": "loser",
+      "transfer": "opposite record index maps to the other combatant participant"
+    },
+    {
+      "access": "pure target-mode resolver over confirmed participant context",
+      "confidence": "confirmed",
+      "evidence": "All target classes are deterministic and have explicit unresolved or ambiguous failure behavior.",
+      "identity_source": "ordered participant-index target tuple",
+      "initialization": "per effect invocation",
+      "owner_structure": "System 2.0 hook-local context",
+      "reset": "discard after effect invocation",
+      "role": "effect_target",
+      "transfer": "never persists runtime pointers or target indices in Gate data"
+    }
+  ],
+  "scripted_paths": [
+    "Normal local and AI-versus-player battles share the same battle constructor, descriptor mapping, and result-controller winner field.",
+    "The clean tutorial/story path derives Gate ownership and participant control identity before its later skip behavior.",
+    "Multiplayer modes 6 and 7 alter only the human-controlled prefix count; participant +0xC8 remains the authoritative control representation."
+  ],
+  "target_modes": [
+    {
+      "availability": "battle object live",
+      "confidence": "confirmed",
+      "evidence": "battle object +0x06",
+      "mode": "owner",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "single canonical Gate-owner participant; combatant-only effects separately require a live record mapping"
+    },
+    {
+      "availability": "distinct selected combatants",
+      "confidence": "confirmed",
+      "evidence": "session +0x28D descriptor mapping",
+      "mode": "defender",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "single defender participant"
+    },
+    {
+      "availability": "distinct selected combatants",
+      "confidence": "confirmed",
+      "evidence": "session +0x28E descriptor mapping",
+      "mode": "challenger",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "single challenger participant"
+    },
+    {
+      "availability": "explicit source participant supplied",
+      "confidence": "confirmed",
+      "evidence": "fail-closed source-relative resolver contract",
+      "mode": "self",
+      "requires_result": false,
+      "requires_source": true,
+      "resolution": "source participant unchanged; combatant-only effects require a live combatant mapping"
+    },
+    {
+      "availability": "explicit source matches exactly one member of a distinct combatant pair",
+      "confidence": "confirmed",
+      "evidence": "fail-closed source-relative resolver contract",
+      "mode": "opponent",
+      "requires_result": false,
+      "requires_source": true,
+      "resolution": "the other combatant participant"
+    },
+    {
+      "availability": "distinct selected combatants",
+      "confidence": "confirmed",
+      "evidence": "defender/challenger descriptor ordering",
+      "mode": "both",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "ordered unique tuple of defender then challenger"
+    },
+    {
+      "availability": "result-controller +0x21 settled to 0 or 1",
+      "confidence": "confirmed",
+      "evidence": "winner index constructor, writers, and result consumers",
+      "mode": "winner",
+      "requires_result": true,
+      "requires_source": false,
+      "resolution": "record 0 selects defender; record 1 selects challenger"
+    },
+    {
+      "availability": "result-controller +0x21 settled to 0 or 1",
+      "confidence": "confirmed",
+      "evidence": "opposite losing record generated by original result state",
+      "mode": "loser",
+      "requires_result": true,
+      "requires_source": false,
+      "resolution": "winner record index XOR 1 mapped to the other combatant"
+    },
+    {
+      "availability": "live participant objects and combatants",
+      "confidence": "confirmed",
+      "evidence": "participant +0xC8 null predicate",
+      "mode": "human",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "ordered unique combatants whose AI-controller pointer is null"
+    },
+    {
+      "availability": "live participant objects and combatants",
+      "confidence": "confirmed",
+      "evidence": "participant +0xC8 non-null predicate",
+      "mode": "ai",
+      "requires_result": false,
+      "requires_source": false,
+      "resolution": "ordered unique combatants whose AI-controller pointer is non-null"
+    }
+  ],
+  "unresolved": []
+}

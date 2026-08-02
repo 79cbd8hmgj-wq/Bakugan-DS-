@@ -45,7 +45,7 @@ Python CI completed with 254 passed, 12 expected environment-gated skips, and 0 
 
 ## Task 3
 
-Current checkpoint: **3E — update timing, score lifetime, scripted behavior, and reset**.
+Current checkpoint: **3F — normalized artifact, validators, symbols, tests, CI, and task completion**.
 
 Task 3 checkpoints:
 
@@ -53,7 +53,7 @@ Task 3 checkpoints:
 2. 3B — runtime score-changing result and no-change control: complete
 3. 3C — capture-history counter identity and relationship to score: complete
 4. 3D — victory threshold and comparison path: complete
-5. 3E — update timing, round lifetime, scripted behavior, and reset: pending
+5. 3E — update timing, round lifetime, scripted behavior, and reset: complete
 6. 3F — normalized artifact, validators, symbols, tests, CI, and task completion: pending
 
 ### Checkpoint 3A
@@ -79,38 +79,13 @@ This confirms `+0xEE` as authoritative participant-owned match-progress state in
 
 `analysis/gates/capture-history-counter.json` at commit `3ecda0c3a2f6fa1132e477394170b144d5338e8c` separates participant `+0xF4` from match score.
 
-The process was paused after the winner's `+0xEE` update and immediately before the capture-ledger block. At that boundary:
-
-```text
-winner +0xEE = 3
-winner +0xF4 = 0
-winner capture entry 0 = empty
-```
-
-After `0x0224242C..0x02242498`:
-
-```text
-winner +0xEE = 3       unchanged
-winner +0xF4 = 1       incremented
-winner entry 0 = be0000000000
-other  +0xF4 = 0       unchanged
-```
-
-Static evidence confirms that `participant +0xF4` indexes six-byte capture-history entries at `participant +0x84 + index * 6`. It is not the authoritative match-score field.
+The score update completes before the capture ledger is appended. `participant +0xF4` indexes six-byte capture-history entries at `participant +0x84 + index * 6`; it is not the authoritative match-score field.
 
 ### Checkpoint 3D
 
 `analysis/gates/match-score-victory-threshold.json` at commit `c2dce8bf3bc77fce08d7c11ad69e19e466aad03e` confirms the exact victory helper and threshold.
 
-The helper at `0x02263150`:
-
-- iterates the configured participant count from global match configuration `+0x97`;
-- reads participant `+0xEE`;
-- when team-mode flag `+0x98` is enabled, resolves the teammate through participant `+0xF2` and adds the teammate's `+0xEE`;
-- compares the resulting individual or team score against `3` with an unsigned `>=` test;
-- returns `1` when any participant or team reaches the threshold, otherwise `0`.
-
-A single runtime call supplied both controls:
+The helper at `0x02263150` reads participant `+0xEE`, optionally adds the teammate score selected through participant `+0xF2`, and applies the same unsigned threshold of three in solo and team modes.
 
 ```text
 participant 0 +0xEE = 2: threshold branch not taken
@@ -119,6 +94,17 @@ helper return r0 = 1
 caller 0x0223E834 -> match-complete target 0x0223E8D4
 ```
 
-This confirms participant `+0xEE` as the captured-Gate match score for standard Gate battles. Solo participants are tested individually; team mode sums the participant and teammate scores before applying the same victory threshold of three.
+### Checkpoint 3E
 
-Checkpoint 3E will determine score initialization outside constructor-only evidence, round-to-round persistence, scripted seeding or bypasses, match completion lifetime, and final reset.
+`analysis/gates/match-score-lifecycle.json` at commit `62fd0a4c4879fcc5af8195ea702f5592581c5241` confirms score timing, lifetime, special writers, scripted seeding, and reset behavior.
+
+- The normal result path sets winner `+0xFE`, increments winner `+0xEE`, then appends capture history and increments `+0xF4`.
+- Runtime reads after the match-complete branch and during later tutorial UI still showed participant scores `2` and `3`; result and presentation transitions do not reset the score.
+- Four specialized result paths preserve one-point increment behavior.
+- Four byte-identical mode/script setup blocks increment both primary participant scores twice, proving a match may be deliberately seeded after construction.
+- The participant constructor at `0x022696B4` is called once per configured participant during session construction and is the only direct overlay-7 clear of `+0xEE`.
+- Participant destructors clean up and free the object without clearing `+0xEE`; destruction ends the score's lifetime instead of resetting it in place.
+
+System 2.0 must therefore read the live post-setup participant score, treat it as participant-session state, emit ordinary score-change handling after the winner score store, and never retain participant pointers across session destruction.
+
+Checkpoint 3F will consolidate the confirmed model into the normalized context artifact, validators, symbols, documentation, tests, exact-binary guards, and final Task 3 verification.

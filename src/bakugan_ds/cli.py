@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
+from bakugan_ds.gates.cli import add_gate_parser, run_gate_command
 from bakugan_ds.inspection import inspect_rom
 from bakugan_ds.patches.apply import apply_patch_set
 from bakugan_ds.profile import load_profile
@@ -51,6 +52,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     patch_parser.add_argument("workspace", type=Path)
     patch_parser.add_argument("patch_file", type=Path)
+
+    add_gate_parser(subparsers)
     return parser
 
 
@@ -71,6 +74,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_usage(sys.stderr)
         return 2
     try:
+        if arguments.command == "gate":
+            return run_gate_command(arguments)
         if arguments.command == "inspect":
             profile = load_profile(arguments.profile)
             inspection = inspect_rom(

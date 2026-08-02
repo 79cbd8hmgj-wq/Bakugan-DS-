@@ -1,0 +1,103 @@
+{
+  "capture": {
+    "breakpoint_after": "0x0224242C",
+    "breakpoint_before": "0x022423F0",
+    "clean_process": true,
+    "deferred_semantics": [
+      "captured Gate count",
+      "victory threshold",
+      "team aggregation",
+      "round lifetime",
+      "match reset"
+    ],
+    "launch": "Clean ROM boot through a newly created profile into the standalone Battle tutorial; no executable save state was loaded.",
+    "result_controller": "0x022E58A0",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "scenario": "Tutorial battle result with participant index 1 winning combatant record 0."
+  },
+  "checkpoint": "3B",
+  "confidence_boundary": "This capture confirms that participant +0xEE is authoritative participant-owned state incremented exactly for the settled winner while the other combatant remains unchanged. It does not yet prove that the byte specifically represents captured Gate Cards or the complete match score used for victory.",
+  "format_version": 1,
+  "instruction_path": {
+    "after_store": "0x02242428: strb r0, [r2, #0xEE]",
+    "after_store_breakpoint": "0x0224242C",
+    "before_block_breakpoint": "0x022423F0",
+    "participant_flag_store": "0x0224241C: strb r1, [r2, #0xFE]",
+    "participant_pointer_register_after_resolution": {
+      "register": "r2",
+      "value": "0x022E2640"
+    },
+    "score_increment": [
+      "0x02242420: ldrb r0, [r2, #0xEE]",
+      "0x02242424: add r0, r0, #1",
+      "0x02242428: strb r0, [r2, #0xEE]"
+    ]
+  },
+  "mapping": {
+    "combatant_record_base": "0x022E596C",
+    "participant_index_0_pointer": "0x022E24E0",
+    "participant_index_1_pointer": "0x022E2640",
+    "participant_pointer_table": "session +0x0C",
+    "session": "0x0229FC80",
+    "session_pointer_global": "0x020D433C",
+    "winner_combatant_record_index": 0,
+    "winner_record_address": "0x022E596C",
+    "winner_record_participant_selector_byte": "0x12",
+    "winner_record_participant_selector_rule": "high nibble",
+    "winner_participant_index": 1
+  },
+  "observations": [
+    {
+      "after": {
+        "+0xEE": 2,
+        "+0xFE": 0
+      },
+      "before": {
+        "+0xEE": 2,
+        "+0xFE": 0
+      },
+      "participant_index": 0,
+      "participant_pointer": "0x022E24E0",
+      "role": "non-winning combatant",
+      "selected_capture_sha256_after": "3ca90a4812bc703a0d48bdc11d07b9e80d0bcc5e622389830c2f0e33ff13de65",
+      "selected_capture_sha256_before": "3ca90a4812bc703a0d48bdc11d07b9e80d0bcc5e622389830c2f0e33ff13de65"
+    },
+    {
+      "after": {
+        "+0xEE": 3,
+        "+0xFE": 1
+      },
+      "before": {
+        "+0xEE": 2,
+        "+0xFE": 0
+      },
+      "participant_index": 1,
+      "participant_pointer": "0x022E2640",
+      "role": "settled winner",
+      "selected_capture_sha256_after": "bdf8990ac2b685b6eb3a84b7f116c8af1564b8990b0734888d9e39d51ac7532e",
+      "selected_capture_sha256_before": "355692476850c96530ab991bab0b3a592c1b8483f5b420e86d9a7d4a8da54fac"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "raw_capture_policy": {
+    "committed": false,
+    "selected_hashes": {
+      "session_participant_pointers": "8158a903fc71109c2fd7819545c8e7fb9c91713ebb18de6c953b05cb84321a69",
+      "winner_combatant_record": "6ea7333c6bf692d33f9771830b9591babac49562849cacf5dff628213cb23073"
+    }
+  },
+  "supported_conclusions": [
+    "The result path resolved participant index 1 from settled combatant record 0 and loaded participant pointer 0x022E2640 into r2.",
+    "Participant index 1 byte +0xEE changed from 2 to 3 across the exact increment block.",
+    "Participant index 0 byte +0xEE remained 2 across the same result, providing the required no-change control.",
+    "Participant index 1 byte +0xFE changed from 0 to 1 while participant index 0 +0xFE remained 0.",
+    "Byte +0xFE remains semantically unnamed pending the captured-Gate state checkpoint.",
+    "Participant +0xEE is confirmed as a winner-updated participant match-progress counter; its narrower interpretation as captured-Gate count or final victory score remains unresolved."
+  ],
+  "tooling": {
+    "bundle_archive_sha256": "87b9e55d8555b2f9df6b8ac188de9dc5e6f91a527ed7a02097e82e9097ebe8c3",
+    "desmume_commit": "84e445159ccf2fd7900748094518eb1e88bdc7d0",
+    "gdb_stub": "ARM9 port 20000",
+    "internal_bundle_checksums": "all passed"
+  }
+}

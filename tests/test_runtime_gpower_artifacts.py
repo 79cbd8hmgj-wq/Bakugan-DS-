@@ -20,21 +20,45 @@ def test_runtime_observation_records_controlled_formula() -> None:
     }
 
     cases = {record["side"]: record for record in payload["controlled_records"]}
-    assert cases["player"]["equation"] == "190 + 100 = 290"
-    assert cases["opponent"]["equation"] == "230 + 180 = 410"
+    assert cases["player"]["values"] == {
+        "animated_current_g": 290,
+        "target_total_g": 290,
+        "base_snapshot_g": 190,
+        "gate_attribute_bonus_g": 100,
+    }
+    assert cases["opponent"]["values"] == {
+        "animated_current_g": 410,
+        "target_total_g": 410,
+        "base_snapshot_g": 230,
+        "gate_attribute_bonus_g": 180,
+    }
 
     formula = payload["formula"]
     assert formula["initial_base_snapshot"] == "source_u16_04 + source_u16_06"
     assert formula["target_total"] == "base_snapshot_g + gate_attribute_bonus_g"
+    assert formula["gate_attribute_bonus"] == "lookup(card_id, attribute_id) * 10"
     assert formula["display_animation_step"] == 3
 
-    assert payload["gate_bonus_source"]["helper_confidence"] == "probable"
-    boundaries = payload["confidence_boundaries"]
-    assert boundaries["source_u16_04"]["confidence"] == "probable"
-    assert boundaries["source_u16_06"]["confidence"] == "probable"
+    source = payload["source_components"]
+    assert source["0x04"] == {
+        "name": "form_base_g",
+        "functional_confidence": "confirmed",
+        "tutorial_value": 190,
+        "reference_role": "published level-1 G-Power",
+    }
+    assert source["0x06"]["name"] == "progression_bonus_g"
+    assert source["0x06"]["functional_confidence"] == "confirmed"
+    assert source["0x06"]["semantic_interpretation"] == "level_growth_g"
+    assert source["0x06"]["semantic_confidence"] == "probable"
+
+    crosscheck = payload["reference_crosscheck"]
+    assert crosscheck["forms_checked"] == 38
+    assert crosscheck["unique_max_minus_min_values"] == [250]
+    assert payload["gate_bonus_source"]["helper_confidence"] == "confirmed"
+    assert payload["gate_bonus_source"]["table_address"] == "0x020A15AC"
 
 
-def test_runtime_symbols_include_confirmed_constructor_math_and_tween() -> None:
+def test_runtime_symbols_include_confirmed_constructor_math_lookup_and_tween() -> None:
     with Path("analysis/symbols/runtime_gpower.csv").open(
         newline="", encoding="utf-8"
     ) as handle:
@@ -46,7 +70,9 @@ def test_runtime_symbols_include_confirmed_constructor_math_and_tween() -> None:
     assert rows["BattleGPower_StoreTarget"]["address"] == "0x0223D28C"
     assert rows["BattleGPower_DisplayTween"]["address"] == "0x0223DDAC"
     assert rows["GateAttributeBonus_Lookup"]["address"] == "0x02065BF4"
-    assert rows["GateAttributeBonus_Lookup"]["confidence"] == "probable"
+    assert rows["GateAttributeBonus_Lookup"]["confidence"] == "confirmed"
+    assert rows["GateAttributeBonus_Table"]["address"] == "0x020A15AC"
+    assert rows["GateAttributeBonus_Table"]["confidence"] == "confirmed"
 
 
 def test_runtime_document_preserves_evidence_boundaries() -> None:
@@ -61,7 +87,12 @@ def test_runtime_document_preserves_evidence_boundaries() -> None:
         "190 + 100 = 290",
         "230 + 180 = 410",
         "20-byte",
-        "Probable, not confirmed",
+        "38 forms",
+        "+250 G",
+        "form base G",
+        "level-growth interpretation remains probable",
+        "0x02065BF4",
+        "0x020A15AC",
         "not committed",
     ):
         assert required in text
@@ -78,6 +109,9 @@ def test_static_candidate_file_is_promoted_by_runtime_evidence() -> None:
         "watchpoint_post_store_pc: 0x0223D290",
         "display_tween_address: 0x0223DDAC",
         "target_total: base_snapshot_g + gate_attribute_bonus_g",
-        "helper_confidence: probable",
+        "source_u16_04_role: form_base_g",
+        "source_u16_06_role: progression_bonus_g",
+        "helper_confidence: confirmed",
+        "table_address: 0x020A15AC",
     ):
         assert required in text

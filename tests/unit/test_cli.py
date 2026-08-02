@@ -48,3 +48,27 @@ def test_cli_writes_report_from_mocked_inspection(
 
     assert result == 0
     assert output_path.read_text(encoding="utf-8") == '{"supported": true}\n'
+
+
+def test_gate_export_dispatches(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    calls = []
+    monkeypatch.setattr(cli, "run_gate_command", lambda args: calls.append(args) or 0)
+
+    result = cli.main(
+        [
+            "gate",
+            "export-legacy",
+            str(tmp_path / "workspace"),
+            str(tmp_path / "output.json"),
+            "--runtime-arm9",
+            str(tmp_path / "runtime.bin"),
+            "--metadata",
+            "analysis/gates/legacy-table-metadata.json",
+        ]
+    )
+
+    assert result == 0
+    assert calls[0].gate_command == "export-legacy"

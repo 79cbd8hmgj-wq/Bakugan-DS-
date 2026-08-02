@@ -18,15 +18,15 @@ def test_target_total_watchpoints_record_exact_runtime_operands() -> None:
         "r0_result": 410,
         "r1_bonus": 180,
         "r2_base": 230,
-        "r5_record": "0x022E58E0",
-        "r6_container": "0x022E58E0",
+        "r5_entry_base": "0x022E58E0",
+        "r6_container_base": "0x022E58E0",
     }
     assert hits["player"]["registers"] == {
         "r0_result": 290,
         "r1_bonus": 100,
         "r2_base": 190,
-        "r5_record": "0x022E58F4",
-        "r6_container": "0x022E58E0",
+        "r5_entry_base": "0x022E58F4",
+        "r6_container_base": "0x022E58E0",
     }
 
 
@@ -43,9 +43,12 @@ def test_runtime_symbols_separate_confirmed_math_from_probable_lookup_semantics(
 
 def test_runtime_document_states_the_remaining_semantic_boundary() -> None:
     text = Path("docs/runtime-gpower-tracing.md").read_text(encoding="utf-8")
-    assert "0x0223D290" in text
-    assert "r2 = 230" in text
-    assert "r1 = 180" in text
-    assert "r2 = 190" in text
-    assert "r1 = 100" in text
-    assert "helper's exact card/attribute semantics remain probable" in text
+    for required in (
+        "0x0223D290",
+        "r2 = 230",
+        "r1 = 180",
+        "r2 = 190",
+        "r1 = 100",
+        "helper's exact\ncard/attribute semantics remain probable",
+    ):
+        assert required in text

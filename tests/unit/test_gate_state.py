@@ -113,7 +113,7 @@ def test_gate_state_rejects_duplicate_or_missing_kind() -> None:
     duplicate = replace(model.states[-1], kind=GateStateKind.REMOVED)
 
     with pytest.raises(WorkspaceError, match="duplicate Gate state kind"):
-        replace(model, states=model.states[:-1] + (duplicate,)).validate()
+        replace(model, states=(*model.states[:-1], duplicate)).validate()
 
     with pytest.raises(WorkspaceError, match="requires all lifecycle kinds"):
         replace(model, states=model.states[:-1]).validate()

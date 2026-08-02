@@ -24,12 +24,14 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2B — canonical Gate owner**.
+Current checkpoint: **2B.2 — reverse-owner control**.
 
 Task 2 checkpoints:
 
 1. 2A — static candidate inventory: complete
 2. 2B — canonical Gate owner: in progress
+   - 2B.1 — player-owned Gate capture: complete
+   - 2B.2 — reverse-owner control: pending
 3. 2C — challenger and combatant mapping: pending
 4. 2D — human and AI identity: pending
 5. 2E — effect targeting rules: pending
@@ -59,4 +61,18 @@ Verification:
 
 Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
-No Task 2 field is considered confirmed until the applicable runtime and lifecycle evidence is complete.
+### Checkpoint 2B.1 result
+
+The player-owned tutorial capture is stored in `analysis/gates/ownership-runtime-player-owned.json` at commit `59f9985f30d5d74f328d07e8cad1b04b51677f74`.
+
+The controlled clean-launch scenario established:
+
+- P1/player placed Juggernoid, global Gate ID 19;
+- participant index 0 maps to the 190 G player object and owns Gate IDs 19, 40, and 72;
+- participant index 1 maps to the 230 G AI object and owns Gate IDs 21, 59, and 93;
+- the active session pair is `+0x28D = 0`, `+0x28E = 1`;
+- the battle constructor reached the confirmed 190 + 100 = 290 and 230 + 180 = 410 totals.
+
+This proves ownership for that capture but does not yet prove that `+0x28D` is always the canonical owner field. A reverse-owner control must show `+0x28D = 1`, `+0x28E = 0` when participant index 1 owns the contested Gate. Until then, the field semantics remain probable.
+
+No Task 2 field is considered globally confirmed until the applicable runtime and lifecycle evidence is complete.

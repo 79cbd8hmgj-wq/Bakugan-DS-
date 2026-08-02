@@ -100,17 +100,23 @@ not been demonstrated.
 Function **`0x0223DDAC`** moves displayed G toward target G by three per frame.
 It is a presentation tween, not the formula.
 
-## Probable progression callsites
+## Separated `+30` callsites
 
-Two callsites—`0x0222B500` and `0x0222D154`—pass `+30` to
-`0x0226A380` and then increment participant byte `+0xFD` up to 99. That pairing
-is strong progression evidence, but no controlled level-up or post-battle
-sample has identified whether the counter is level, experience, battle count,
-or another progression measure.
+The two `+30` callers are not the same system:
+
+- **`0x0222B500` — probable field G-Power Boost pickup.** It appears in a
+  three-case field-pickup handler, applies `+30` through `0x0226A380`, and does
+  not increment participant byte `+0xFD`. The game guide independently records
+  the yellow field G-Power Boost as `+30`.
+- **`0x0222D154` — probable level-up or progression award.** It applies `+30`
+  and immediately increments participant byte `+0xFD`, clamping that counter to
+  99. The game documents that leveling increases G-Power, but the exact role of
+  `+0xFD`—level, experience step, upgrade count, or another counter—has not yet
+  been observed at runtime.
 
 The user-supplied reference table contains 38 forms, each with a +250 G
-minimum-to-maximum range. This supports a progression interpretation but does
-not prove the semantics of source `+0x06` or the `+30` callsites.
+minimum-to-maximum range. That supports progression tuning but does not prove
+that each level uses a flat `+30` or identify the final-level adjustment.
 
 ## Candidate evolution model
 

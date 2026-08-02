@@ -10,6 +10,7 @@ LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
 LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
 SELECTOR = Path("analysis/gates/battle-type-selector.json")
 BATTLE_TYPE_SYMBOLS = Path("analysis/symbols/battle_types.csv")
+CONTEXT = Path("analysis/gates/battle-context.json")
 FORBIDDEN_KEYS = {"raw_bytes", "ram_dump", "save_state", "screenshot", "complete_gate_table"}
 
 
@@ -119,3 +120,38 @@ def test_battle_type_symbol_csv_has_required_columns() -> None:
         "DispatchBattleType",
     }
     assert all(row["confidence"] == "confirmed" for row in rows)
+
+
+def test_battle_context_has_confirmed_hook_safe_core() -> None:
+    from bakugan_ds.gates.context import confirmed_hook_context, load_context_fields
+
+    fields = load_context_fields(CONTEXT)
+    included = {item.name for item in confirmed_hook_context(fields)}
+    assert {
+        "gate_card_id",
+        "attribute_id",
+        "compressed_core_g",
+        "mutable_modifier_g",
+        "base_snapshot_g",
+        "gate_bonus_g",
+        "target_total_g",
+        "combatant_record_pointer",
+        "battle_type_id",
+        "battle_state",
+    } <= included
+    assert "animated_current_g" not in included
+    assert "gate_owner" not in included
+
+    payload = json.loads(CONTEXT.read_text(encoding="utf-8"))
+    unresolved = {item["name"] for item in payload["unresolved_fields"]}
+    assert {
+        "match_score_or_captured_gate_count",
+        "ability_cards_used",
+        "gate_activation_count",
+        "previous_battle_types",
+        "landing_or_shot_condition",
+        "arena_id",
+        "difficulty",
+        "human_ai_identity",
+    } <= unresolved
+    assert FORBIDDEN_KEYS.isdisjoint(walk_keys(payload))

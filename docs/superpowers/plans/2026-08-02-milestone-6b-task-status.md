@@ -24,15 +24,39 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-Current checkpoint: **2A — static candidate inventory**.
+Current checkpoint: **2B — canonical Gate owner**.
 
 Task 2 checkpoints:
 
-1. 2A — static candidate inventory
-2. 2B — canonical Gate owner
-3. 2C — challenger and combatant mapping
-4. 2D — human and AI identity
-5. 2E — effect targeting rules
-6. 2F — normalized artifact, tests, CI, and task completion
+1. 2A — static candidate inventory: complete
+2. 2B — canonical Gate owner: in progress
+3. 2C — challenger and combatant mapping: pending
+4. 2D — human and AI identity: pending
+5. 2E — effect targeting rules: pending
+6. 2F — normalized artifact, tests, CI, and task completion: pending
+
+### Checkpoint 2A result
+
+Candidate-only static evidence is stored in `analysis/gates/ownership-participant-candidates.json` at commit `54f32929704d87cec44555578111b07d820c2ad4`.
+
+It records:
+
+- the paired byte fields at session offsets `+0x28D` and `+0x28E`;
+- their generic setter and repeated `0, 1` setup initialization;
+- their use by the battle-record constructor;
+- two candidate result-state readers;
+- participant-pointer and 20-byte descriptor-array candidates;
+- exact overlay-7 hashes and instruction-range hashes;
+- all remaining semantic questions.
+
+Verification:
+
+```text
+240 passed
+11 expected environment-gated skips
+0 failed
+```
+
+Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 No Task 2 field is considered confirmed until the applicable runtime and lifecycle evidence is complete.

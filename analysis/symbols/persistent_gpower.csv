@@ -1,0 +1,7 @@
+name,component,address,confidence,evidence
+PlayerGPower_IdentityIndex,arm9_runtime,0x0202317C,confirmed,"Validates one owner bank, 41 Bakugan identities, and six attributes; returns owner*246 + id*6 + attribute"
+PlayerGPower_SetStored,arm9_runtime,0x020231C0,confirmed,"Stores one byte in units of 10 at global roster offset 0x460"
+PlayerGPower_GetStored,arm9_runtime,0x020231F4,confirmed,"Loads one byte at global roster offset 0x460 and multiplies by 10"
+PlayerBakuganAux_GetRecord,arm9_runtime,0x02023248,confirmed_address_unresolved_semantics,"Returns a four-byte auxiliary record at global roster offset 0x88 plus identity index times four"
+PlayerGPower_Table,runtime_ram,0x020D4850,confirmed,"246-byte persistent table: 41 Bakugan identities by six attributes"
+BattleParticipant_ResultCounterFD,overlay_0007,participant+0xFD,confirmed_nonpersistent,"Initialized and cleared with battle state, incremented after a +30 G adjustment, and copied into battle results"

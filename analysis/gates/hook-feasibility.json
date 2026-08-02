@@ -1,0 +1,113 @@
+{
+  "code_layout": {
+    "arena_high": "0x023E0000",
+    "arena_low_original": "0x0228BC20",
+    "arena_low_system2": "0x02293C60",
+    "cache_end": "0x02293C60",
+    "cache_start": "0x02293C20",
+    "module_end": "0x02293C20",
+    "module_size": 32768,
+    "module_start": "0x0228BC20",
+    "new_bss_size": 64,
+    "new_ram_size": 501728,
+    "original_bss_preserved_as_payload": 1600,
+    "original_ram_size": 467360
+  },
+  "format_version": 1,
+  "instrumentation": {
+    "boundary": "context_access",
+    "breakpoint_or_watchpoint": "ARM9 write watchpoint on each target-total halfword; stop occurred at post-store PC 0x0223D290.",
+    "gameplay_result_changed": false,
+    "observations": [
+      {"base_snapshot_g": 230, "equation": "230 + 180 = 410", "gate_bonus_g": 180, "side": "opponent", "target_total_g": 410},
+      {"base_snapshot_g": 190, "equation": "190 + 100 = 290", "gate_bonus_g": 100, "side": "player", "target_total_g": 290},
+      {"base_snapshot_g": 525, "equation": "525 + 100 = 625", "gate_bonus_g": 100, "side": "controlled_high_player", "target_total_g": 625},
+      {"base_snapshot_g": 555, "equation": "555 + 100 = 655", "gate_bonus_g": 100, "side": "controlled_high_modifier", "target_total_g": 655}
+    ],
+    "post_exit_input_responsive": true,
+    "raw_debugger_log_committed": false,
+    "register_or_memory_mutation_by_instrumentation": false,
+    "returned_to_surrounding_story": true,
+    "source": "Existing normalized DeSmuME ARM9 GDB evidence in analysis/runtime-observations/core_g_compression_validation.json and runtime G-Power observations."
+  },
+  "profile_id": "b6re_rev0",
+  "protected_core_g_ranges": [
+    {"end_offset": "0x00023C1C", "start_offset": "0x00023C18"},
+    {"end_offset": "0x00023CF8", "start_offset": "0x00023CB0"},
+    {"end_offset": "0x00023D7C", "start_offset": "0x00023D78"}
+  ],
+  "sites": [
+    {
+      "address": "0x0223D258",
+      "calling_convention": "Overlay-7 constructor internal ARM state; wrapper preserves r4-r11 and lr, uses r5 as the current combatant record and r6 as the selected source record.",
+      "code_space_strategy": "Replace the 32-byte legacy normal-attribute block with a branch and padding to a wrapper in 0x0228BC20-0x02293C20; wrapper returns to 0x0223D278.",
+      "component": "overlay_0007",
+      "component_offset": "0x00023E18",
+      "confidence": "confirmed",
+      "core_g_compatible": true,
+      "evidence": "Disassembly proves the block loads attribute from combatant byte +0x19, loads global card ID from source halfword +0x04, calls 0x02065BF4, multiplies by 10, and stores Gate bonus at combatant +0x12. The block is after all protected core compression ranges. Expected region SHA-256 ea818916339a9e9050f32020781f80611e88065b6c9adc6a324fcbb43f79a6d5.",
+      "expected_bytes_sha256": "ea818916339a9e9050f32020781f80611e88065b6c9adc6a324fcbb43f79a6d5",
+      "instruction_length": 32,
+      "live_registers": ["r4", "r5", "r6", "r10", "lr"],
+      "overwritten_behavior": "Normal attribute Gate lookup, stored-unit-to-G multiplication, and Gate-bonus halfword store. The wrapper must execute the exact legacy path when cache/data validation fails.",
+      "purpose": "gate_bonus",
+      "return_address": "0x0223D278",
+      "rollback": "Restore the exact 32 original bytes, clear the System 2.0 cache valid flag, and leave the NitroFS trailer ignored.",
+      "stack_assumptions": "The existing constructor frame is active and remains 8-byte aligned; the wrapper saves every additional callee-saved register it uses."
+    },
+    {
+      "address": "0x0223E350",
+      "calling_convention": "r0 is the battle-object pointer; the called selector returns a type ID in r0; r5 retains the same battle-object pointer in the caller.",
+      "code_space_strategy": "Replace the original BL with BL to a selector wrapper in the expanded overlay module; the wrapper calls legacy selector 0x022433AC when System 2.0 data is unavailable.",
+      "component": "overlay_0007",
+      "component_offset": "0x00024F10",
+      "confidence": "confirmed",
+      "core_g_compatible": true,
+      "evidence": "The four-byte call is followed immediately by strb r0,[r5,#0x20]. Expected call SHA-256 c250ec6758f4cb49cd6c3467aa8c39647cf33446a35413341b715ad61133f54d. Normal legacy selector behavior is independently confirmed as fixed metadata field 2.",
+      "expected_bytes_sha256": "c250ec6758f4cb49cd6c3467aa8c39647cf33446a35413341b715ad61133f54d",
+      "instruction_length": 4,
+      "live_registers": ["r0", "r4", "r5", "lr"],
+      "overwritten_behavior": "One BL to legacy selector 0x022433AC.",
+      "purpose": "battle_type_selector",
+      "return_address": "0x0223E354",
+      "rollback": "Restore the original BL instruction; legacy metadata selection resumes without reading System 2.0 data.",
+      "stack_assumptions": "The battle-object constructor frame is active; wrapper follows the original call's register-clobber contract."
+    },
+    {
+      "address": "0x0223D288",
+      "calling_convention": "r2 is base_snapshot_g, r1 is gate_bonus_g, r5 is the current combatant record, and r0 receives target_total_g.",
+      "code_space_strategy": "Replace add/strh with a branch to a context/effect wrapper in the expanded overlay module; replay add and store before returning to 0x0223D290.",
+      "component": "overlay_0007",
+      "component_offset": "0x00023E48",
+      "confidence": "confirmed",
+      "core_g_compatible": true,
+      "evidence": "Runtime watchpoints stopped at post-store PC 0x0223D290 with exact equations 230+180=410 and 190+100=290. Controlled execution also proved 525+100=625 and 555+100=655. Expected add/store SHA-256 8caaf927c5702aa9c1041697d0c2f8000ca0c64f9cc9c9a810ce36a08783ac38.",
+      "expected_bytes_sha256": "8caaf927c5702aa9c1041697d0c2f8000ca0c64f9cc9c9a810ce36a08783ac38",
+      "instruction_length": 8,
+      "live_registers": ["r1", "r2", "r4", "r5", "lr"],
+      "overwritten_behavior": "Add base snapshot and Gate bonus, then store target total to combatant +0x0E.",
+      "purpose": "context_access",
+      "return_address": "0x0223D290",
+      "rollback": "Restore the exact add/strh pair. Reversible debugger instrumentation at this boundary made no code or gameplay changes.",
+      "stack_assumptions": "The constructor frame is active; wrapper must preserve loop register r4 and combatant pointer r5."
+    },
+    {
+      "address": "0x022433AC",
+      "calling_convention": "r0 is the battle-object pointer and lr is the caller return. The displaced instruction pushes r3 and lr before dereferencing battle object +0x38.",
+      "code_space_strategy": "Replace the first instruction with B to a loader trampoline in the expanded overlay module. The trampoline replays push {r3,lr}, validates/loads the selected G2DT record, then branches to 0x022433B0.",
+      "component": "overlay_0007",
+      "component_offset": "0x00029F6C",
+      "confidence": "confirmed",
+      "core_g_compatible": true,
+      "evidence": "The function loads nested pointer [r0,+0x38], card ID halfword [nested,+0x04], selects metadata field 2, and returns the byte. Full function SHA-256 is a2ca7b7b527814153df7c077fe02fa3b0617a7c51c808def3c3c6fccc5247e3c; displaced push SHA-256 is fe8d65ae913df24877f27645b6abefd01c7d55d06183491a9a5cb0579724f022.",
+      "expected_bytes_sha256": "fe8d65ae913df24877f27645b6abefd01c7d55d06183491a9a5cb0579724f022",
+      "instruction_length": 4,
+      "live_registers": ["r0", "lr"],
+      "overwritten_behavior": "Function prologue push {r3,lr}; the trampoline must replay it exactly before continuing the original function.",
+      "purpose": "expanded_data_lookup",
+      "return_address": "0x022433B0",
+      "rollback": "Restore the original push instruction, clear cache valid flag, and ignore any raw trailer. The unmodified selector then reads legacy metadata.",
+      "stack_assumptions": "Caller stack is valid for the original two-register push; trampoline adds no persistent stack fields before continuing."
+    }
+  ]
+}

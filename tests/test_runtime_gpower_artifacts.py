@@ -51,6 +51,11 @@ def test_mutable_modifier_is_general_and_semantics_remain_bounded() -> None:
     boundaries = payload["confidence_boundaries"]
     assert boundaries["source_mutable_modifier"]["confidence"] == "confirmed_function"
     assert boundaries["progression_callsites"]["confidence"] == "probable"
+    callsites = {item["address"]: item for item in modifier["known_callsites"]}
+    assert "field G-Power Boost" in callsites["0x0222B500"]["interpretation"]
+    assert "level-up or progression" in callsites["0x0222D154"]["interpretation"]
+    assert "no +0xFD increment" in callsites["0x0222B500"]["evidence"]
+    assert "+0xFD" in callsites["0x0222D154"]["evidence"]
     assert boundaries["evolution_representation"]["confidence"] == "candidate"
     assert "not exclusively" in boundaries["source_mutable_modifier"]["interpretation"]
 
@@ -73,7 +78,9 @@ def test_document_and_candidate_file_preserve_confidence_boundaries() -> None:
     for required in (
         "general mutable G modifier",
         "0x0226A380",
-        "Probable progression callsites",
+        "Separated `+30` callsites",
+        "probable field G-Power Boost pickup",
+        "probable level-up or progression award",
         "Candidate evolution model",
         "Evolution is not yet runtime-confirmed",
         "0x02007EB8",
@@ -81,5 +88,6 @@ def test_document_and_candidate_file_preserve_confidence_boundaries() -> None:
         assert required in document
     candidate = Path("analysis/candidates/gpower.yaml").read_text(encoding="utf-8")
     assert "source_mutable_modifier: confirmed_general_additive_channel" in candidate
-    assert "progression_callsites: probable" in candidate
+    assert "progression_callsite_0x0222D154: probable" in candidate
+    assert "field_gpower_pickup_0x0222B500: probable" in candidate
     assert "evolution_representation: candidate" in candidate

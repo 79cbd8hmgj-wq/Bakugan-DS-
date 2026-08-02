@@ -1,0 +1,132 @@
+{
+  "binary": {
+    "decoded_overlay": 7,
+    "decoded_overlay_runtime_base": "0x02219440",
+    "decoded_overlay_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+  },
+  "breakpoint_boundary": {
+    "after_removal": {
+      "address": "0x022424B4",
+      "description": "The call to arena-placement removal 0x022626B8 has returned; combatant descriptor cleanup has not started.",
+      "selected_register_packet_sha256": "411238325604b513f7c637d5f2cc76dc059f0239b5db8b16d99d1e2714c17dce"
+    },
+    "before_removal": {
+      "address": "0x02242498",
+      "description": "Winner score and capture-history bookkeeping have completed; arena-placement removal has not started.",
+      "selected_register_packet_sha256": "be8f4067771f286082f5413af53a863bd4be79ff2cf7cdaee13e358e7b651ab4"
+    }
+  },
+  "checkpoint": "4B",
+  "confidence_boundary": "This checkpoint confirms the common result path's arena-record and board-grid removal transition in one clean standalone Battle tutorial run using the game's built-in tutorial skip. It does not confirm that participant Gate-slot value 2 uniquely means captured or removed: the active owner slot already held value 2 before 0x022626B8 and remained 2 afterward. A normal non-tutorial allocation-to-removal control and reset/reuse tracing remain assigned to checkpoint 4C.",
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "purpose": "normal result ordering through score, capture history, arena removal, and descriptor cleanup",
+      "runtime_end": "0x022424DC",
+      "runtime_start": "0x022423F0",
+      "sha256": "166b5c882d31a6d9a5c60df8a0f77ea28817d72fce9eabc16585ac6f4f780467"
+    },
+    {
+      "purpose": "arena-placement removal and participant Gate-slot state write",
+      "runtime_end": "0x02262714",
+      "runtime_start": "0x022626B8",
+      "sha256": "416fc9473ffc62cecccc31cfe782ae9fb6f22abd5ace82cf5c1d16832886b810"
+    },
+    {
+      "purpose": "central participant Gate-slot state setter and state-zero count adjustment",
+      "runtime_end": "0x0226A448",
+      "runtime_start": "0x0226A404",
+      "sha256": "c120e6a295ecefeead7099b47f095b0388d3372f831700f31d4b9a7d4f3b2fd8"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "question": "What memory changes occur across the common result path's arena-placement removal call, and does the active participant Gate-slot byte transition from 1 to 2?",
+  "runtime_context": {
+    "active_gate_id": 21,
+    "active_gate_owner_participant_index": 1,
+    "active_gate_slot_index": 0,
+    "arena_entry_index": 0,
+    "arena_record_address": "0x0229FC9C",
+    "board_grid_reference_address": "0x0229FE2C",
+    "participant_0": "0x022E24E0",
+    "participant_1": "0x022E2640",
+    "participant_1_available_gate_count_address": "0x022E2738",
+    "participant_1_gate_slot_0_state_address": "0x022E2696",
+    "scenario": "Clean emulator launch from the preserved EVAN battery save, Tutorial -> 2) Battle!, failed controlled throw, then the game's built-in tutorial skip into the shared result path.",
+    "session": "0x0229FC80",
+    "session_active_placement_count_address": "0x0229FF14"
+  },
+  "transitions": [
+    {
+      "access": "arena entry 0 at session +0x1C",
+      "after": "0001000604020000",
+      "after_sha256": "cfb22d556656b878c17c7cf4dc1697324320c3e0a2a8d2e98ecdc0ee27708d9f",
+      "before": "0001010604020000",
+      "before_sha256": "1ca2400c43d175e5dc67963d2c47cbf3cbf43e6b09528f34583e0df0ff394145",
+      "confirmed_change": "record byte +0x02 changed from 1 to 0; Gate slot, owner, grid coordinates, and remaining selected bytes were preserved",
+      "field": "arena_placement_occupied"
+    },
+    {
+      "access": "session +0x16C + row 6 * 10 + column 4",
+      "after": 0,
+      "after_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "before": 1,
+      "before_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "confirmed_change": "the arena board-grid reference was cleared",
+      "field": "arena_board_grid_reference"
+    },
+    {
+      "access": "session +0x294",
+      "after": 0,
+      "after_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "before": 1,
+      "before_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "confirmed_change": "the active arena-placement count decreased by exactly one",
+      "field": "active_arena_placement_count"
+    },
+    {
+      "access": "participant 1 +0x54 through +0x63",
+      "after": "150002003b0002005d00020000000000",
+      "after_sha256": "4e21de95daea31d358cfc88460b7526db38cfef656f5be83891af67352c0d6ba",
+      "before": "150002003b0002005d00020000000000",
+      "before_sha256": "4e21de95daea31d358cfc88460b7526db38cfef656f5be83891af67352c0d6ba",
+      "confirmed_change": "none; active Gate slot 0 state was already 2 and the removal helper's write of 2 was idempotent",
+      "field": "participant_gate_slot_entries"
+    },
+    {
+      "access": "participant 1 +0xF8",
+      "after": 0,
+      "after_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511afa01d",
+      "before": 0,
+      "before_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511afa01d",
+      "confirmed_change": "none; the central setter adjusts +0xF8 only when a slot crosses the zero/nonzero boundary",
+      "field": "participant_available_gate_slot_count_candidate"
+    },
+    {
+      "access": "participant 0 +0x54 through +0x63",
+      "after": "13000200280002004800020000000000",
+      "after_sha256": "b0b448cb6806f365d0c00e01746a370437821cfc1405714eecfb8ec1b2eaddec",
+      "before": "13000200280002004800020000000000",
+      "before_sha256": "b0b448cb6806f365d0c00e01746a370437821cfc1405714eecfb8ec1b2eaddec",
+      "confirmed_change": "none; non-owner Gate-slot entries were an unchanged control",
+      "field": "non_owner_gate_slot_control"
+    }
+  ],
+  "supported_conclusions": [
+    "Arena-placement record byte +0x02 is confirmed as the occupied or present byte for the observed result path because 0x022626B8 changed it from 1 to 0 while preserving the placement identity and grid coordinates.",
+    "The board-grid reference selected by the placement record's row and column was cleared from 1 to 0 by the same removal call.",
+    "Session +0x294 decreased from 1 to 0 across one placement removal, confirming it as an active arena-placement count for this observed table and path.",
+    "Participant Gate-slot byte value 2 cannot be named solely as captured or removed from this tutorial scenario because it was already 2 before the removal call.",
+    "The removal helper still writes value 2 through the central setter, but that write was idempotent here and did not change participant +0xF8.",
+    "Board removal is distinct from the later combatant descriptor cleanup calls at 0x022424C4 and 0x022424D8.",
+    "No activation-counter claim is made by this runtime capture."
+  ],
+  "unresolved": [
+    "The exact lifecycle meaning of participant Gate-slot values 0, 1, and 2 across ordinary non-tutorial placement, activation, capture, and reset.",
+    "Why the tutorial setup had all selected participant Gate-slot bytes at value 2 before result removal.",
+    "Whether a normal non-tutorial active Gate transitions 1 to 2 at removal.",
+    "Whether state 2 can return to state 0 during the same match through reuse, transfer, or scripted behavior.",
+    "Whether session +0x294 counts only Gate placements in every mode or all objects represented by the placement table."
+  ]
+}

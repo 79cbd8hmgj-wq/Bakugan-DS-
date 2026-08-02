@@ -276,7 +276,7 @@ def test_gate_documentation_defines_legacy_and_6b_contracts() -> None:
     for required in (
         "No System 2.0 gameplay effect is implemented",
         "4,152-byte `G2DT` trailer",
-        "0x0228BC20–0x02293C20",
+        "0x0228BC20\u20130x02293C20",
         "fixed-point percentage of compressed core G",
         "Every other Gate retains original",
         "Milestone 6G",

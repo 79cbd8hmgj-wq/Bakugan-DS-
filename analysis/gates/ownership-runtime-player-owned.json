@@ -1,0 +1,76 @@
+{
+  "confidence_boundary": "This capture proves participant identity and Gate ownership for one player-owned tutorial battle. It does not by itself prove that session +0x28D is the canonical Gate-owner field in all normal, AI-owned, or scripted scenarios. A reverse-owner control is required before promotion to confirmed.",
+  "format_version": 1,
+  "participant_mapping": [
+    {
+      "base_g": 190,
+      "battle_side": "P1/player",
+      "gate_card_ids": [
+        19,
+        40,
+        72
+      ],
+      "participant_index": 0,
+      "participant_object_runtime_address": "0x022E24E0",
+      "player_ai_identity_confidence": "confirmed_for_this_capture"
+    },
+    {
+      "base_g": 230,
+      "battle_side": "P2/AI opponent",
+      "gate_card_ids": [
+        21,
+        59,
+        93
+      ],
+      "participant_index": 1,
+      "participant_object_runtime_address": "0x022E2640",
+      "player_ai_identity_confidence": "confirmed_for_this_capture"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "runtime_observation": {
+    "active_gate_card_id": 19,
+    "active_gate_label": "Juggernoid",
+    "battle_constructor_breakpoint": "0x0223CFE8",
+    "battle_constructor_breakpoint_hit": true,
+    "battle_totals": {
+      "ai_opponent": {
+        "base_g": 230,
+        "gate_bonus_g": 180,
+        "target_total_g": 410
+      },
+      "player": {
+        "base_g": 190,
+        "gate_bonus_g": 100,
+        "target_total_g": 290
+      }
+    },
+    "gate_placement_actor": "P1/player",
+    "launch_method": "clean executable launch with normal battery save; no executable save state",
+    "session_fields": {
+      "+0x28A": 0,
+      "+0x28D": 0,
+      "+0x28E": 1
+    },
+    "session_pointer_holder": "0x020D433C",
+    "session_runtime_address": "0x0229FC80"
+  },
+  "supported_conclusions": [
+    "Participant pointer-table index 0 is the P1/player object in this capture because its base-G field is 190, matching the displayed player Serpenoid.",
+    "Participant pointer-table index 1 is the P2/AI object in this capture because its base-G field is 230, matching the displayed opponent.",
+    "Participant index 0 owns Juggernoid ID 19 in this capture because ID 19 is present in its three Gate-card slots and absent from participant index 1's Gate-card slots.",
+    "The ordered session pair is +0x28D = 0 and +0x28E = 1 when participant index 0 owns the active Gate and participant index 1 contests it.",
+    "The battle constructor uses the same player/AI objects that supply the displayed 190 and 230 base-G values."
+  ],
+  "unresolved": [
+    "Whether +0x28D reverses to 1 when participant index 1 owns the active Gate",
+    "Whether +0x28E is always the challenger rather than simply the second combatant",
+    "Whether tutorial or scripted setup forces the ordered pair independently of Gate ownership",
+    "Whether +0x28A is an active-participant, turn, winner, or other slot selector"
+  ],
+  "verification_requirements": [
+    "Capture an AI-owned Gate contested by the player and inspect +0x28D/+0x28E at the same constructor boundary.",
+    "Require +0x28D = 1 and +0x28E = 0 in that reverse-owner control before naming the fields canonical owner and challenger.",
+    "If the pair remains 0/1, reject the owner/challenger interpretation and continue tracing the caller inputs."
+  ]
+}

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import cast
 
 import pytest
 
 from bakugan_ds.errors import WorkspaceError
+from bakugan_ds.gates.model import Confidence
 from bakugan_ds.gates.participants import (
     ParticipantContext,
     ParticipantControl,
@@ -13,11 +15,10 @@ from bakugan_ds.gates.participants import (
     TargetRule,
     normalize_participant_artifact,
 )
-from bakugan_ds.gates.model import Confidence
 
 
 def participant_payload() -> dict[str, object]:
-    roles = []
+    roles: list[object] = []
     for role in ParticipantRole:
         roles.append(
             {
@@ -33,7 +34,7 @@ def participant_payload() -> dict[str, object]:
             }
         )
 
-    target_modes = []
+    target_modes: list[object] = []
     for mode in TargetMode:
         target_modes.append(
             {
@@ -82,7 +83,7 @@ def test_normalize_participant_artifact_requires_complete_confirmed_model() -> N
 
 def test_normalize_participant_artifact_rejects_missing_role() -> None:
     payload = participant_payload()
-    roles = list(payload["roles"])
+    roles = list(cast(list[object], payload["roles"]))
     roles.pop()
     payload["roles"] = roles
 
@@ -92,8 +93,8 @@ def test_normalize_participant_artifact_rejects_missing_role() -> None:
 
 def test_normalize_participant_artifact_rejects_probable_role() -> None:
     payload = participant_payload()
-    roles = list(payload["roles"])
-    first = dict(roles[0])
+    roles = list(cast(list[object], payload["roles"]))
+    first = dict(cast(dict[str, object], roles[0]))
     first["confidence"] = "probable"
     roles[0] = first
     payload["roles"] = roles

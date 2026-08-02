@@ -195,3 +195,20 @@ def test_storage_strategy_selects_viable_primary_and_fallback() -> None:
         "Expanded executable or overlay",
     ):
         assert required in document
+
+
+def test_hook_feasibility_has_all_purposes_and_reversible_instrumentation() -> None:
+    from bakugan_ds.gates.hooks import HookPurpose, normalize_hook_capture, validate_hook_sites
+
+    payload = json.loads(Path("analysis/gates/hook-feasibility.json").read_text())
+    sites = normalize_hook_capture(payload)
+    validate_hook_sites(sites)
+    assert {site.purpose for site in sites} == set(HookPurpose)
+    assert all(site.core_g_compatible for site in sites)
+    assert payload["instrumentation"]["gameplay_result_changed"] is False
+    assert payload["instrumentation"]["register_or_memory_mutation_by_instrumentation"] is False
+    assert payload["instrumentation"]["returned_to_surrounding_story"] is True
+    assert payload["instrumentation"]["post_exit_input_responsive"] is True
+    assert payload["instrumentation"]["raw_debugger_log_committed"] is False
+    assert payload["code_layout"]["module_start"] == "0x0228BC20"
+    assert payload["code_layout"]["module_end"] == "0x02293C20"

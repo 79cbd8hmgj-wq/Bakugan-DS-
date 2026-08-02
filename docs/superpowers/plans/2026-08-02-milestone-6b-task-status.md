@@ -99,12 +99,12 @@ Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace 
 
 **Status:** in progress.
 
-Current checkpoint: **4B — runtime normal capture and arena-removal transition**.
+Current checkpoint: **4C — reuse, alternate/scripted paths, lifetime, and reset**.
 
 Task 4 checkpoints:
 
 1. 4A — static Gate-state and mutation-path inventory: complete
-2. 4B — runtime normal capture and arena-removal transition: pending
+2. 4B — runtime normal capture and arena-removal transition: complete
 3. 4C — reuse, alternate/scripted paths, lifetime, and reset: pending
 4. 4D — activation-counter presence or confirmed absence and replacement storage: pending
 5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: pending
@@ -125,4 +125,23 @@ The normal result path increments score and capture history first, then removes 
 
 No per-Gate activation increment appears in the audited placement, removal, transfer, result, and Gate-slot setter paths. This remains unresolved rather than confirmed absent until the bounded exhaustive audit in Checkpoint 4D.
 
-Checkpoint 4B will use a clean runtime transition to confirm the state values and memory changes across one ordinary Gate capture/removal event.
+### Checkpoint 4B
+
+`analysis/gates/gate-removal-runtime.json` at commit `66f8658e24721bd55c71c05a17f10bcbbfa09510` records a clean pre/post transition across the common result path's call to arena-placement removal `0x022626B8`.
+
+The runtime was paused at `0x02242498`, after winner score and capture-history bookkeeping but before board removal, and again at `0x022424B4`, immediately after the removal helper returned but before combatant descriptor cleanup.
+
+Confirmed transition:
+
+```text
+arena record +0x02: 1 -> 0
+board-grid reference: 1 -> 0
+session +0x294: 1 -> 0
+owner Gate-slot state: 2 -> 2
+owner participant +0xF8: 0 -> 0
+non-owner Gate-slot entries: unchanged
+```
+
+This confirms the arena-record presence byte, the corresponding board-grid reference clear, and `session +0x294` as an active arena-placement count for the observed table and path. It also rejects the narrow interpretation that participant Gate-slot value `2` uniquely means “captured” or “removed”: in the tutorial scenario, the active owner slot already contained `2` before removal, so the helper's write of `2` was idempotent.
+
+Checkpoint 4C must now determine the Gate-slot values' lifecycle in normal and alternate/scripted paths, whether state `2` can return to `0`, and the exact session and participant reset boundaries.

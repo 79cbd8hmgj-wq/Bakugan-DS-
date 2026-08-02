@@ -1,0 +1,91 @@
+{
+  "checkpoint": "3C",
+  "confidence_boundary": "This checkpoint confirms that participant +0xF4 is a separate capture-history entry count, not the authoritative match-score byte. It does not yet promote participant +0xEE to a fully named captured-Gate victory counter; that final interpretation remains coupled to the threshold and match-end comparison in checkpoint 3D.",
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "question": "Is participant +0xF4 the captured-Gate score counter, or is it separate bookkeeping from participant +0xEE?",
+  "runtime_capture": {
+    "breakpoint_after": "0x02242498",
+    "breakpoint_before": "0x0224242C",
+    "non_winner": {
+      "capture_history_count_after": 0,
+      "capture_history_count_before": 0,
+      "capture_record_0_after": "000000000000",
+      "capture_record_0_before": "000000000000",
+      "match_progress_after": 2,
+      "match_progress_before": 2,
+      "participant_index": 0,
+      "participant_pointer": "0x022E24E0",
+      "selected_memory_sha256_after": "1cb071d49d518857584f7c92cea9657a54c44d6c11faf8ac0d67ed2f5a01988b",
+      "selected_memory_sha256_before": "1cb071d49d518857584f7c92cea9657a54c44d6c11faf8ac0d67ed2f5a01988b"
+    },
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "scenario": "The same clean standalone Battle tutorial result captured in checkpoint 3B, paused after the winner-only +0xEE increment and before the +0xF4 capture-ledger block.",
+    "winner": {
+      "capture_history_count_after": 1,
+      "capture_history_count_before": 0,
+      "capture_record_0_after": "be0000000000",
+      "capture_record_0_before": "000000000000",
+      "capture_record_0_decoded": {
+        "losing_combatant_base_g": 190,
+        "losing_participant_selector": 0,
+        "remaining_bytes": "000000"
+      },
+      "match_progress_after": 3,
+      "match_progress_before": 3,
+      "participant_index": 1,
+      "participant_pointer": "0x022E2640",
+      "selected_memory_sha256_after": "4d60f0beed1e0c9aac50485037ea1bf29785d70d41c7d45bb3438e25385a0b50",
+      "selected_memory_sha256_before": "f1870d012710d40f995b3697c3f41dbf9df1a0a119d1140ea48bd7f700864201"
+    }
+  },
+  "static_evidence": {
+    "alternate_or_scripted_capture_append": {
+      "instruction_range_sha256": "de2f4a3490c3a7bd06f54e49d479302ab18bb104a52cf5230336f586a6645554",
+      "runtime_end": "0x02261450",
+      "runtime_start": "0x022613F4",
+      "summary": "A second result path appends the same six-byte participant capture record and increments participant +0xF4."
+    },
+    "constructor_reset": {
+      "instruction_range_sha256": "44b9dbe8732fdbf515ad8db24922cfec3ad10e4a6485cd16bee8384108dfdbbf",
+      "runtime_end": "0x02269724",
+      "runtime_start": "0x022696E4",
+      "summary": "Participant construction clears +0xEE and +0xF4 independently, then clears the 36-byte region at +0x84, establishing six fixed six-byte capture-history slots."
+    },
+    "normal_capture_append": {
+      "entry_address": "participant +0x84 + participant[+0xF4] * 6",
+      "entry_geometry_bytes": 6,
+      "entry_storage_bytes": 36,
+      "instruction_range_sha256": "bd35061a0c467fea0fbcddc410760cf91e22c60ef03692ab4abf14c5d537be5c",
+      "runtime_end": "0x02242498",
+      "runtime_start": "0x0224242C",
+      "stored_fields_confirmed_in_this_path": [
+        "losing combatant record halfword +0x04 at capture entry +0x00",
+        "low-nibble participant selector derived from losing combatant record byte +0x0D at capture entry +0x02"
+      ],
+      "summary": "After the separate winner +0xEE increment, result finalization indexes a six-byte capture-history entry with +0xF4, stores losing-combatant metadata, and increments +0xF4."
+    }
+  },
+  "supported_conclusions": [
+    "Participant +0xEE and participant +0xF4 are independently initialized and independently mutated fields.",
+    "The winner's +0xEE had already reached 3 while +0xF4 was still 0, proving the fields are not aliases or two views of one counter.",
+    "Participant +0xF4 is an index/count for populated six-byte capture-history records beginning at participant +0x84.",
+    "The normal result path and an alternate or scripted result path append the same capture-history geometry.",
+    "The non-winning participant receives neither a capture-history entry nor a +0xF4 increment.",
+    "Participant +0xF4 is not the authoritative match-score counter and must not be used as the System 2.0 owner-behind or victory-state value.",
+    "Participant +0xEE remains the authoritative winner-updated match-progress field; checkpoint 3D will determine its exact victory threshold and finalize whether it is the captured-Gate count used to end the match."
+  ],
+  "system2_contract": {
+    "capture_history_capacity": 6,
+    "capture_history_count_access": "participant +0xF4",
+    "capture_history_record_access": "participant +0x84 + index * 6",
+    "match_progress_access": "participant +0xEE",
+    "rule": "Do not substitute capture-history count +0xF4 for match score +0xEE."
+  },
+  "unresolved": [
+    "The exact semantic names of the remaining three bytes in each six-byte capture-history record.",
+    "Whether the capture-history ledger is consumed only by post-battle presentation/rewards or by later gameplay systems.",
+    "The exact victory threshold applied to participant +0xEE.",
+    "Whether all normal, team, and scripted modes interpret +0xEE as captured Gate Cards or a mode-specific match score."
+  ]
+}

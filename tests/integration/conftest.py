@@ -20,6 +20,17 @@ def reference_rom() -> Path:
 
 
 @pytest.fixture(scope="session")
+def reference_runtime_arm9() -> Path:
+    value = os.environ.get("BAKUGAN_DS_RUNTIME_ARM9")
+    if value is None:
+        pytest.skip("set BAKUGAN_DS_RUNTIME_ARM9 to run runtime ARM9 integration tests")
+    path = Path(value)
+    if not path.is_file():
+        pytest.fail(f"BAKUGAN_DS_RUNTIME_ARM9 does not point to a file: {path}")
+    return path
+
+
+@pytest.fixture(scope="session")
 def reference_profile() -> RomProfile:
     return load_profile(Path("config/b6re_rev0.json"))
 

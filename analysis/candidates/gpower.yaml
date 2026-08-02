@@ -56,3 +56,32 @@ gate_bonus_candidate:
   caveats:
     - The surrounding record schema, ordering, and seventh or later fields are not confirmed.
     - Two all-equal bonus rows also match overlay 7 and are treated as likely low-specificity matches.
+
+runtime_confirmation:
+  formula_confidence: confirmed
+  constructor_address: 0x0223CFE8
+  constructor_component_offset: 0x00023BA8
+  display_tween_address: 0x0223DDAC
+  display_tween_component_offset: 0x0002496C
+  record_layout:
+    stride_bytes: 20
+    animated_current_g_offset: 0x00
+    target_total_g_offset: 0x02
+    base_snapshot_g_offset: 0x04
+    gate_attribute_bonus_g_offset: 0x06
+  formulas:
+    initial_base_snapshot: source_u16_04 + source_u16_06
+    gate_attribute_bonus: lookup(card_id, attribute_id) * 10
+    target_total: base_snapshot_g + gate_attribute_bonus_g
+  controlled_values:
+    - side: player
+      equation: 190 + 100 = 290
+    - side: opponent
+      equation: 230 + 180 = 410
+  confidence_boundaries:
+    - source_u16_04 is probably the species or stored base G-Power component.
+    - source_u16_06 is probably a growth, level, or evolution contribution.
+    - record_u16_0A remains a candidate temporary battle modifier.
+  rejected_false_positive:
+    address: 0x02007EB8
+    reason: overlay decompression reused the watched RAM after the battle

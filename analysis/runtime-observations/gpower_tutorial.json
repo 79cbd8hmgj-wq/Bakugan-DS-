@@ -54,6 +54,7 @@
       "0x0223D0F8 add r1, r2, r1",
       "0x0223D0FC strh r1, [r6, #12]"
     ],
+    "gate_attribute_bonus": "lookup(card_id, attribute_id) * 10",
     "target_total": "base_snapshot_g + gate_attribute_bonus_g",
     "target_total_instructions": [
       "0x0223D278 ldrh r2, [r5, #12]",
@@ -97,22 +98,48 @@
   },
   "gate_bonus_source": {
     "helper_address": "0x02065BF4",
-    "helper_confidence": "probable",
-    "confirmed_code_behavior": "ordinary branch multiplies the helper return value by 10 before storing the bonus",
-    "semantic_boundary": "The helper's exact card/attribute table semantics remain probable rather than runtime-confirmed."
+    "table_address": "0x020A15AC",
+    "helper_confidence": "confirmed",
+    "confirmed_code_behavior": "The helper indexes a six-byte-per-card table with card_id * 6 + attribute_id and returns one unsigned byte; overlay 7 multiplies it by 10 before storage."
+  },
+  "source_components": {
+    "0x04": {
+      "name": "form_base_g",
+      "functional_confidence": "confirmed",
+      "tutorial_value": 190,
+      "reference_role": "published level-1 G-Power"
+    },
+    "0x06": {
+      "name": "progression_bonus_g",
+      "functional_confidence": "confirmed",
+      "tutorial_value": 0,
+      "semantic_interpretation": "level_growth_g",
+      "semantic_confidence": "probable",
+      "evidence_boundary": "A nonzero leveled runtime sample has not yet been captured."
+    }
+  },
+  "reference_crosscheck": {
+    "source": "user-supplied Bakugan reference table; normalized summary only",
+    "forms_checked": 38,
+    "unique_max_minus_min_values": [250],
+    "interpretation": "Every listed form has a 250 G level-1-to-max progression range."
   },
   "confidence_boundaries": {
     "source_u16_04": {
-      "confidence": "probable",
-      "interpretation": "species or stored base G-Power component"
+      "confidence": "confirmed",
+      "interpretation": "form base G-Power matching the published level-1 value"
     },
     "source_u16_06": {
-      "confidence": "probable",
-      "interpretation": "growth, level, or evolution contribution"
+      "confidence": "confirmed_function_probable_semantics",
+      "interpretation": "additive progression bonus; level-growth meaning is probable until a nonzero leveled sample is captured"
     },
     "record_u16_0A": {
       "confidence": "candidate",
       "interpretation": "later temporary battle adjustment used by the state function at 0x0221A7D0"
+    },
+    "evolution_representation": {
+      "confidence": "probable",
+      "interpretation": "evolution selects a different form/base entry rather than populating source +0x06; not directly observed"
     }
   },
   "excluded_false_positive": {

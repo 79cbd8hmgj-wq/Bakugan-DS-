@@ -4,6 +4,10 @@
 
 This document separates original Gate reuse eligibility, capture bookkeeping, physical arena removal, scene cleanup, object lifetime, and future System 2.0 activation history. These mechanisms are related by result ordering but are not interchangeable fields.
 
+## Battle object state-machine compatibility
+
+The higher-level battle object remains driven by dispatcher `0x0223EA60`. Its state byte is battle-object offset `+0x0C`, and the original executable handles states `0` through `8`. This dispatcher coordinates battle construction, active battle processing, result handling, and completion; it is separate from the Gate-slot, arena-placement, capture-history, and descriptor state documented below.
+
 ## Participant Gate-slot state
 
 Each participant owns Gate-slot records beginning at:

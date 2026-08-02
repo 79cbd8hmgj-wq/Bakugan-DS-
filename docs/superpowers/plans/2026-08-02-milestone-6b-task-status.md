@@ -2,7 +2,8 @@
 
 - Task 1: complete
 - Task 2: complete
-- Tasks 3–13: pending
+- Task 3: in progress
+- Tasks 4–13: pending
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
 
@@ -24,7 +25,7 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed.
 
 ## Task 2
 
-**Status:** complete — awaiting user review before Task 3.
+**Status:** complete.
 
 Task 2 confirmed the complete ownership and participant-targeting model required by Gate Card System 2.0.
 
@@ -32,13 +33,7 @@ Task 2 confirmed the complete ownership and participant-targeting model required
 
 1. 2A — static candidate inventory
 2. 2B — canonical Gate owner
-   - player-owned Gate control
-   - reverse-owner AI control
-   - canonical owner source
-   - owner lifetime, reset, and alternate-path validation
 3. 2C — challenger and combatant mapping
-   - descriptor-to-combatant mapping
-   - challenger ordering policy
 4. 2D — human and AI identity
 5. 2E — effect targeting rules
 6. 2F — normalized artifact, resolver, tests, symbols, documentation, and exact-binary verification
@@ -53,28 +48,12 @@ Task 2 confirmed the complete ownership and participant-targeting model required
 - Combatant record 1 is the challenger record at `battle object +0x20..+0x33`.
 - `participant +0xC8 == NULL` identifies human control.
 - `participant +0xC8 != NULL` identifies AI control.
-- `battle-result controller +0x21` is a signed winner-record index:
-  - `-1` unresolved;
-  - `0` defender won;
-  - `1` challenger won.
+- `battle-result controller +0x21` is a signed winner-record index: `-1` unresolved, `0` defender, `1` challenger.
 - The loser is derived as `winner_record_index XOR 1` after a valid result.
 
 ### System 2.0 targeting contract
 
-The pure resolver supports:
-
-- owner
-- defender
-- challenger
-- self
-- opponent
-- both combatants
-- winner
-- loser
-- human combatants
-- AI combatants
-
-The resolver fails closed for unresolved results, equal-descriptor fallbacks, missing explicit self/opponent sources, noncombatant sources, and combatant-only owner effects when the Gate owner is not currently battling.
+The pure resolver supports owner, defender, challenger, self, opponent, both combatants, winner, loser, human combatants, and AI combatants. It fails closed for unresolved results, equal-descriptor fallbacks, missing explicit self/opponent sources, noncombatant sources, and combatant-only owner effects when the Gate owner is not currently battling.
 
 ### Main artifacts
 
@@ -98,18 +77,41 @@ Python CI at branch head `55c043482543d5a44ff5acf79ad45068b417b222` completed su
 0 failed
 ```
 
-The following passed in the same run:
+Python compilation, Ruff, strict mypy, the complete repository test suite, changed-file whitespace checks, and exact-binary participant/result-region verification passed.
 
-- Python compilation
-- Ruff on all changed Python files
-- strict mypy on changed package files
-- complete repository test suite
-- changed-file whitespace checks
+## Task 3
 
-A separate local exact-binary verification against the supplied runtime ARM9 and decoded overlay 7 confirmed all nine guarded participant/result instruction regions and both expected component SHA-256 hashes.
+Current checkpoint: **3B — runtime confirmation of participant `+0xEE` score behavior**.
 
-No Gate bonus, battle-type selection, Ability Card behavior, AI decision, match result, roster value, ROM payload, or save format was changed.
+Task 3 checkpoints:
 
-## Next task
+1. 3A — static match-score candidate inventory: complete
+2. 3B — runtime score-changing result and no-change control: pending
+3. 3C — captured-Gate counter identity and relationship to score: pending
+4. 3D — victory threshold and comparison path: pending
+5. 3E — update timing, round lifetime, scripted behavior, and reset: pending
+6. 3F — normalized artifact, validators, symbols, tests, CI, and task completion: pending
 
-Task 3 will reverse-engineer authoritative match score, captured-Gate counts, victory threshold, score updates, capture timing, and reset behavior. It has not started.
+### Checkpoint 3A result
+
+Static candidate evidence is stored in `analysis/gates/match-score-candidates.json` at commit `e61452d70f57785c3ac18a23c985b419131864cd`.
+
+Confirmed only at candidate confidence:
+
+- participant byte `+0xEE` is cleared by participant construction;
+- result finalization resolves the winning participant, sets adjacent byte `+0xFE`, increments `+0xEE`, and stores it back;
+- independent consumers compare or combine `+0xEE` values from participant objects;
+- result-controller `+0x21` and `+0x0E` remain rejected as score counters because Task 2 confirmed them as winner and loser record indices;
+- adjacent participant `+0xF4` is reserved for the captured-Gate counter checkpoint rather than being conflated with score.
+
+Four exact overlay-7 instruction ranges and their SHA-256 hashes are recorded. The decoded overlay matched the expected B6RE revision-0 SHA-256.
+
+Not yet confirmed:
+
+- whether `+0xEE` means captured Gates, abstract score, or a mode-dependent team total;
+- whether team modes aggregate participant counters;
+- the victory threshold;
+- round and match reset behavior;
+- a controlled runtime increment and no-change observation.
+
+Checkpoint 3B will answer only whether participant `+0xEE` changes exactly for the winning side in one clean result and remains unchanged for the non-winning side.

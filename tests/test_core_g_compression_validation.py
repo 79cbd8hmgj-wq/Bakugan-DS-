@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import json
-from pathlib import Path
+import pathlib
 
 
-VALIDATION = Path(
+VALIDATION = pathlib.Path(
     "analysis/runtime-observations/core_g_compression_validation.json"
 )
 

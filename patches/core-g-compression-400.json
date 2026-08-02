@@ -1,0 +1,33 @@
+{
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "patches": [
+    {
+      "id": "preload-core-compression-constant",
+      "type": "binary_replace",
+      "target": "overlay:7",
+      "offset": 146456,
+      "expected": "0c70a0e3",
+      "replacement": "c870a0e3",
+      "rationale": "Replace a dead MOV r7,#12 value with MOV r7,#200 for the bounded high-core compression calculation."
+    },
+    {
+      "id": "compress-both-core-g-inputs",
+      "type": "binary_replace",
+      "target": "overlay:7",
+      "offset": 146608,
+      "expected": "b420d1e1b610d1e1011082e0bc10c6e1b410d0e1b600d0e1000081e0b002c6e1bc00d6e1b001c6e1b002d6e10ab0a0e30b70a0e1b402c6e1b241c6e1b642c6e1b641c6e1ba42c6e1",
+      "replacement": "b420d1e1b610d1e1190e52e3a2208780011082e0bc10c6e1b011c6e1b410d0e1b600d0e1190e51e3a1108780000081e0b002c6e1b402c6e1b241c6e1b642c6e1b641c6e1ba42c6e1",
+      "rationale": "Compress only core G above 400 for both combatants before adding the shared mutable modifier, while preserving all existing snapshot and zero-initialization stores."
+    },
+    {
+      "id": "restore-gate-scale-constant",
+      "type": "binary_replace",
+      "target": "overlay:7",
+      "offset": 146808,
+      "expected": "0b80a0e1",
+      "replacement": "0a80a0e3",
+      "rationale": "Load r8 with 10 directly because the rewritten constructor no longer initializes r11 earlier."
+    }
+  ]
+}

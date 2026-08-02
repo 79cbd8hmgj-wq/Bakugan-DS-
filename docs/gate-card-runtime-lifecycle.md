@@ -103,6 +103,8 @@ replacement Gate-slot state -> 1
 
 The arena entry stays occupied, so `session +0x294` does not change. No decoded-overlay-7 path restores a Gate after its arena record has already been removed.
 
+The historical **Reused** label is therefore limited to active-placement transfer: an occupied arena entry receives a replacement Gate identity. It does not describe reuse after physical removal, because no such restoration path was found.
+
 ## Capture bookkeeping
 
 The original game does not maintain one per-Gate captured Boolean. Capture is a composite result event:

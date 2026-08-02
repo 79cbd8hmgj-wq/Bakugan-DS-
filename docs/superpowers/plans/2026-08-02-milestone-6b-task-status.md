@@ -3,7 +3,8 @@
 - Task 1: complete
 - Task 2: complete
 - Task 3: complete
-- Tasks 4–13: pending
+- Task 4: in progress
+- Tasks 5–13: pending
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
 
@@ -94,4 +95,34 @@ GitHub Python CI run `30766338199` completed successfully at branch commit `ceed
 
 Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace checks passed. The exact decoded-overlay integration test also passed locally against overlay-7 SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1`.
 
-Task 4 is the next pending task and has not started.
+## Task 4
+
+**Status:** in progress.
+
+Current checkpoint: **4B — runtime normal capture and arena-removal transition**.
+
+Task 4 checkpoints:
+
+1. 4A — static Gate-state and mutation-path inventory: complete
+2. 4B — runtime normal capture and arena-removal transition: pending
+3. 4C — reuse, alternate/scripted paths, lifetime, and reset: pending
+4. 4D — activation-counter presence or confirmed absence and replacement storage: pending
+5. 4E — normalized model, validators, lifecycle documentation, exact-binary tests, CI, and task completion: pending
+
+### Checkpoint 4A
+
+`analysis/gates/gate-state-candidates.json` at commit `d84859fbf9ee696b49dce8b82226feb946b4b898` separates the original Gate-state mechanisms without promoting candidate names beyond the evidence.
+
+Static evidence identifies:
+
+- `participant +0x56 + gate_slot_index * 4` as a three-value Gate-slot state byte. Arena allocation writes `1`, arena transfer writes old `0` and new `1`, and arena removal writes `2`.
+- `participant +0xF8` as a byte adjusted only when Gate slots enter or leave state `0`, making it the probable available-Gate-slot count.
+- `session +0x1C + arena_entry_index * 8 +0x02` as the probable arena-placement occupied byte.
+- `session +0x294` as the probable active arena-placement count.
+- `0x022626B8` as the arena-placement removal path and `0x02262828` as a separate combatant descriptor/scene cleanup path.
+
+The normal result path increments score and capture history first, then removes the defender's arena placement, writes Gate-slot state `2`, clears the board reference, decrements the arena-placement count, and separately cleans both combatant descriptors.
+
+No per-Gate activation increment appears in the audited placement, removal, transfer, result, and Gate-slot setter paths. This remains unresolved rather than confirmed absent until the bounded exhaustive audit in Checkpoint 4D.
+
+Checkpoint 4B will use a clean runtime transition to confirm the state values and memory changes across one ordinary Gate capture/removal event.

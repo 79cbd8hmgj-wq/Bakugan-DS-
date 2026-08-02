@@ -97,9 +97,9 @@
     {
       "access": "participant 1 +0xF8",
       "after": 0,
-      "after_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511afa01d",
+      "after_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
       "before": 0,
-      "before_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511afa01d",
+      "before_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
       "confirmed_change": "none; the central setter adjusts +0xF8 only when a slot crosses the zero/nonzero boundary",
       "field": "participant_available_gate_slot_count_candidate"
     },

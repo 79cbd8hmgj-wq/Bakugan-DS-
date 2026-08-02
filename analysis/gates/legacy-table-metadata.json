@@ -1,0 +1,64 @@
+{
+  "attribute_order": [
+    "attribute_0",
+    "attribute_1",
+    "attribute_2",
+    "attribute_3",
+    "attribute_4",
+    "attribute_5"
+  ],
+  "complete_table_committed": false,
+  "confidence": "probable",
+  "control_cases": [],
+  "element_width": 1,
+  "end_address": 34216618,
+  "end_address_hex": "0x020A1AAA",
+  "evidence": {
+    "attribute_order_status": "Numeric attribute slots 0-5 are confirmed; human-readable names are deferred to Task 5.",
+    "card_id_domain": {
+      "adjacent_four_byte_table": "0x020A1258 + 213 * 4 = 0x020A15AC",
+      "adjacent_halfword_table": "0x020A10AC + 213 * 2",
+      "bounds_check_address": 33971232,
+      "bounds_check_address_hex": "0x02065C20",
+      "confidence": "confirmed",
+      "instruction_sha256": "6a37eedf85a4d6965c92ed9d5c90f890cd11ef75b6fa4ab5766a0341ec8f7a31",
+      "upper_bound_exclusive": 213
+    },
+    "end_boundary": {
+      "calculation": "0x020A15AC + 213 * 6 = 0x020A1AAA",
+      "confidence": "confirmed",
+      "next_referenced_data_address": "0x020A1AC6",
+      "next_region_prefix_sha256": "b256e7c3035ce6c6da780da068c1330288d4dfcdbd686409a4b8344ad1a374b0"
+    },
+    "lookup_helper": {
+      "confidence": "confirmed",
+      "index_formula": "card_id * 6 + attribute_id",
+      "instruction_sha256": "bf5213848b95c1acbf3b6e1b5608b85ece6fe08bd2c6679cec2e4e30c27c108e",
+      "load": "unsigned byte",
+      "runtime_address": 33971188,
+      "runtime_address_hex": "0x02065BF4"
+    }
+  },
+  "format_version": 1,
+  "last_nonzero_record_id": 200,
+  "mapping": {
+    "decoded_offset": 660908,
+    "decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
+    "directly_patchable": false,
+    "mapping_kind": "decoded",
+    "runtime_address": 34215340,
+    "runtime_offset": 660908,
+    "stored_sha256": "c4ac54ee4c8cd36bd572deb78c224c5739f6847418dc7554974a7e0ce1c4dcbf",
+    "workspace_component": "arm9"
+  },
+  "nonzero_record_count": 136,
+  "profile_id": "b6re_rev0",
+  "record_count": 213,
+  "record_stride": 6,
+  "region_sha256": "6445b00c88445b736e2fa36dae804fce4e7595255403d56039d6da64db478fc4",
+  "runtime_address": 34215340,
+  "runtime_address_hex": "0x020A15AC",
+  "schema": "legacy_gate_attribute_bonus_v1",
+  "signed": false,
+  "table_size": 1278
+}

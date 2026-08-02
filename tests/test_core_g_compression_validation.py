@@ -2,7 +2,6 @@ from pathlib import Path
 
 from bakugan_ds.gates.io import load_json_object
 
-
 VALIDATION = Path(
     "analysis/runtime-observations/core_g_compression_validation.json"
 )

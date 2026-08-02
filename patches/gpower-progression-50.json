@@ -1,0 +1,24 @@
+{
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "patches": [
+    {
+      "id": "halve-player-one-progression",
+      "type": "binary_replace",
+      "target": "overlay:7",
+      "offset": 146616,
+      "expected": "011082e0",
+      "replacement": "a11082e0",
+      "rationale": "Change ADD r1,r2,r1 at runtime 0x0223D0F8 to ADD r1,r2,r1,LSR #1 so the first combatant keeps full form base G but receives 50% of the additive progression component."
+    },
+    {
+      "id": "halve-player-two-progression",
+      "type": "binary_replace",
+      "target": "overlay:7",
+      "offset": 146632,
+      "expected": "000081e0",
+      "replacement": "a00081e0",
+      "rationale": "Change ADD r0,r1,r0 at runtime 0x0223D108 to ADD r0,r1,r0,LSR #1 so the second combatant uses the same 50% progression rule."
+    }
+  ]
+}

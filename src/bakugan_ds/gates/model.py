@@ -87,7 +87,8 @@ class LegacyGateTableSpec:
     def validate(self) -> None:
         if self.profile_id != SUPPORTED_PROFILE_ID:
             raise WorkspaceError(
-                f"unsupported Gate table profile: expected {SUPPORTED_PROFILE_ID}, got {self.profile_id}"
+                "unsupported Gate table profile: "
+                f"expected {SUPPORTED_PROFILE_ID}, got {self.profile_id}"
             )
         _require_nonnegative(self.runtime_address, "runtime address")
         if self.element_width not in _VALID_ELEMENT_WIDTHS:

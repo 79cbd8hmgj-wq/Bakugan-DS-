@@ -1,0 +1,130 @@
+{
+  "format_version": 1,
+  "rom_profile": "b6re_rev0",
+  "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+  "confidence": "confirmed_with_bounded_callsites",
+  "persistent_player_gpower": {
+    "global_roster_base": "0x020D43F0",
+    "table_offset": "0x0460",
+    "table_address": "0x020D4850",
+    "entry_size_bytes": 1,
+    "bakugan_identity_count": 41,
+    "attribute_count": 6,
+    "entry_count": 246,
+    "stored_unit_g": 10,
+    "index_formula": "owner_bank * 246 + bakugan_id * 6 + attribute_id",
+    "supported_owner_banks_observed": 1,
+    "value_formula": "current_g = stored_byte * 10"
+  },
+  "confirmed_helpers": [
+    {
+      "name": "PlayerGPower_IdentityIndex",
+      "component": "arm9_runtime",
+      "address": "0x0202317C",
+      "behavior": "Validates owner_bank < 1, bakugan_id < 41, and attribute_id < 6, then returns the 41-by-6 table index."
+    },
+    {
+      "name": "PlayerGPower_SetStored",
+      "component": "arm9_runtime",
+      "address": "0x020231C0",
+      "behavior": "Converts G-Power to units of ten when the input is at least 10, then stores one byte at global_roster + index + 0x460."
+    },
+    {
+      "name": "PlayerGPower_GetStored",
+      "component": "arm9_runtime",
+      "address": "0x020231F4",
+      "behavior": "Loads one byte from global_roster + index + 0x460 and returns the value multiplied by 10."
+    },
+    {
+      "name": "PlayerBakuganAux_GetRecord",
+      "component": "arm9_runtime",
+      "address": "0x02023248",
+      "behavior": "Returns global_roster + 0x88 + identity_index * 4; the two-halfword auxiliary record semantics remain unresolved."
+    }
+  ],
+  "direct_setter_callsites": [
+    {
+      "component": "arm9_runtime",
+      "address": "0x02022CB4",
+      "role": "roster initialization/import loop",
+      "confidence": "confirmed_function"
+    },
+    {
+      "component": "overlay_0000",
+      "address": "0x02222800",
+      "role": "new-game roster initialization",
+      "confidence": "confirmed_context"
+    },
+    {
+      "component": "overlay_0000",
+      "address": "0x02222868",
+      "role": "new-game roster initialization",
+      "confidence": "confirmed_context"
+    },
+    {
+      "component": "overlay_0002",
+      "address": "0x0221B224",
+      "role": "scripted 670 G assignment associated with Bakugan ID 37",
+      "confidence": "probable_story_evolution_context"
+    },
+    {
+      "component": "overlay_0005",
+      "address": "0x0221E6AC",
+      "role": "scripted 440 G assignment associated with Bakugan ID 36",
+      "confidence": "probable_story_context"
+    }
+  ],
+  "battle_counter_fd": {
+    "participant_offset": "0x00FD",
+    "confidence": "confirmed_nonpersistent_battle_state",
+    "exact_label_confidence": "probable_gpower_pickup_result_counter",
+    "evidence": [
+      {
+        "address": "0x02234D28",
+        "behavior": "initialized to zero with the participant battle object"
+      },
+      {
+        "address": "0x02269700",
+        "behavior": "initialized to zero by the participant-record initializer"
+      },
+      {
+        "address": "0x0222D158",
+        "behavior": "read and incremented immediately after a +30 mutable-G adjustment"
+      },
+      {
+        "address": "0x0222D168",
+        "behavior": "stored with a clamp to 99"
+      },
+      {
+        "address": "0x022502F8",
+        "behavior": "copied into a battle-results object beside participant offset +0xFC"
+      },
+      {
+        "address": "0x02235718",
+        "behavior": "cleared during battle-state handling"
+      },
+      {
+        "address": "0x022358C8",
+        "behavior": "cleared during battle-state handling"
+      },
+      {
+        "address": "0x02235A38",
+        "behavior": "cleared during battle-state handling"
+      }
+    ],
+    "rejected_interpretations": [
+      "persistent level",
+      "persistent experience",
+      "persistent roster progression"
+    ]
+  },
+  "confidence_boundaries": {
+    "persistent_table_layout": "confirmed",
+    "getter_setter_scaling": "confirmed",
+    "normal_level_up_commit_path": "unresolved",
+    "bakugan_id_36_name": "probable_skyress_from_reference_order",
+    "bakugan_id_37_name": "probable_storm_skyress_from_reference_order",
+    "evolution_storage_model": "candidate"
+  },
+  "repository_boundary": "Only normalized addresses, formulas, callsite roles, and confidence labels are committed. ROM bytes, live RAM dumps, save states, screenshots, and copied guide tables remain local."
+}

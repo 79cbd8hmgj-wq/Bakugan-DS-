@@ -1,26 +1,19 @@
 # G-Power Runtime Validation
 
-Static analysis cannot identify the final G-Power calculation with sufficient
-confidence. Runtime evidence is required.
+The first runtime-validation pass is complete. See
+[`runtime-gpower-tracing.md`](runtime-gpower-tracing.md) and
+`analysis/runtime-observations/gpower_tutorial.json` for the normalized evidence.
 
-1. Enter a controlled battle and record the displayed G-Power.
-2. Search emulator RAM for the value as both unsigned 16-bit and 32-bit data.
-3. Change exactly one input: Gate Card, level, evolution state, attribute, or an
-   Ability Card effect.
-4. Filter the candidate addresses using the new displayed value.
-5. Set a write breakpoint on the surviving live value.
-6. Repeat the action and record:
-   - writing instruction address;
-   - active executable component or overlay ID;
-   - source registers and memory operands;
-   - call stack or link-register chain;
-   - before and after values.
-7. Convert addresses to component-relative offsets:
-   - ARM9 offset = address minus `0x02000000`;
-   - overlay 7 offset = address minus `0x02219440`.
-8. Repeat with isolated changes to base Bakugan, level, evolution, Gate Card,
-   and attribute to identify where each contribution enters the pipeline.
+Confirmed results:
 
-The target deliverable is a verified function and input map for base G-Power,
-level growth, evolution, Gate bonus, attribute modifier, and final stored value.
-Only then should a guarded balance patch be designed.
+- two adjacent 20-byte participant records;
+- animated current, target total, base snapshot, and Gate attribute bonus fields;
+- constructor at `0x0223CFE8`;
+- initial base snapshot formed from source `+0x04 + +0x06`;
+- Gate/attribute lookup result scaled by ten;
+- target total formed as base snapshot plus Gate bonus;
+- display tween at `0x0223DDAC`, separate from the formula.
+
+The next controlled runtime matrix should vary level, evolution state, and one
+Ability Card effect independently. Until then, the source components at `+0x04`
+and `+0x06` remain probable base/growth inputs rather than fully named fields.

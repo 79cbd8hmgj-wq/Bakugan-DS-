@@ -1,0 +1,73 @@
+{
+  "format_version": 1,
+  "rom_profile": "b6re_rev0",
+  "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+  "confidence": "confirmed_arithmetic_with_unresolved_promotion",
+  "persistent_auxiliary_record": {
+    "global_roster_base": "0x020D43F0",
+    "helper_address": "0x02023248",
+    "record_offset": "0x0088",
+    "record_size_bytes": 4,
+    "index_formula": "global_roster + 0x88 + identity_index * 4",
+    "packed_level_experience": {
+      "halfword_offset": 0,
+      "level_bits": "0-3",
+      "experience_bits": "4-15",
+      "level_encoding": "zero_based; displayed_level = stored_nibble + 1",
+      "decode_formula": {
+        "level_index": "packed & 0x000F",
+        "experience": "packed >> 4"
+      },
+      "encode_formula": "(experience << 4) | level_index",
+      "maximum_level_index": 15,
+      "maximum_experience": 4095
+    },
+    "field_stats": {
+      "halfword_offset": 2,
+      "packed_stat_count": 5,
+      "bits_per_stat": 3,
+      "confirmed_unpacker_address": "0x0205B124"
+    }
+  },
+  "experience_boost": {
+    "primary_handler_address": "0x0222B600",
+    "primary_update_range": "0x0222B668-0x0222B6A0",
+    "secondary_update_range": "0x0222CB98-0x0222CBC8",
+    "award_xp": 40,
+    "pre_add_guard": "current_xp < 4055",
+    "packed_experience_limit": 4095,
+    "preserves_level_nibble": true,
+    "formula": "if current_xp < 4055: packed = ((current_xp + 40) << 4) | level_index",
+    "precision_note": "4055 is the pre-add guard, not the stored cap; the guard keeps the 40-point addition within 12 bits."
+  },
+  "normal_battle_experience": {
+    "state_function_address": "0x0223F918",
+    "update_range": "0x0224224C-0x02242280",
+    "overflow_guard": "current_xp <= 4095 - reward_xp",
+    "preserves_level_nibble": true,
+    "performs_level_promotion": false,
+    "formula": "if current_xp <= 4095 - reward_xp: packed = ((current_xp + reward_xp) << 4) | level_index",
+    "scene_boundary": "The battle-result state accumulates XP and exits; promotion occurs in a later unidentified scene."
+  },
+  "tutorial_runtime_anchor": {
+    "bakugan": "Pyrus Serpenoid",
+    "identity_index": 132,
+    "persistent_packed_address": "0x020D4688",
+    "persistent_g_address": "0x020D48D4",
+    "battle_packed_address": "0x022E24EC",
+    "forced_packed_value": "0xFD70",
+    "decoded_level_index": 0,
+    "decoded_displayed_level": 1,
+    "decoded_experience": 4055,
+    "persistent_g": 190,
+    "bounded_result": "Skipping the tutorial did not execute a normal battle reward or persistent level/G write."
+  },
+  "confidence_boundaries": {
+    "packed_level_experience_layout": "confirmed",
+    "experience_boost_arithmetic": "confirmed",
+    "normal_battle_xp_accumulator": "confirmed",
+    "normal_level_promotion_path": "unresolved",
+    "persistent_g_update_on_promotion": "unresolved"
+  },
+  "repository_boundary": "Only normalized addresses, formulas, runtime values, and confidence labels are committed. ROM bytes, RAM dumps, save states, screenshots, and copied guide tables remain local."
+}

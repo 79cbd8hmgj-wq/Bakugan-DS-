@@ -6,6 +6,8 @@ from pathlib import Path
 
 EVIDENCE = Path("analysis/gates/card-id-evidence.json")
 SYMBOLS = Path("analysis/symbols/gate_cards.csv")
+LIFECYCLE = Path("analysis/gates/activation-lifecycle.json")
+LIFECYCLE_DOC = Path("docs/gate-card-runtime-lifecycle.md")
 FORBIDDEN_KEYS = {"raw_bytes", "ram_dump", "save_state", "screenshot", "complete_gate_table"}
 
 
@@ -53,3 +55,22 @@ def test_gate_symbol_csv_matches_selected_mappings() -> None:
         (item["card_id"], item["label"]) for item in payload["mappings"]
     ]
     assert all(row["confidence"] == "confirmed" for row in rows)
+
+
+def test_gate_lifecycle_artifact_has_battle_path_and_evidence() -> None:
+    payload = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
+    transitions = payload["transitions"]
+    assert transitions
+    assert any(item["to_state"] == "battle_started" for item in transitions)
+    assert all(item["evidence"].strip() for item in transitions)
+    assert all(item["owner_source"].strip() for item in transitions)
+    assert all(item["card_id_source"].strip() for item in transitions)
+    assert payload["ai_path"]["shared"] is True
+    assert payload["reuse_supported"] is False
+    assert payload["complete_runtime_capture_committed"] is False
+    assert FORBIDDEN_KEYS.isdisjoint(walk_keys(payload))
+
+    document = LIFECYCLE_DOC.read_text(encoding="utf-8")
+    assert "0x0223EA60" in document
+    assert "Resolved to reset" in document
+    assert "Reused" in document

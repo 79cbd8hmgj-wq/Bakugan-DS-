@@ -20,29 +20,66 @@ moderate scalable G bonus
 + optional condition or drawback
 ```
 
-No System 2.0 gameplay effect is implemented by Milestone 6A.
+No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B.
 
-## Milestone 6A result
+## Milestone 6A — reverse-engineering foundation
 
-The reverse-engineering foundation provides:
+Completed foundation:
 
-- the complete legacy table geometry and global ID domain;
+- complete legacy table geometry and global ID domain;
 - selected card-ID mappings established without guide ordering;
-- the Gate activation and result lifecycle;
-- the original fixed battle-type selector and scripted overrides;
-- a minimal confirmed hook-safe battle context;
-- a scalable storage and executable-layout decision;
+- Gate activation and result lifecycle;
+- original fixed battle-type selector and scripted overrides;
+- initial confirmed hook-safe battle context;
+- scalable storage and executable-layout decision;
 - four guarded hook boundaries;
 - reversible unchanged-result runtime instrumentation;
 - compatibility constraints for the merged core-G compression patch.
 
-## Milestone 6B input contract
+## Milestone 6B — complete System 2.0 discovery
 
-Milestone 6B implements one experimental System 2.0 Gate and must use these exact boundaries.
+Milestone 6B postpones the first prototype and confirms every runtime dependency required by the full System 2.0 design.
 
-### Data storage
+### Mandatory confirmation gate
 
-Primary:
+All of the following must be confirmed before prototype implementation:
+
+- canonical Gate ownership;
+- challenging and contesting participant identity;
+- human-versus-AI identity;
+- effect recipient targeting;
+- match score and captured-Gate counters;
+- Gate activation, reuse, capture, removal, and reset behavior;
+- previous battle-type history storage and reset;
+- suitable weighted-selection RNG and calling convention;
+- Ability Card usage state and timing;
+- landing and shot conditions;
+- difficulty setting and battle access path;
+- battle result, G-margin, capture, round-reset, and match-reset timing;
+- raw NitroFS open, seek, read, close, validation, and fallback behavior;
+- overlay module growth and original BSS preservation;
+- selected-record cache initialization and invalidation;
+- final version-1 `G2DT` header and 40-byte Gate record;
+- authoring schema, serializer, validator, and calculation trace format.
+
+A field is not confirmed until its semantics, owner structure, width, signedness, initialization, lifetime, mutation, reset, player/AI behavior, scripted behavior, and runtime or executable evidence are documented.
+
+Candidate or probable evidence blocks Milestone 6C.
+
+### Arena-ID exception
+
+Arena ID is the only allowed unresolved context field at the end of Milestone 6B.
+
+Consequences:
+
+- no arena-dependent condition or effect may appear in the first prototype;
+- version-1 records must not require arena state;
+- the format must retain a versioned or reserved path for arena-aware behavior later;
+- every other required context field must be confirmed.
+
+### Storage and executable boundaries to validate
+
+Primary design under investigation:
 
 - append a 4,152-byte `G2DT` trailer after the raw LZ10 stream of file ID `2762`, `font/mes_CardName.mes`;
 - retain the native decoded 6,524-byte message payload unchanged;
@@ -51,15 +88,15 @@ Primary:
 - reserve a 64-byte BSS cache at `0x02293C20–0x02293C60`;
 - move the battle-arena low boundary to `0x02293C60`.
 
-Fallback:
+Fallback design under investigation:
 
 - use the same trailer;
 - read the 32-byte header and one 40-byte selected record into a 72-byte stack buffer;
 - perform no frame-critical repeated filesystem reads.
 
-Malformed, missing, unsupported, stale, or checksum-invalid data must use the original Gate behavior.
+Milestone 6B may build loader-only instrumentation, but malformed, missing, unsupported, stale, or checksum-invalid data must use original Gate behavior and no gameplay result may change.
 
-### Hook boundaries
+### Hook boundaries to validate
 
 | Purpose | Original boundary | Required fallback |
 |---|---:|---|
@@ -68,34 +105,38 @@ Malformed, missing, unsupported, stale, or checksum-invalid data must use the or
 | Battle-type selector | call at `0x0223E350` | call original fixed selector `0x022433AC` |
 | Expanded-data lookup | entry `0x022433AC` | replay displaced prologue and continue original function |
 
-The protected core-G offsets `0x23C18–0x23C1C`, `0x23CB0–0x23CF8`, and `0x23D78–0x23D7C` must not be modified by System 2.0 hooks.
+The protected core-G offsets `0x23C18–0x23C1C`, `0x23CB0–0x23CF8`, and `0x23D78–0x23D7C` must remain untouched.
 
-### First prototype record
+### Completion rule
 
-The prototype Gate contains only:
+Milestone 6B ends with an automated readiness report that fails closed unless:
 
-```text
-flat bonus
-+ fixed-point percentage of compressed core G
-+ one attribute modifier
-+ one battle-type weight
-+ one bounded condition/effect
-```
+- every mandatory context field is confirmed;
+- arena ID is the only deferred field;
+- loader, cache, record, timing, RNG, lifecycle, and fallback evidence are complete;
+- exact-ROM integration checks pass;
+- no Gate bonus, battle type, condition, effect, AI decision, or roster value has changed.
 
-Percentage scaling uses the compressed core-G register value before the mutable modifier. It must not use persistent roster G or the post-modifier base snapshot.
+The complete design is documented in `docs/superpowers/specs/2026-08-02-gate-card-system-2-complete-discovery-design.md`.
 
-All arithmetic is integer or fixed-point with one documented rounding rule. Floating point is prohibited.
+## Milestone 6C — engine and first prototype
 
-### Compatibility behavior
+Milestone 6C begins only after the Milestone 6B readiness validator passes.
 
-- Only one explicitly selected Gate ID uses the prototype definition.
-- Every other Gate retains original six-byte bonus and fixed battle-type behavior.
-- Invalid cache or trailer state immediately selects legacy behavior.
-- Both player and AI combatants use the same calculation rules.
-- Mutable modifiers, field pickups, persistent roster values, and the existing core-G curve remain unchanged.
-- The rebuilt ROM must boot without executable save-state restoration, enter the controlled battle, complete or safely exit, return to responsive story or menu, and preserve unrelated Gate behavior.
+It will implement:
 
-## Milestone 6C — core balance framework
+- the data-driven raw-trailer loader and selected-record cache;
+- the version-1 record parser;
+- fixed-point hybrid G calculation;
+- attribute modifiers;
+- weighted battle-type selection;
+- the condition and effect dispatcher;
+- one experimental Gate using confirmed context only;
+- complete legacy fallback for every unrelated Gate and malformed-data path.
+
+The first prototype must not depend on arena ID.
+
+## Milestone 6D — core balance framework
 
 - Finalize hybrid flat/percentage scaling.
 - Define attribute relationships.
@@ -103,7 +144,7 @@ All arithmetic is integer or fixed-point with one documented rounding rule. Floa
 - Establish bounded battle-type weights and probability rules.
 - Implement the initial reusable condition and effect library.
 
-## Milestone 6D — complete roster conversion
+## Milestone 6E — complete roster conversion
 
 - Convert IDs `1–103` to System 2.0 records.
 - Assign one readable identity to every Gate.
@@ -111,15 +152,15 @@ All arithmetic is integer or fixed-point with one documented rounding rule. Floa
 - Validate power budgets against compressed core G.
 - Preserve selected exceptional cards intentionally.
 
-## Milestone 6E — advanced stateful mechanics
+## Milestone 6F — advanced stateful mechanics
 
-- Add battle-type history and repeat penalties.
+- Enable battle-type history and repeat penalties.
 - Add Gate fatigue and activation limits.
-- Confirm and add ownership/contest behavior.
+- Add ownership and contest mechanics using confirmed fields.
 - Add comeback, risk, secondary-effect, and drawback conditions.
 - Persist only the minimum state required for one match unless a later design explicitly approves save changes.
 
-## Milestone 6F — AI and presentation
+## Milestone 6G — AI and presentation
 
 - Teach AI to evaluate the new Gate definitions.
 - Replace or extend card descriptions with understandable effects.
@@ -127,13 +168,13 @@ All arithmetic is integer or fixed-point with one documented rounding rule. Floa
 - Add debug output for effective bonus components and final battle-type scores.
 - Keep internal weights hidden from normal player-facing text.
 
-## Milestone 6G — optional adaptive difficulty
+## Milestone 6H — optional adaptive difficulty
 
 - Investigate bounded player-performance statistics by battle type.
-- Integrate difficulty only after the base system, history, AI, and presentation are stable.
+- Integrate adaptation only after the base system, history, AI, and presentation are stable.
 - Avoid hidden forced-loss behavior.
 - Keep adaptation optional and separately reviewable.
 
 ## Approval boundary
 
-Completing Milestone 6A authorizes a separate Milestone 6B design and implementation plan. It does not authorize full-roster balance values, fatigue, adaptive difficulty, AI changes, or presentation changes without their later design reviews.
+Completing Milestone 6B authorizes a separate Milestone 6C design and implementation plan. It does not authorize a prototype before the readiness validator passes, and it does not authorize full-roster balance values, fatigue, adaptive difficulty, AI changes, or presentation changes without their later design reviews.

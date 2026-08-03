@@ -14,7 +14,7 @@
       "start_offset": 56
     },
     "module_size": 32768,
-    "module_start": 36207648,
+    "module_start": 36224032,
     "record_end_offset": 40,
     "reserved_end_offset": 64,
     "reserved_start_offset": 60,
@@ -32,35 +32,66 @@
   },
   "checks": [
     {
-      "evidence": "The exact reference-ROM FAT entry for file ID 2762 is 2,840 bytes with SHA-256 76a03522a5031762eb51d07b72a19331bc06a5b6dc0eab60e227a199466d4c4e.",
-      "name": "reference_carrier_is_hash_guarded",
-      "status": "confirmed"
+      "confidence": "confirmed",
+      "evidence": "The System 2.0 loader returned to 0x0223D1D0 with Gate ID 21 selected and populated the 64-byte cache at 0x02293C20 with record ID 21, format version 1, valid flag 1, and arena entry 0. Cache SHA-256 was 8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d.",
+      "name": "cache_initialization"
     },
     {
-      "evidence": "The original decoded overlay payload is 0x721A0 bytes. Preserving the original 0x640-byte BSS as physical zeros and appending a 0x8000-byte module produces 0x7A7E0 bytes ending at cache start 0x02293C20.",
-      "name": "expanded_overlay_geometry_is_exact",
-      "status": "confirmed"
+      "confidence": "confirmed",
+      "evidence": "The normal Gate-result removal path returned to 0x022424B8 after the System 2.0 clear hook at 0x022424B4. All 64 cache bytes were zero; SHA-256 was f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b.",
+      "name": "cache_invalidation"
     },
     {
-      "evidence": "The 0x40-byte cache ends at 0x02293C60, which becomes the future battle-arena low boundary and remains below arena high 0x023E0000.",
-      "name": "cache_and_arena_do_not_overlap",
-      "status": "confirmed"
+      "confidence": "confirmed",
+      "evidence": "Cache state is match-local: battle construction writes one validated selected record, and result/removal resets the complete 64-byte region to zero before execution resumes.",
+      "name": "cache_reset"
     },
     {
-      "evidence": "Host parsing returns no System 2.0 records for an absent, short, malformed, unsupported, mismatched, or CRC-invalid trailer.",
-      "name": "host_loader_is_fail_closed",
-      "status": "confirmed"
+      "confidence": "confirmed",
+      "evidence": "Any failed file operation or invalid G2DT magic, version, geometry, card ID, reserved field, or CRC leaves the cache invalid and preserves the original Gate path.",
+      "name": "malformed_fallback"
     },
     {
-      "evidence": "The BLZ-decoded ARM9 and a clean-boot ARM9 GDB trace agree on FS_InitFile, FS_OpenFileFast, FS_ReadFile, FS_SeekFile, and FS_CloseFile calling conventions and return behavior.",
-      "name": "runtime_nitrofs_interface_is_confirmed",
-      "status": "confirmed"
+      "confidence": "confirmed",
+      "evidence": "FS_CloseFile is 0x0200AADC with r0=FSFile*. A clean-boot call returned 1 and cleared archive, command, and file status state in the same 72-byte handle.",
+      "name": "nitrofs_close"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "FS_OpenFileFast is 0x0200AA24 with r0=FSFile*, r1=FSArchive*, and r2=file ID. File ID 2762 was observed through this interface on a clean boot.",
+      "name": "nitrofs_open"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "FS_ReadFile is 0x0200AC30 with r0=FSFile*, r1=destination, and r2=length. Runtime calls returned the exact bytes read and advanced position by the same amount; reads clamp to the remaining file range.",
+      "name": "nitrofs_read"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "FS_SeekFile is 0x0200AC40 with SET/CUR/END modes 0/1/2. Runtime SET/0 returned 1; decoded code confirms clamping and invalid-mode failure without position mutation.",
+      "name": "nitrofs_seek"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The expanded overlay preserves the original 0x640-byte BSS as zero-backed payload bytes at the original addresses before the new 0x8000-byte module.",
+      "name": "original_bss_preservation"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Overlay 7 grows from 0x721A0 to 0x7A7E0 decoded bytes, ends at cache start 0x02293C20, and moves arena low atomically to 0x02293C60 below arena high 0x023E0000.",
+      "name": "overlay_growth"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The host loader accepts only the exact 32-byte G2DT header, 103 ordered 40-byte records, supported version, matching payload geometry, zero reserved fields, and valid header/payload CRC-32 values.",
+      "name": "trailer_validation"
     }
   ],
   "domain": "loader-and-cache",
+  "fields": [],
   "format_version": 1,
   "overlay": {
-    "arena_low_original": 36207648,
+    "arena_low_original": 36224032,
     "arena_low_system2": 36256864,
     "cache_bss_size": 64,
     "expanded_payload_size": 501728,
@@ -71,101 +102,52 @@
     "overlay_base": 35755072
   },
   "profile_id": "b6re_rev0",
-  "runtime_io": {
-    "arm9": {
-      "decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
-      "decoded_size": 786712
+  "runtime_cache_lifecycle": {
+    "arena_low_literal": {
+      "address": 33579620,
+      "patched_bytes": "603c2902"
     },
-    "close": {
-      "calling_convention": "r0=FSFile*",
-      "function": 33598172,
-      "function_size": 60,
-      "name": "FS_CloseFile",
-      "result": "BOOL in r0; success clears arc, restores command 14, and clears file/dir status bits.",
-      "sha256": "586363903833fc2366f21761acac6938077ebf87d71daef90d602aa27c36d686"
+    "cache_address": 36256800,
+    "cache_size": 64,
+    "initialization": {
+      "arena_entry": 0,
+      "cache_sha256": "8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d",
+      "format_version": 1,
+      "hook_address": 35901900,
+      "hook_bytes": "933a01eb",
+      "record_card_id": 21,
+      "return_pc": 35901904,
+      "selected_card_id": 21,
+      "valid_flag": 1
     },
-    "fs_file_size": 72,
-    "init_file": {
-      "calling_convention": "r0=FSFile*",
-      "function": 33597364,
-      "function_size": 40,
-      "name": "FS_InitFile",
-      "result": "Initializes the 72-byte handle in place; command becomes 14 and arc/stat are cleared.",
-      "sha256": "131f15b7db06da746cb03744ffda8f5453b1c6c2fbdf8f0dacab41326e10421f"
+    "instrumented_rom_sha256": "8177aff2ca1c6cfe401c4401ccfca954e17d1d546612628d0bc6e032b2d15388",
+    "invalidation": {
+      "cache_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+      "hook_address": 35923124,
+      "hook_bytes": "4f2601eb",
+      "post_clear_all_zero": true,
+      "return_pc": 35923128
     },
-    "open": {
-      "calling_convention": "r0=FSFile*, r1=FSArchive*, r2=u32 file_id",
-      "function": 33597988,
-      "function_size": 112,
-      "name": "FS_OpenFileFast",
-      "result": "BOOL in r0; success populates arc, own_id, top, bottom, and pos.",
-      "sha256": "611e41d8d1b768da2e873e2ec320815dbd118d51589c6363ffea380ea8858f39"
+    "method": "Exact-profile ROM rebuilt with the approved overlay expansion, 576-byte reference loader module, Gate-construction load hook, result/removal clear hook, and arena-low reservation; observed through one DeSmuME ARM9 GDB session from a clean battery-save launch.",
+    "module": {
+      "address": 36224032,
+      "runtime_sha256": "d18dd0f7eba1279295e2314fa2d125030f0d382e577fad2fd9d712a623202ca6",
+      "size": 576
     },
-    "read": {
-      "calling_convention": "r0=FSFile*, r1=destination, r2=s32 length",
-      "core_function": 33597728,
-      "core_function_size": 124,
-      "core_sha256": "0d82a4200a16927edd1012c75b49d5ef0f99934a7fb36f289aaa0604b144e481",
-      "function": 33598512,
-      "function_size": 16,
-      "name": "FS_ReadFile",
-      "result": "Returns bytes read, advances pos by that amount, and returns -1 when synchronous wait fails.",
-      "sha256": "cf5c1821cef4a3567d28cffdf6210f5cc4b71edd52af40b9eea9794becbb6956"
-    },
-    "rom_archive_address": 34340020,
-    "runtime_capture": {
-      "close": {
-        "arc_after": 0,
-        "arc_before": 34340020,
-        "command_after": 14,
-        "command_before": 0,
-        "file_pointer": 41822844,
-        "return_value": 1,
-        "stat_after": 0,
-        "stat_before": 16
-      },
-      "method": "clean boot with DeSmuME ARM9 GDB stub; entry and caller-return breakpoints",
-      "open": {
-        "archive": 34340020,
-        "bottom_after": 8966240,
-        "file_id": 10799,
-        "file_pointer": 34347424,
-        "own_id_after": 10799,
-        "position_after": 6164480,
-        "return_value": 1,
-        "top_after": 6164480
-      },
-      "read": {
-        "file_pointer": 41822844,
-        "position_after": 1348072,
-        "position_before": 1260032,
-        "position_delta": 88040,
-        "requested": 88040,
-        "returned": 88040,
-        "stack_pointer": 41822840
-      },
-      "seek": {
-        "file_pointer": 34347424,
-        "mode": 0,
-        "offset": 0,
-        "position_after": 6164480,
-        "position_before": 6164480,
-        "return_value": 1
-      }
-    },
-    "seek": {
-      "calling_convention": "r0=FSFile*, r1=s32 offset, r2=FSSeekFileMode",
-      "function": 33598528,
-      "function_size": 108,
-      "name": "FS_SeekFile",
-      "result": "Modes 0/1/2 are SET/CUR/END and clamp to top..bottom; invalid mode returns 0 without changing pos.",
-      "sha256": "99e8a8db572238f5c2aa23d35ddfe505843277a0623dedfe207c2d5872236747"
-    },
+    "original_rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
     "status": "confirmed"
   },
-  "status": "host_loader_and_layout_complete_runtime_io_confirmed_cache_lifecycle_pending",
-  "unresolved": [
-    "Runtime cache initialization on overlay load or battle construction",
-    "Runtime cache invalidation at battle completion"
-  ]
+  "runtime_io": {
+    "arm9_decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
+    "close": 33598172,
+    "fs_file_size": 72,
+    "init_file": 33597364,
+    "open": 33597988,
+    "read": 33598512,
+    "rom_archive_address": 34340020,
+    "seek": 33598528,
+    "status": "confirmed"
+  },
+  "status": "complete",
+  "unresolved": []
 }

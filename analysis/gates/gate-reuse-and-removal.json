@@ -1,0 +1,215 @@
+{
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "Score and capture-history bookkeeping complete before common arena-placement removal; descriptor and scene cleanup occurs afterward.",
+      "name": "capture_removal_and_scene_cleanup_are_separate"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Active-placement transfer releases the old Gate slot to state 0, replaces owner and slot identity, assigns the replacement slot state 1, and leaves active-placement count unchanged.",
+      "name": "active_placement_transfer_preserves_board_presence"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "State 2 is unavailable to ordinary placement selection but is not uniquely captured or removed because scripted setup can assign it before battle.",
+      "name": "state_two_is_not_a_capture_boolean"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Participant and session constructors establish reset state; destruction ends validity without clearing all fields in place.",
+      "name": "construction_is_authoritative_reset"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The bounded exhaustive 4D audit found no per-Gate activation history and supplies a new match-local replacement contract.",
+      "name": "activation_counter_confirmed_absent"
+    }
+  ],
+  "domain": "gate-reuse-and-removal",
+  "fields": [
+    {
+      "access": "none in the original Gate lifecycle",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Complete direct-call inventories, nine exact instruction-region hashes, and all 18 overlay-7 callers of the pure ARM9 Gate-bonus accessor contain no activation-history increment or read.",
+      "initialization": "none",
+      "lifetime": "not present",
+      "mutations": [
+        "none"
+      ],
+      "name": "gate_activation_count",
+      "owner_structure": "none in the original Gate lifecycle",
+      "player_ai_behavior": "Not applicable in the original system; the bounded absence is shared across human and AI battle construction.",
+      "presence": "absent",
+      "replacement_plan": "Reserve activation_count_by_arena_entry[12] as unsigned saturating bytes at offsets 0x2C..0x37 of the approved future 64-byte overlay-7 match-local BSS cache at 0x02293C20..0x02293C60. Reset at session construction, initialize on arena allocation, increment once after canonical Gate identity is known during battle construction, reset when active-placement identity changes, and clear on arena removal. Do not repurpose original object or save-data bytes.",
+      "reset": "none",
+      "scripted_behavior": "No normal or scripted Gate setup, battle-construction, result, transfer, removal, or reset path maintains activation history.",
+      "signed": null,
+      "width_bits": null
+    },
+    {
+      "access": "participant +0x56 + gate_slot_index * 4; +0xF8 is a supporting ordinary availability cache",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The ordinary selector chooses only state-0 slots; allocation writes 1, transfer restores the old slot to 0 and assigns the replacement slot 1, removal writes 2, and scripted setup may preassign 2.",
+      "initialization": "Participant constructor 0x022696B4 clears Gate-slot records to state 0 and initializes +0xF8 from configured Gate count.",
+      "lifetime": "Participant object / match session.",
+      "mutations": [
+        "0 to 1 when an ordinary selectable Gate slot is assigned to an active arena placement.",
+        "1 or 2 to 0 only when active-placement transfer releases the previous owner slot.",
+        "Any nonzero state to 2 when the arena placement is removed.",
+        "Scripted setup at 0x0226A48C may assign state 2 and directly override +0xF8."
+      ],
+      "name": "gate_reuse_state",
+      "owner_structure": "320-byte participant object Gate-slot records",
+      "player_ai_behavior": "The same slot-state setter and ordinary selector apply to human and AI participants.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "New participant construction is the authoritative reset; destruction frees the object without clearing it in place.",
+      "scripted_behavior": "Scripted setup can preassign state 2 and force +0xF8 to zero, so +0xF8 is not a universal derived count.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "winner participant +0xEE and +0xF4 with ledger at +0x84; owner Gate-slot state participates after capture bookkeeping",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The normal result increments winner match score, appends capture history, increments its count, then removes the active placement. This is a composite capture event rather than a single per-Gate Boolean flag.",
+      "initialization": "Participant construction clears +0xEE, +0xF4, the capture ledger, and Gate-slot records; scripted setup may seed score or slot availability afterward.",
+      "lifetime": "Participant object / match session, including result and post-result presentation.",
+      "mutations": [
+        "Normal result increments the settled winner score at +0xEE.",
+        "Normal and alternate result paths append a six-byte capture-history record and increment winner +0xF4.",
+        "The active Gate owner's slot is written to unavailable state 2 during arena removal."
+      ],
+      "name": "gate_capture_state",
+      "owner_structure": "participant match-state, capture-history ledger, and owner Gate-slot records",
+      "player_ai_behavior": "Winner-relative bookkeeping is shared by human and AI participants.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Participant construction resets score, capture ledger, and Gate slots; destruction ends validity.",
+      "scripted_behavior": "Specialized result writers and scripted score or slot seeding are documented separately; no single state-2 byte alone proves capture.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "session arena entry +0x02 with board-grid reference and session +0x294",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The controlled 4B runtime boundary changed occupied 1 to 0, its board-grid reference 1 to 0, and session +0x294 from 1 to 0 while descriptor cleanup had not yet run.",
+      "initialization": "Session construction at 0x0225FD5C clears arena records, board-grid state, and session +0x294.",
+      "lifetime": "Gate session arena-placement lifetime.",
+      "mutations": [
+        "Arena allocation at 0x02262638 sets occupied to 1, records owner and slot identity, updates the board grid, and increments +0x294.",
+        "Arena removal at 0x022626B8 sets occupied to 0, clears the board-grid reference, writes owner slot state 2, and decrements +0x294.",
+        "Active-placement transfer at 0x02262714 changes owner and slot identity without clearing occupied or changing +0x294."
+      ],
+      "name": "gate_removal_state",
+      "owner_structure": "Gate session arena-placement table",
+      "player_ai_behavior": "Removal is keyed by canonical arena entry and owner slot, independent of human or AI control identity.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Session construction clears the table and placement count; session teardown invalidates all addresses.",
+      "scripted_behavior": "Scripted setup may preassign participant slot state, but the common arena occupied byte and board-grid clear still define physical removal.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "profile_id": "b6re_rev0",
+  "safe_extension_storage": "Future overlay-7 match-local BSS cache 0x02293C20..0x02293C60; activation_count_by_arena_entry[12] occupies offsets 0x2C..0x37 and is not implemented during Milestone 6B.",
+  "states": [
+    {
+      "access": "none in the original Gate lifecycle",
+      "confidence": "confirmed",
+      "evidence": "Complete direct-call inventories, nine exact instruction-region hashes, and all 18 overlay-7 callers of the pure ARM9 Gate-bonus accessor contain no activation-history increment or read.",
+      "initialization": "none",
+      "kind": "activation_count",
+      "mutations": [
+        "none"
+      ],
+      "owner_structure": "none in the original Gate lifecycle",
+      "presence": "absent",
+      "replacement_plan": "Reserve activation_count_by_arena_entry[12] as unsigned saturating bytes at offsets 0x2C..0x37 of the approved future 64-byte overlay-7 match-local BSS cache at 0x02293C20..0x02293C60. Reset at session construction, initialize on arena allocation, increment once after canonical Gate identity is known during battle construction, reset when active-placement identity changes, and clear on arena removal. Do not repurpose original object or save-data bytes.",
+      "reset": "none"
+    },
+    {
+      "access": "participant +0x56 + gate_slot_index * 4; participant +0xF8 is an ordinary availability cache",
+      "confidence": "confirmed",
+      "evidence": "The ordinary selector chooses only state-0 slots; allocation writes 1, transfer restores the old slot to 0 and assigns the replacement slot 1, removal writes 2, and scripted setup may preassign 2.",
+      "initialization": "Participant constructor 0x022696B4 clears Gate-slot records to state 0 and initializes +0xF8 from configured Gate count.",
+      "kind": "reusable",
+      "mutations": [
+        "0 to 1 when an ordinary selectable Gate slot is assigned to an active arena placement.",
+        "1 or 2 to 0 only when active-placement transfer releases the previous owner slot.",
+        "Any nonzero state to 2 when the arena placement is removed.",
+        "Scripted setup at 0x0226A48C may assign state 2 and directly override +0xF8."
+      ],
+      "owner_structure": "320-byte participant object Gate-slot records",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "New participant construction is the authoritative reset; destruction frees the object without clearing it in place."
+    },
+    {
+      "access": "settled winner participant +0xEE and +0xF4 with six-byte capture-history records at +0x84; owner Gate-slot state is then made unavailable",
+      "confidence": "confirmed",
+      "evidence": "The normal result increments winner match score, appends capture history, increments its count, then removes the active placement. This is a composite capture event rather than a single per-Gate Boolean flag.",
+      "initialization": "Participant construction clears +0xEE, +0xF4, the capture ledger, and Gate-slot records; scripted setup may seed score or slot availability afterward.",
+      "kind": "captured",
+      "mutations": [
+        "Normal result increments the settled winner score at +0xEE.",
+        "Normal and alternate result paths append a six-byte capture-history record and increment winner +0xF4.",
+        "The active Gate owner's slot is written to unavailable state 2 during arena removal."
+      ],
+      "owner_structure": "participant match-state and Gate-slot records",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Participant construction resets score, capture ledger, and Gate slots; destruction ends validity."
+    },
+    {
+      "access": "session +0x1C + arena_entry_index * 8 +0x02 occupied byte; supporting board-grid reference and session +0x294 active-placement count",
+      "confidence": "confirmed",
+      "evidence": "The controlled 4B runtime boundary changed occupied 1 to 0, its board-grid reference 1 to 0, and session +0x294 from 1 to 0 while descriptor cleanup had not yet run.",
+      "initialization": "Session construction at 0x0225FD5C clears arena records, board-grid state, and session +0x294.",
+      "kind": "removed",
+      "mutations": [
+        "Arena allocation at 0x02262638 sets occupied to 1, records owner and slot identity, updates the board grid, and increments +0x294.",
+        "Arena removal at 0x022626B8 sets occupied to 0, clears the board-grid reference, writes owner slot state 2, and decrements +0x294.",
+        "Active-placement transfer at 0x02262714 changes owner and slot identity without clearing occupied or changing +0x294."
+      ],
+      "owner_structure": "Gate session arena-placement table and board-grid state",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Session construction clears the table and placement count; session teardown invalidates all addresses."
+    },
+    {
+      "access": "participant constructor 0x022696B4 and session constructor/reset range 0x0225FD5C..0x0225FF18",
+      "confidence": "confirmed",
+      "evidence": "Fresh construction establishes zeroed participant Gate state and an empty arena-placement table. Participant destruction does not perform an in-place reset.",
+      "initialization": "Participant and session constructors establish all original lifecycle reset values.",
+      "kind": "reset",
+      "mutations": [
+        "Participant construction clears Gate-slot records and initializes the ordinary availability cache.",
+        "Session construction clears arena placement, board-grid, placement-count, and descriptor-count state.",
+        "Destruction frees objects; the next construction establishes a new clean lifecycle."
+      ],
+      "owner_structure": "participant and Gate-session construction boundaries",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "The construction paths are themselves the authoritative reset boundaries."
+    }
+  ],
+  "transitions": [
+    "Participant construction clears Gate-slot records to state 0 and initializes the ordinary +0xF8 availability cache.",
+    "Session construction clears twelve arena-placement entries, board-grid references, session +0x294, and descriptor state.",
+    "Ordinary arena allocation selects a state-0 Gate slot, marks it state 1, creates an occupied arena entry, and increments active-placement count.",
+    "Battle construction derives canonical Gate ID and owner from the arena entry without incrementing any activation-history field.",
+    "Result finalization updates winner score and capture history before physical arena removal.",
+    "Arena removal clears occupied and board-grid state, writes owner Gate-slot state 2, and decrements active-placement count.",
+    "Active-placement transfer releases the old slot to 0, replaces owner and Gate-slot identity, and assigns the replacement slot state 1 while keeping the arena entry occupied.",
+    "Scripted setup may preassign Gate-slot state 2 and override +0xF8, bypassing ordinary availability bookkeeping.",
+    "Destruction invalidates participant and session objects; new construction is the authoritative reset."
+  ],
+  "unresolved": []
+}

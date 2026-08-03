@@ -106,5 +106,7 @@ def test_landing_outcomes_include_only_runtime_proven_stand_paths() -> None:
         LandingOutcome.UNOPPOSED_STAND,
         LandingOutcome.BATTLE_STAND,
     )
-    assert LandingOutcome.UNOPPOSED_STAND.value == 2
-    assert LandingOutcome.BATTLE_STAND.value == 3
+    assert LandingOutcome.UNOPPOSED_STAND.value == "unopposed_stand"
+    assert LandingOutcome.UNOPPOSED_STAND.raw_code == 2
+    assert LandingOutcome.BATTLE_STAND.value == "battle_stand"
+    assert LandingOutcome.BATTLE_STAND.raw_code == 3

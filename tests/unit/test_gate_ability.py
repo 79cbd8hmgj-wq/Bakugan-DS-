@@ -86,7 +86,8 @@ def test_ui_selection_alone_cannot_satisfy_later_ability_phases() -> None:
 
 
 def test_ability_model_rejects_duplicate_participant_phase() -> None:
-    duplicate = complete_states() + (
+    duplicate = (
+        *complete_states(),
         confirmed_state(AbilityParticipant.PLAYER, AbilityPhase.USED),
     )
     with pytest.raises(WorkspaceError, match="duplicate Ability state"):

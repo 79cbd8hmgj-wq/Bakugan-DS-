@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "record": {
+      "additionalProperties": false,
+      "properties": {
+        "activation_limit": {"maximum": 255, "minimum": 0, "type": "integer"},
+        "archetype": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "attribute_modifiers": {"$ref": "#/$defs/sixSignedBytes"},
+        "battle_weights": {"$ref": "#/$defs/sixUnsignedBytes"},
+        "card_id": {"maximum": 103, "minimum": 1, "type": "integer"},
+        "condition_id": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "condition_value": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "drawback_id": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "drawback_value": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "effect_id": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "effect_value": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "fatigue_rate": {"maximum": 255, "minimum": 0, "type": "integer"},
+        "flags": {"const": 0},
+        "flat_bonus_g": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "percent_q8_8": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "preferred_type": {"enum": [0, 1, 2, 3, 4, 5, 255]},
+        "reserved": {"const": 0},
+        "secondary_condition_id": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "secondary_effect_id": {"maximum": 254, "minimum": 0, "type": "integer"},
+        "secondary_value": {"maximum": 32767, "minimum": -32768, "type": "integer"},
+        "target_mode": {"maximum": 6, "minimum": 0, "type": "integer"},
+        "timing_phase": {"maximum": 11, "minimum": 0, "type": "integer"}
+      },
+      "required": [
+        "card_id",
+        "archetype",
+        "flags",
+        "flat_bonus_g",
+        "percent_q8_8",
+        "attribute_modifiers",
+        "battle_weights",
+        "preferred_type",
+        "condition_id",
+        "effect_id",
+        "drawback_id",
+        "effect_value",
+        "drawback_value",
+        "activation_limit",
+        "fatigue_rate",
+        "target_mode",
+        "timing_phase",
+        "condition_value",
+        "secondary_effect_id",
+        "secondary_condition_id",
+        "secondary_value",
+        "reserved"
+      ],
+      "type": "object"
+    },
+    "sixSignedBytes": {
+      "items": {"maximum": 127, "minimum": -128, "type": "integer"},
+      "maxItems": 6,
+      "minItems": 6,
+      "type": "array"
+    },
+    "sixUnsignedBytes": {
+      "items": {"maximum": 255, "minimum": 0, "type": "integer"},
+      "maxItems": 6,
+      "minItems": 6,
+      "type": "array"
+    }
+  },
+  "$id": "gate-system2-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "format_version": {"const": 1},
+    "records": {
+      "items": {"$ref": "#/$defs/record"},
+      "maxItems": 103,
+      "minItems": 103,
+      "type": "array"
+    }
+  },
+  "required": ["format_version", "records"],
+  "title": "Bakugan DS Gate System 2.0 authoring format v1",
+  "type": "object"
+}

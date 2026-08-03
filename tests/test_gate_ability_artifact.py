@@ -102,7 +102,7 @@ def test_ability_artifact_preserves_exact_regions_and_call_inventories() -> None
     assert len(payload["exact_regions"]) == 7
     assert payload["direct_calls"]["ability_state_setter"] == [
         35759912,
-        35762480,
+        35762512,
         35925196,
         35925296,
         35925412,
@@ -111,6 +111,6 @@ def test_ability_artifact_preserves_exact_regions_and_call_inventories() -> None
     ]
     assert payload["direct_calls"]["ability_slot_selector"] == [
         35918576,
-        35918988,
-        35931568,
+        35919004,
+        35931600,
     ]

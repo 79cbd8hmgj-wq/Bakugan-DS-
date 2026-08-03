@@ -1,0 +1,125 @@
+{
+  "arm9": {
+    "decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
+    "decoded_size": 786712
+  },
+  "carrier": {
+    "file_id": 2762,
+    "path": "font/mes_CardName.mes",
+    "raw_sha256": "76a03522a5031762eb51d07b72a19331bc06a5b6dc0eab60e227a199466d4c4e",
+    "raw_size": 2840
+  },
+  "checks": [
+    {
+      "evidence": "The target open was the 169th observed FS_OpenFileFast entry after a clean executable boot. r2 was exactly 2762 and r0 returned 1 at caller 0x0200AAC0.",
+      "name": "carrier_open_is_live_confirmed",
+      "status": "confirmed"
+    },
+    {
+      "evidence": "The opened FSFile had top 0x0014BE00, bottom 0x0014C918, and pos 0x0014BE00. bottom - top is exactly 2,840 bytes.",
+      "name": "carrier_geometry_matches_fat",
+      "status": "confirmed"
+    },
+    {
+      "evidence": "FS_SeekFile(handle, 0, SET) returned 1 without changing the already-zero relative position.",
+      "name": "carrier_seek_is_live_confirmed",
+      "status": "confirmed"
+    },
+    {
+      "evidence": "The first FS_ReadFile requested 4 and returned 4. The second requested 2,840 with only 2,836 bytes remaining and returned exactly 2,836, clamping at file bottom.",
+      "name": "carrier_read_clamps_to_remaining_bytes",
+      "status": "confirmed"
+    },
+    {
+      "evidence": "FS_CloseFile returned 1, cleared the archive pointer and file-status bits, and restored command 14 in the same 72-byte FSFile.",
+      "name": "carrier_close_is_live_confirmed",
+      "status": "confirmed"
+    }
+  ],
+  "domain": "nitrofs-carrier-runtime",
+  "format_version": 1,
+  "fs_file": {
+    "address": 34427968,
+    "address_hex": "0x020D5440",
+    "archive_after_open": 34340020,
+    "bottom_after_open": 1362200,
+    "command_after_close": 14,
+    "own_id_after_open": 2762,
+    "position_after_open": 1359360,
+    "size": 72,
+    "status_after_close": 0,
+    "top_after_open": 1359360
+  },
+  "method": "Clean executable boot under DeSmuME 0.9.14 ARM9 GDB stub. Entry breakpoints were filtered by file ID, then caller-return breakpoints captured return values and the same FSFile before and after each operation.",
+  "operations": [
+    {
+      "arguments": {
+        "archive": 34340020,
+        "file_id": 2762,
+        "file_pointer": 34427968
+      },
+      "caller_return": 33598144,
+      "function": 33597988,
+      "function_hex": "0x0200AA24",
+      "name": "FS_OpenFileFast",
+      "return_value": 1
+    },
+    {
+      "arguments": {
+        "file_pointer": 34427968,
+        "mode": 0,
+        "offset": 0
+      },
+      "caller_return": 33699344,
+      "function": 33598528,
+      "function_hex": "0x0200AC40",
+      "name": "FS_SeekFile",
+      "return_value": 1
+    },
+    {
+      "arguments": {
+        "buffer": 34427876,
+        "file_pointer": 34427968,
+        "length": 4
+      },
+      "caller_return": 33699360,
+      "function": 33598512,
+      "function_hex": "0x0200AC30",
+      "name": "FS_ReadFile",
+      "position_after": 1359364,
+      "position_before": 1359360,
+      "return_value": 4
+    },
+    {
+      "arguments": {
+        "buffer": 36641120,
+        "file_pointer": 34427968,
+        "length": 2840
+      },
+      "caller_return": 33699480,
+      "function": 33598512,
+      "function_hex": "0x0200AC30",
+      "name": "FS_ReadFile",
+      "position_after": 1362200,
+      "position_before": 1359364,
+      "return_value": 2836
+    },
+    {
+      "arguments": {
+        "file_pointer": 34427968
+      },
+      "caller_return": 33699516,
+      "function": 33598172,
+      "function_hex": "0x0200AADC",
+      "name": "FS_CloseFile",
+      "return_value": 1
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "raw_capture_sha256": "314f3087f177c53e4862ca55400a907a09c7ed0a700761d259702b715e05f35e",
+  "status": "confirmed",
+  "unresolved": [
+    "Live System 2.0 cache initialization",
+    "Live System 2.0 cache invalidation at battle completion"
+  ]
+}

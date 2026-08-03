@@ -14,7 +14,7 @@
       "start_offset": 56
     },
     "module_size": 32768,
-    "module_start": 36207648,
+    "module_start": 36224032,
     "record_end_offset": 40,
     "reserved_end_offset": 64,
     "reserved_start_offset": 60,
@@ -91,7 +91,7 @@
   "fields": [],
   "format_version": 1,
   "overlay": {
-    "arena_low_original": 36207648,
+    "arena_low_original": 36224032,
     "arena_low_system2": 36256864,
     "cache_bss_size": 64,
     "expanded_payload_size": 501728,
@@ -130,7 +130,7 @@
     },
     "method": "Exact-profile ROM rebuilt with the approved overlay expansion, 576-byte reference loader module, Gate-construction load hook, result/removal clear hook, and arena-low reservation; observed through one DeSmuME ARM9 GDB session from a clean battery-save launch.",
     "module": {
-      "address": 36207648,
+      "address": 36224032,
       "runtime_sha256": "d18dd0f7eba1279295e2314fa2d125030f0d382e577fad2fd9d712a623202ca6",
       "size": 576
     },

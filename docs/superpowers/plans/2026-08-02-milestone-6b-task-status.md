@@ -2,8 +2,8 @@
 
 ## Current summary
 
-- Tasks 1–6: complete
-- Tasks 7–9: pending
+- Tasks 1–7: complete
+- Tasks 8–9: pending
 - Tasks 10–12: complete
 - Task 13: pending
 
@@ -150,11 +150,78 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed. A fre
 
 No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
 
-## Tasks 7–9
+## Task 7 — landing and shot context
+
+**Status:** complete.
+
+Confirmed runtime state:
+
+- throw-controller `+0x1D2` is the authoritative unsigned landing-result code;
+- selected Bakugan slot is `+0x1D3`;
+- active participant is `+0x1D4`;
+- teammate participant is `+0x1D5`;
+- main shot-controller `+0x6198` is copied to throw-controller `+0x1DF` as the authoritative shot-condition category;
+- `+0x1E8` is the one-based attachment-descriptor index and is not a landing result or arena ID;
+- dispatcher `0x02255640` provides the final common read-only evaluation boundary after the primary and optional alternate evaluators complete.
+
+Two distinct natural standing outcomes were captured:
+
+```text
+result 3
+active participant 0
+selected slot 1
+shot condition 0
+→ contested Gate battle
+```
+
+```text
+result 2
+active participant 1
+selected slot 1
+shot condition 0
+→ unopposed Stand without battle
+```
+
+An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receiving unsupported universal labels.
+
+Human and AI shot-condition sources converge on the same category:
+
+- human participant shot-setup byte `+0x10` at `0x02260A64`;
+- AI-controller byte `+0x7E` at `0x02260B04`;
+- shared shot-controller storage `+0x6198` through constructor `0x0226A988`;
+- ordinary copy to throw `+0x1DF` at `0x0226B5C4`;
+- alternate or scripted copy at `0x0226D488`.
+
+A clean battery-save tutorial launch used the same ordinary shot-condition copy and primary/alternate evaluator pipeline. The guided throw retained result `0`, produced no arena attachment, displayed the retry path, and reset the throw fields for another attempt. This confirms scripted behavior without falsely naming result code `0`.
+
+Arena ID remains the sole approved deferred field. Transient projected grid bytes and the attachment index are not promoted to arena identity.
+
+Primary normalized implementation and evidence:
+
+- `src/bakugan_ds/gates/landing.py`
+- `analysis/gates/landing-and-shot-context.json`
+- `analysis/gates/landing-shot-candidates.json`
+- `analysis/symbols/gate_system2_context.csv`
+- `tests/unit/test_gate_landing.py`
+- `tests/test_gate_landing_artifact.py`
+- `tests/integration/test_gate_landing_reference.py`
+
+GitHub Python CI run `30859631532` passed at commit `d677edad0f8d16f3b8ca7f32a1eda401af6d8006` with:
+
+```text
+347 passed
+23 expected environment-gated skips
+0 failed
+```
+
+Compilation, changed-file Ruff, strict mypy, and whitespace checks passed. A fresh local exact-overlay verification against SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1` confirmed all 12 committed instruction-region hashes and all 16 inventoried direct calls across the throw constructor, primary evaluator, alternate evaluator, and shared attachment helper.
+
+No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
+
+## Tasks 8–9
 
 **Status:** pending.
 
-- Task 7: landing and shot context
 - Task 8: difficulty context
 - Task 9: effect timing boundaries
 
@@ -201,4 +268,4 @@ Primary files:
 
 **Status:** pending.
 
-Task 13 begins only after Tasks 7–9 are complete and the generated readiness report contains no failures with `arena_id` as the sole allowed deferred field.
+Task 13 begins only after Tasks 8–9 are complete and the generated readiness report contains no failures with `arena_id` as the sole allowed deferred field.

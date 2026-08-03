@@ -1,0 +1,274 @@
+{
+  "bounded_conclusions": [
+    "Overlay 7 constructs a dedicated 496-byte throw controller and publishes it through the battle session before shot and landing evaluation.",
+    "The controller is evaluated by a primary routine at 0x02259AF0 and, only when that routine returns false, an alternate routine at 0x0225A278.",
+    "Controller byte +0x1D2 is initialized to zero, receives executable values 0 through 4, is read immediately before arena attachment, and produced runtime values 1, 2, and 3 at valid execution boundaries.",
+    "A controlled natural throw confirmed +0x1D2 value 1 as the player-facing GATE CARD WON! result.",
+    "Controller byte +0x1DF selects three alternate attachment classes through value 5, value 6, or all other values, but the writer and player-facing meaning of this byte are not yet mapped.",
+    "Controller byte +0x1E8 stores the one-based descriptor index returned by 0x02262768 after attachment and is therefore separated from landing result or shot-condition semantics."
+  ],
+  "component": {
+    "decoded_size": 467360,
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
+  },
+  "direct_call_inventory": {
+    "alternate_landing_evaluator_0x0225A278": {
+      "call_count": 1,
+      "callers": [
+        "0x02255680"
+      ]
+    },
+    "arena_descriptor_attachment_0x02262768": {
+      "call_count": 13,
+      "landing_evaluator_callers": [
+        "0x022588A8",
+        "0x0225A004",
+        "0x0225A074",
+        "0x0225A600",
+        "0x0225A6B8",
+        "0x0225A774",
+        "0x0225A830"
+      ],
+      "other_callers": [
+        "0x02262E10",
+        "0x02262F00",
+        "0x02262F24",
+        "0x02263074",
+        "0x02263098",
+        "0x02265DD4"
+      ]
+    },
+    "grid_projection_0x02248998": {
+      "call_count": 5,
+      "callers": [
+        "0x02258858",
+        "0x02258D50",
+        "0x02259A24",
+        "0x02259BAC",
+        "0x0225B568"
+      ]
+    },
+    "primary_landing_evaluator_0x02259AF0": {
+      "call_count": 1,
+      "callers": [
+        "0x02255670"
+      ]
+    },
+    "throw_controller_constructor_0x02252730": {
+      "call_count": 1,
+      "callers": [
+        "0x0226BDAC"
+      ]
+    }
+  },
+  "evaluation_paths": [
+    {
+      "address": "0x02259AF0",
+      "name": "primary landing evaluator",
+      "observations": [
+        "Requires controller phase byte +0x1E0 to equal 3 before continuing.",
+        "Projects controller position data into two temporary grid bytes through 0x02248998.",
+        "Writes controller +0x1D2 with values 0, 1, 2, 3, or 4 according to participant and descriptor comparisons.",
+        "Reads +0x1D2 and participant-association bytes immediately before calls to 0x02262768.",
+        "Stores the one-based attachment result at controller +0x1E8."
+      ]
+    },
+    {
+      "address": "0x0225A278",
+      "name": "alternate landing evaluator",
+      "observations": [
+        "Runs only when the primary evaluator returns false through dispatcher 0x02255640.",
+        "Derives temporary grid bytes through 0x0225B4A0.",
+        "Writes controller +0x1D2 during alternate resolution.",
+        "Reads controller +0x1DF and maps value 5, value 6, and all other values to attachment classes 2, 3, and 1.",
+        "Stores the one-based attachment result at controller +0x1E8."
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "access": "throw controller +0x1D2",
+      "candidate_name": "landing_or_resolution_code",
+      "confidence": "probable",
+      "confirmed_value_labels": {
+        "1": "gate_card_won"
+      },
+      "evidence": "Constructor 0x02252730 initializes the byte to 0. The primary evaluator writes immediate values 1, 2, 3, and 4 and also copies a branch result into it; the alternate evaluator writes values 1, 2, and 3. The byte is read before arena attachment. A controlled natural throw reached 0x02257AC8 with the prior byte equal to 0, stored value 1, resumed normally, and displayed GATE CARD WON!.",
+      "executable_values": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner_structure": "496-byte throw controller",
+      "runtime_observed_values": [
+        1,
+        2,
+        3
+      ],
+      "width_bits": 8
+    },
+    {
+      "access": "throw controller +0x1DF",
+      "candidate_name": "alternate_attachment_branch_code",
+      "confidence": "candidate",
+      "evidence": "0x0225A670 compares the byte with 5 and 6. Those branches pass attachment classes 2 and 3 to 0x02262768; every other value passes class 1. The authoritative writer, full value domain, and gameplay labels are not yet mapped.",
+      "owner_structure": "496-byte throw controller",
+      "static_branch_values": [
+        5,
+        6,
+        "other"
+      ],
+      "width_bits": 8
+    },
+    {
+      "access": "throw controller +0x1D3",
+      "candidate_name": "constructor_actor_or_shot_participant_selector",
+      "confidence": "candidate",
+      "evidence": "Constructor 0x02252730 stores its fourth argument at +0x1D3. Both evaluators pass this byte to arena attachment. Runtime captures observed values 1 and 2, but the canonical participant mapping is not yet proven.",
+      "owner_structure": "496-byte throw controller",
+      "width_bits": 8
+    },
+    {
+      "access": "throw controller +0x1D4 and +0x1D5",
+      "candidate_name": "participant_association_pair",
+      "confidence": "probable",
+      "evidence": "Constructor 0x02252730 stores its third argument at +0x1D4 and derives +0x1D5 from the selected participant object's +0xF2 byte. The primary evaluator compares descriptor participant identity against both bytes; attachment calls pass +0x1D4. Exact active-versus-teammate labels require a controlled participant reversal.",
+      "owner_structure": "496-byte throw controller",
+      "width_bits": 8
+    },
+    {
+      "access": "throw controller +0x1E8",
+      "candidate_name": "attached_descriptor_index_plus_one",
+      "confidence": "confirmed",
+      "evidence": "Every primary and alternate attachment path stores the return value of 0x02262768 at +0x1E8. The shared helper allocates an arena descriptor and returns its one-based index. This field is explicitly excluded as the landing result or shot condition.",
+      "owner_structure": "496-byte throw controller",
+      "width_bits": 8
+    },
+    {
+      "access": "temporary stack bytes +0x0C and +0x0D during evaluation",
+      "candidate_name": "projected_arena_grid_coordinates",
+      "confidence": "probable",
+      "evidence": "The primary and alternate evaluators derive two bytes from controller position data, then use them when selecting arena placement and board-state consumers. The bytes are transient and are not yet mapped to an arena ID.",
+      "owner_structure": "landing evaluator call frame",
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "length": 900,
+      "purpose": "throw controller construction and candidate-field initialization",
+      "runtime_end": "0x02252AB4",
+      "runtime_start": "0x02252730",
+      "sha256": "bcadd852c13eee82eef1da6842b264e85bb710d4e61ff18a2269b6e2f1726b3b"
+    },
+    {
+      "length": 84,
+      "purpose": "landing evaluator dispatcher choosing primary then alternate path",
+      "runtime_end": "0x02255694",
+      "runtime_start": "0x02255640",
+      "sha256": "a6bfa8d2ab961467819f197732a93dd5bb8e49b1272f89d2f546cc5bfc452842"
+    },
+    {
+      "length": 1056,
+      "purpose": "primary landing evaluation and result-code assignment",
+      "runtime_end": "0x02259F10",
+      "runtime_start": "0x02259AF0",
+      "sha256": "93b481bb9393cac895a91aaf5af5e8bf1e9995ed6e856b7f3e1bb80e06648c04"
+    },
+    {
+      "length": 332,
+      "purpose": "primary attachment calls and post-attachment index storage",
+      "runtime_end": "0x0225A0DC",
+      "runtime_start": "0x02259F90",
+      "sha256": "0207859fef252ed24c9dd82bafa50c3886bd5e792cb71bea575d909b17608d0a"
+    },
+    {
+      "length": 1604,
+      "purpose": "alternate landing evaluation and branch-class attachment calls",
+      "runtime_end": "0x0225A8BC",
+      "runtime_start": "0x0225A278",
+      "sha256": "8cc6fe040dc8f83ee9cdcfa8b3783ba4d65ad04c63417a91ddf88d95a5e4eff9"
+    },
+    {
+      "length": 192,
+      "purpose": "shared arena descriptor attachment allocator",
+      "runtime_end": "0x02262828",
+      "runtime_start": "0x02262768",
+      "sha256": "73afd39dec4e7dafbce85f2769f80840988c0439141cb048526260fcbf88aa2a"
+    },
+    {
+      "length": 56,
+      "purpose": "throw controller construction call site and session publication",
+      "runtime_end": "0x0226BDC4",
+      "runtime_start": "0x0226BD8C",
+      "sha256": "027351e699e3002c7836d4551141488a8d6c67255bc1d3635c387465b935582a"
+    },
+    {
+      "length": 36,
+      "purpose": "natural Gate Card win result assignment",
+      "runtime_end": "0x02257ADC",
+      "runtime_start": "0x02257AB8",
+      "sha256": "ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "question": "Which original controller fields and evaluation boundaries carry landing-result, shot-condition, participant, and arena-attachment context into Gate activation?",
+  "rejected_or_separated": [
+    {
+      "field": "throw controller +0x1E8",
+      "reason": "It is assigned only from the arena-descriptor attachment helper's one-based return value, after evaluation has already selected an attachment path."
+    },
+    {
+      "field": "session arena-placement occupied byte",
+      "reason": "It records whether an arena entry is occupied after allocation, not how the shot or landing was achieved."
+    },
+    {
+      "field": "battle Gate ID and owner fields",
+      "reason": "They identify the active Gate and owner after battle construction but do not preserve the preceding throw or landing classification."
+    }
+  ],
+  "runtime_anchors": [
+    {
+      "capture_sha256": "d8bd8f68b52d1130029fb17edf9227062060b74a67c14e5dbb20a4fba5c8ef13",
+      "controller": "0x022F02A0",
+      "event": "throw controller construction",
+      "instruction": "0x02252730",
+      "selected_evidence": "The 496-byte object was allocated through the sole constructor call at 0x0226BDAC and published at session +0x298. Raw debugger packets and memory were not committed."
+    },
+    {
+      "capture_sha256": "ce23e8b30b61fe3e445291a0ac5554c396450ca7a0af722d8be91541f734745c",
+      "controller": "0x022F02A0",
+      "event": "alternate attachment boundary",
+      "instruction": "0x0225A600",
+      "selected_evidence": "Valid session 0x0229FC80 and controller geometry were present; controller +0x1D2 was 3 and participant-association bytes +0x1D3/+0x1D4/+0x1D5 were 1/0/0 before attachment."
+    },
+    {
+      "capture_sha256": "ce23e8b30b61fe3e445291a0ac5554c396450ca7a0af722d8be91541f734745c",
+      "controller": "0x022F02A0",
+      "event": "alternate attachment boundary",
+      "instruction": "0x0225A830",
+      "selected_evidence": "A later valid stop observed controller +0x1D2 as 2 and participant-association bytes +0x1D3/+0x1D4/+0x1D5 as 1/1/1 before attachment."
+    },
+    {
+      "capture_sha256": "3aa768b26565f0b60d63056153c56ba11b61cdc3c3317813e6b6f4017969be37",
+      "controller": "0x022F02A0",
+      "event": "natural Gate Card win result assignment",
+      "instruction": "0x02257AC8",
+      "selected_evidence": "Controller +0x1D2 was zero immediately before value 1 was stored. Execution resumed normally and displayed GATE CARD WON!. Raw debugger packets and the screenshot were not committed."
+    }
+  ],
+  "unresolved": [
+    "Executable names for +0x1D2 values 0, 2, 3, and 4.",
+    "Whether +0x1DF is the authoritative shot_condition or only a lower-level alternate attachment subtype.",
+    "The writer, initialization, full value domain, lifecycle, and scripted behavior of +0x1DF.",
+    "A controlled reverse-participant capture proving exact labels for +0x1D3, +0x1D4, and +0x1D5.",
+    "The last safe read boundary that is shared by all normal and scripted paths before candidate fields are overwritten or reset.",
+    "A clean tutorial or scripted-path capture tied to the same candidate fields.",
+    "Arena ID remains deferred; temporary grid coordinates are not sufficient to promote a stable arena identifier."
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "capture": {
+    "controller": "0x022F02A0",
+    "controller_fields_before_store": {
+      "active_participant_candidate": 0,
+      "alternate_attachment_branch_code_candidate": 0,
+      "landing_or_resolution_code": 0,
+      "selected_slot_candidate": 2,
+      "teammate_participant_candidate": 0
+    },
+    "event_capture_sha256": "3aa768b26565f0b60d63056153c56ba11b61cdc3c3317813e6b6f4017969be37",
+    "execution": {
+      "memory_mutation": false,
+      "raw_debugger_log_committed": false,
+      "rom_modified": false,
+      "scenario": "Natural player throw during a normal battle turn",
+      "visible_result": "GATE CARD WON!",
+      "visible_result_capture_committed": false,
+      "visible_result_capture_sha256": "785ae8c517f83d54a1d3088c376c7c5fa6e44b0da0e2ef2aaa38a95aa8085524"
+    },
+    "participant_association": {
+      "active_participant_candidate": 0,
+      "selected_slot_candidate": 2,
+      "teammate_participant_candidate": 0
+    },
+    "result_assignment": {
+      "branch_condition": "The existing controller result byte was zero.",
+      "destination": "throw controller +0x1D2",
+      "instruction": "0x02257AC8",
+      "result_before_store": 0,
+      "source_register": "r0",
+      "stored_value": 1
+    }
+  },
+  "component": {
+    "decoded_size": 467360,
+    "load_address": "0x02219440",
+    "name": "overlay_0007",
+    "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
+  },
+  "confirmed_conclusions": [
+    "For this controlled natural throw, controller +0x1D2 value 1 corresponds to the player-facing result GATE CARD WON!.",
+    "The value is assigned at 0x02257AC8 only when the prior controller result is zero.",
+    "The captured assignment occurs before the later arena attachment and battle transition, making it a safe read boundary for this natural branch.",
+    "The game resumed normally after the debugger observation and displayed the correlated result without memory mutation."
+  ],
+  "evidence_boundary": [
+    "This capture confirms only the semantic label for +0x1D2 value 1.",
+    "Values 0, 2, 3, and 4 remain unnamed.",
+    "Controller +0x1DF remained zero in this capture, but its gameplay meaning is not established.",
+    "This capture does not establish one boundary shared by every primary, alternate, and scripted path.",
+    "Arena ID remains deferred."
+  ],
+  "format_version": 1,
+  "instruction_evidence": [
+    {
+      "length": 36,
+      "purpose": "Read the existing result, assign value 1 when zero, and continue controller state update",
+      "runtime_end": "0x02257ADC",
+      "runtime_start": "0x02257AB8",
+      "sha256": "ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14"
+    }
+  ],
+  "profile_id": "b6re_rev0",
+  "question": "Which executable value in the throw controller corresponds to a naturally observed Gate Card win?",
+  "reference_rom": {
+    "game_code": "B6RE",
+    "revision": 0,
+    "sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+  },
+  "runtime_sequence": [
+    "The player performed a natural forward throw from the launch ramp.",
+    "Execution reached 0x02257AC8 with controller +0x1D2 equal to 0 and r0 equal to 1.",
+    "The instruction stored value 1 to controller +0x1D2.",
+    "Breakpoint instrumentation was removed and execution resumed.",
+    "The game transitioned normally and displayed GATE CARD WON!."
+  ]
+}

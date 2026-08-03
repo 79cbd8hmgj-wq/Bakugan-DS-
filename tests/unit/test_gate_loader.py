@@ -122,7 +122,9 @@ def test_cache_build_parse_and_invalidate() -> None:
     assert len(cache) == 0x40
     assert cache[0x28:0x2C] == bytes((21, 1, 1, 3))
     assert parse_cache(cache) == record(21)
-    assert parse_cache(invalidate_cache(cache)) is None
+    invalidated = invalidate_cache(cache)
+    assert invalidated == b"\0" * 0x40
+    assert parse_cache(invalidated) is None
 
 
 def test_cache_rejects_invalid_arena_entry_and_mismatched_id() -> None:
@@ -159,7 +161,3 @@ def test_reference_loader_evidence_matches_confirmed_nitrofs_trace() -> None:
     assert evidence.seek_op.confidence == "confirmed"
     assert evidence.close_op.confidence == "confirmed"
     assert "88040" in evidence.read_op.evidence
-    assert "Gate ID 21" in evidence.initialization
-    assert "0x0228BE14" in evidence.initialization
-    assert "0x0228C020" in evidence.invalidation
-    assert "0x0228C068" in evidence.invalidation

@@ -175,9 +175,39 @@ Confirmed or bounded at this checkpoint:
 
 Seven exact overlay-7 regions and all selected direct-call inventories were locally validated against decoded overlay SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1`.
 
-No value in `+0x1D2` or `+0x1DF` has been assigned a player-facing semantic name. The mandatory `landing_result` and `shot_condition` fields therefore remain unresolved and Task 7 is not complete.
+No value in `+0x1D2` or `+0x1DF` was assigned a player-facing semantic name at this checkpoint.
 
-**Next checkpoint:** 7B — capture one controlled natural landing outcome at the last safe pre-attachment boundary and correlate the observed controller fields with the visible result. Stop after that single positive case; the reverse control remains a later checkpoint.
+### Checkpoint 7B — natural Gate Card win correlation
+
+**Status:** complete.
+
+Normalized evidence:
+
+- `analysis/gates/landing-runtime-gate-card-won.json`
+- evidence commit `ed66b094a6296b18b22e2f588a1b5391bcba3203`
+
+A controlled natural player throw reached `0x02257AC8` with:
+
+```text
+controller:             0x022F02A0
+controller +0x1D2:      0 before the store
+r0:                     1
+selected-slot candidate: 2
+active participant:      0
+controller +0x1DF:       0
+```
+
+The exact instruction stored value `1` to controller `+0x1D2`. Breakpoint instrumentation was removed, execution resumed normally, and the game displayed:
+
+```text
+GATE CARD WON!
+```
+
+Therefore, `+0x1D2 == 1` is confirmed as the natural **Gate Card won** result for this branch. The guarded instruction region is `0x02257AB8–0x02257ADC`, SHA-256 `ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14`.
+
+This checkpoint does not name values `0`, `2`, `3`, or `4`; does not promote `+0x1DF`; and does not establish a boundary shared by every primary, alternate, and scripted path. Arena ID remains deferred.
+
+**Next checkpoint:** 7C — capture one distinct natural outcome and correlate its `+0x1D2` value. Stop after that reverse control; scripted behavior remains separate.
 
 ## Tasks 8–9
 

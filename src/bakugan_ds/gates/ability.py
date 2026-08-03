@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.model import Confidence, SUPPORTED_PROFILE_ID
+from bakugan_ds.gates.model import SUPPORTED_PROFILE_ID, Confidence
 
 
 class AbilityParticipant(StrEnum):

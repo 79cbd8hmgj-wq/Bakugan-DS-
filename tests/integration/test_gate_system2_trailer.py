@@ -52,5 +52,5 @@ def test_g2dt_parser_rejects_corrupted_header_crc() -> None:
         build_trailer(tuple(empty_record(card_id) for card_id in range(1, 104)))
     )
     trailer[8] ^= 1
-    with pytest.raises(WorkspaceError, match="header CRC|record size"):
+    with pytest.raises(WorkspaceError, match=r"header CRC|record size"):
         parse_trailer(bytes(trailer))

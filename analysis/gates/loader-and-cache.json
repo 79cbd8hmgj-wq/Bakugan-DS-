@@ -50,6 +50,11 @@
       "evidence": "Host parsing returns no System 2.0 records for an absent, short, malformed, unsupported, mismatched, or CRC-invalid trailer.",
       "name": "host_loader_is_fail_closed",
       "status": "confirmed"
+    },
+    {
+      "evidence": "The BLZ-decoded ARM9 and a clean-boot ARM9 GDB trace agree on FS_InitFile, FS_OpenFileFast, FS_ReadFile, FS_SeekFile, and FS_CloseFile calling conventions and return behavior.",
+      "name": "runtime_nitrofs_interface_is_confirmed",
+      "status": "confirmed"
     }
   ],
   "domain": "loader-and-cache",
@@ -67,19 +72,100 @@
   },
   "profile_id": "b6re_rev0",
   "runtime_io": {
-    "close": null,
-    "open": null,
-    "read": null,
-    "seek": null,
-    "stack_read_size": 72,
-    "status": "runtime_confirmation_required"
+    "arm9": {
+      "decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
+      "decoded_size": 786712
+    },
+    "close": {
+      "calling_convention": "r0=FSFile*",
+      "function": 33598172,
+      "function_size": 60,
+      "name": "FS_CloseFile",
+      "result": "BOOL in r0; success clears arc, restores command 14, and clears file/dir status bits.",
+      "sha256": "586363903833fc2366f21761acac6938077ebf87d71daef90d602aa27c36d686"
+    },
+    "fs_file_size": 72,
+    "init_file": {
+      "calling_convention": "r0=FSFile*",
+      "function": 33597364,
+      "function_size": 40,
+      "name": "FS_InitFile",
+      "result": "Initializes the 72-byte handle in place; command becomes 14 and arc/stat are cleared.",
+      "sha256": "131f15b7db06da746cb03744ffda8f5453b1c6c2fbdf8f0dacab41326e10421f"
+    },
+    "open": {
+      "calling_convention": "r0=FSFile*, r1=FSArchive*, r2=u32 file_id",
+      "function": 33597988,
+      "function_size": 112,
+      "name": "FS_OpenFileFast",
+      "result": "BOOL in r0; success populates arc, own_id, top, bottom, and pos.",
+      "sha256": "611e41d8d1b768da2e873e2ec320815dbd118d51589c6363ffea380ea8858f39"
+    },
+    "read": {
+      "calling_convention": "r0=FSFile*, r1=destination, r2=s32 length",
+      "core_function": 33597728,
+      "core_function_size": 124,
+      "core_sha256": "0d82a4200a16927edd1012c75b49d5ef0f99934a7fb36f289aaa0604b144e481",
+      "function": 33598512,
+      "function_size": 16,
+      "name": "FS_ReadFile",
+      "result": "Returns bytes read, advances pos by that amount, and returns -1 when synchronous wait fails.",
+      "sha256": "cf5c1821cef4a3567d28cffdf6210f5cc4b71edd52af40b9eea9794becbb6956"
+    },
+    "rom_archive_address": 34340020,
+    "runtime_capture": {
+      "close": {
+        "arc_after": 0,
+        "arc_before": 34340020,
+        "command_after": 14,
+        "command_before": 0,
+        "file_pointer": 41822844,
+        "return_value": 1,
+        "stat_after": 0,
+        "stat_before": 16
+      },
+      "method": "clean boot with DeSmuME ARM9 GDB stub; entry and caller-return breakpoints",
+      "open": {
+        "archive": 34340020,
+        "bottom_after": 8966240,
+        "file_id": 10799,
+        "file_pointer": 34347424,
+        "own_id_after": 10799,
+        "position_after": 6164480,
+        "return_value": 1,
+        "top_after": 6164480
+      },
+      "read": {
+        "file_pointer": 41822844,
+        "position_after": 1348072,
+        "position_before": 1260032,
+        "position_delta": 88040,
+        "requested": 88040,
+        "returned": 88040,
+        "stack_pointer": 41822840
+      },
+      "seek": {
+        "file_pointer": 34347424,
+        "mode": 0,
+        "offset": 0,
+        "position_after": 6164480,
+        "position_before": 6164480,
+        "return_value": 1
+      }
+    },
+    "seek": {
+      "calling_convention": "r0=FSFile*, r1=s32 offset, r2=FSSeekFileMode",
+      "function": 33598528,
+      "function_size": 108,
+      "name": "FS_SeekFile",
+      "result": "Modes 0/1/2 are SET/CUR/END and clamp to top..bottom; invalid mode returns 0 without changing pos.",
+      "sha256": "99e8a8db572238f5c2aa23d35ddfe505843277a0623dedfe207c2d5872236747"
+    },
+    "status": "confirmed"
   },
-  "status": "host_loader_and_layout_complete_runtime_io_pending",
+  "status": "host_loader_and_layout_complete_runtime_io_confirmed_cache_lifecycle_pending",
   "unresolved": [
-    "Exact NitroFS open function and calling convention",
-    "Exact NitroFS seek function and error behavior",
-    "Exact NitroFS read function, return value, and stack usage",
-    "Exact NitroFS close function and lifetime",
-    "Runtime cache initialization and invalidation instrumentation"
+    "Runtime cache initialization on overlay load or battle construction",
+    "Runtime cache invalidation at battle completion"
   ]
 }

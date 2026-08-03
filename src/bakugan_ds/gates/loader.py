@@ -30,6 +30,16 @@ EXPANDED_OVERLAY_SIZE = 0x7A7E0
 CACHE_RECORD_SIZE = GATE_RECORD_SIZE
 CACHE_SIZE = 0x40
 ACTIVATION_COUNTER_COUNT = 12
+ARM9_DECODED_SHA256 = (
+    "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e"
+)
+FS_FILE_SIZE = 72
+ROM_ARCHIVE_ADDRESS = 0x020BFCB4
+FS_INIT_FILE_ADDRESS = 0x0200A7B4
+FS_OPEN_FILE_FAST_ADDRESS = 0x0200AA24
+FS_CLOSE_FILE_ADDRESS = 0x0200AADC
+FS_READ_FILE_ADDRESS = 0x0200AC30
+FS_SEEK_FILE_ADDRESS = 0x0200AC40
 
 
 @dataclass(frozen=True)
@@ -123,7 +133,7 @@ class LoaderEvidence:
             raise WorkspaceError("Gate trailer carrier raw size must be 2840")
         if self.trailer_size != TRAILER_SIZE:
             raise WorkspaceError("Gate trailer size must be 4152")
-        if self.stack_read_size != 72:
+        if self.stack_read_size != FS_FILE_SIZE:
             raise WorkspaceError("Gate loader stack read size must be 72")
         self.cache_layout.validate()
         for label, value in (
@@ -133,6 +143,101 @@ class LoaderEvidence:
         ):
             if not value.strip():
                 raise WorkspaceError(f"loader {label} must be nonempty")
+
+
+def reference_loader_evidence() -> LoaderEvidence:
+    return LoaderEvidence(
+        open_op=NitroFsOperation(
+            name="FS_OpenFileFast",
+            function=FS_OPEN_FILE_FAST_ADDRESS,
+            calling_convention=(
+                "ARM AAPCS: r0=FSFile*, r1=FSArchive*, r2=u32 file_id"
+            ),
+            arguments=(
+                "Initialize the 72-byte FSFile with FS_InitFile at 0x0200A7B4, "
+                "then use ROM archive 0x020BFCB4 and file ID 2762."
+            ),
+            result=(
+                "Returns BOOL in r0; success populates arc, own_id, top, bottom, "
+                "and pos and marks the handle as a file."
+            ),
+            confidence="confirmed",
+            evidence=(
+                "Decoded ARM9 function 0x0200AA24 and a clean-boot runtime call "
+                "returned 1 and populated an initialized FSFile."
+            ),
+        ),
+        seek_op=NitroFsOperation(
+            name="FS_SeekFile",
+            function=FS_SEEK_FILE_ADDRESS,
+            calling_convention=(
+                "ARM AAPCS: r0=FSFile*, r1=s32 offset, r2=FSSeekFileMode"
+            ),
+            arguments=(
+                "Modes 0, 1, and 2 are SET, CUR, and END. The loader seeks to "
+                "raw offset 2840 with mode 0 before reading the appended trailer."
+            ),
+            result=(
+                "Returns 1 for valid modes after clamping the absolute position "
+                "to file top..bottom; an invalid mode returns 0 without updating pos."
+            ),
+            confidence="confirmed",
+            evidence=(
+                "Decoded ARM9 function 0x0200AC40 and a clean-boot SET/0 runtime "
+                "call returned 1 with the expected position."
+            ),
+        ),
+        read_op=NitroFsOperation(
+            name="FS_ReadFile",
+            function=FS_READ_FILE_ADDRESS,
+            calling_convention=(
+                "ARM AAPCS: r0=FSFile*, r1=destination, r2=s32 length; the wrapper "
+                "passes async=0 to FSi_ReadFileCore at 0x0200A920."
+            ),
+            arguments=(
+                "The handle is a 72-byte FSFile. Length is bounded to the remaining "
+                "file range before the synchronous command is submitted."
+            ),
+            result=(
+                "Returns the number of bytes read and advances pos by that amount; "
+                "returns -1 when the synchronous wait fails."
+            ),
+            confidence="confirmed",
+            evidence=(
+                "A clean-boot stack FSFile at sp+4 requested 88040 bytes, returned "
+                "88040, and advanced pos by exactly 88040 bytes."
+            ),
+        ),
+        close_op=NitroFsOperation(
+            name="FS_CloseFile",
+            function=FS_CLOSE_FILE_ADDRESS,
+            calling_convention="ARM AAPCS: r0=FSFile*",
+            arguments="The handle must still be marked as an open file.",
+            result=(
+                "Returns BOOL in r0; success clears arc, restores command 14 "
+                "(invalid), and clears the file and directory status bits."
+            ),
+            confidence="confirmed",
+            evidence=(
+                "Decoded ARM9 function 0x0200AADC and a clean-boot runtime call "
+                "returned 1 and invalidated the same stack FSFile in place."
+            ),
+        ),
+        file_id=REFERENCE_FILE_ID,
+        raw_size=REFERENCE_RAW_SIZE,
+        trailer_size=TRAILER_SIZE,
+        stack_read_size=FS_FILE_SIZE,
+        cache_layout=CacheLayout(),
+        initialization=(
+            "FS_InitFile and the four NitroFS operations are confirmed; runtime "
+            "cache initialization remains unresolved."
+        ),
+        invalidation="Runtime cache invalidation remains unresolved.",
+        fallback=(
+            "Any file-operation failure or invalid G2DT header, geometry, ID, or "
+            "checksum leaves the cache invalid and preserves legacy Gate behavior."
+        ),
+    )
 
 
 def append_validated_trailer(

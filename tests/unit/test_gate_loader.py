@@ -159,5 +159,7 @@ def test_reference_loader_evidence_matches_confirmed_nitrofs_trace() -> None:
     assert evidence.seek_op.confidence == "confirmed"
     assert evidence.close_op.confidence == "confirmed"
     assert "88040" in evidence.read_op.evidence
-    assert "cache initialization remains unresolved" in evidence.initialization
-    assert "cache invalidation remains unresolved" in evidence.invalidation
+    assert "Gate ID 21" in evidence.initialization
+    assert "0x0228BE14" in evidence.initialization
+    assert "0x0228C020" in evidence.invalidation
+    assert "0x0228C068" in evidence.invalidation

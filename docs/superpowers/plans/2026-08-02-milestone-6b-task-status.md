@@ -3,7 +3,8 @@
 ## Current summary
 
 - Tasks 1–6: complete
-- Tasks 7–9: pending
+- Task 7: in progress
+- Tasks 8–9: pending
 - Tasks 10–12: complete
 - Task 13: pending
 
@@ -150,11 +151,38 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed. A fre
 
 No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
 
-## Tasks 7–9
+## Task 7 — landing and shot context
+
+**Status:** in progress.
+
+### Checkpoint 7A — static candidate inventory
+
+**Status:** complete.
+
+The bounded static and selected-runtime inventory is committed at:
+
+- `analysis/gates/landing-shot-candidates.json`
+- evidence commit `ec827fdfd05146c623366a5234615bfa0075b177`
+
+Confirmed or bounded at this checkpoint:
+
+- a dedicated 496-byte throw controller is constructed at `0x02252730` and published through the battle session;
+- dispatcher `0x02255640` tries primary evaluator `0x02259AF0` before alternate evaluator `0x0225A278`;
+- controller `+0x1D2` is the strongest landing/result-code candidate, with executable writes spanning values `0..4` and valid runtime attachment-boundary observations of `3` and `2`;
+- controller `+0x1DF` selects alternate attachment classes for value `5`, value `6`, and other values, but its writer and gameplay meaning remain unresolved;
+- controller `+0x1E8` is the one-based arena-descriptor attachment result and is explicitly rejected as landing-result or shot-condition state;
+- temporary projected grid bytes are not sufficient to promote an arena ID.
+
+Seven exact overlay-7 regions and all selected direct-call inventories were locally validated against decoded overlay SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1`.
+
+No value in `+0x1D2` or `+0x1DF` has been assigned a player-facing semantic name. The mandatory `landing_result` and `shot_condition` fields therefore remain unresolved and Task 7 is not complete.
+
+**Next checkpoint:** 7B — capture one controlled natural landing outcome at the last safe pre-attachment boundary and correlate the observed controller fields with the visible result. Stop after that single positive case; the reverse control remains a later checkpoint.
+
+## Tasks 8–9
 
 **Status:** pending.
 
-- Task 7: landing and shot context
 - Task 8: difficulty context
 - Task 9: effect timing boundaries
 

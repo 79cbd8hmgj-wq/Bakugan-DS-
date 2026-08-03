@@ -4,11 +4,12 @@
 - Task 2: complete
 - Task 3: complete
 - Task 4: complete
-- Tasks 5–13: pending
+- Task 5: complete
+- Tasks 6–13: pending
 
-All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`.
+All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`, but execution continues across completed task boundaries unless runtime evidence or an external dependency is genuinely required.
 
-Each task is divided into small, independently recoverable checkpoints. Each checkpoint must end with a commit, status update, normalized evidence summary, or documented negative result before another checkpoint begins. The assistant stops for user review after each completed task.
+Each task remains divided into small, independently recoverable checkpoints. Each checkpoint must end with a commit, status update, normalized evidence summary, or documented negative result before another checkpoint begins.
 
 ## Task 1
 
@@ -147,4 +148,34 @@ GitHub Python CI run `30769106006` completed successfully at branch commit `64a9
 
 Python compilation, changed-file Ruff, strict mypy, and changed-file whitespace checks passed. The exact decoded-overlay and runtime-ARM9 Gate-lifecycle integration guard also passed locally, including all nine committed instruction-region hashes, all seven lifecycle direct-call inventories, and all 18 direct overlay-7 calls to the Gate-bonus accessor.
 
-Task 5 is the next pending task and has not started.
+## Task 5
+
+**Status:** complete.
+
+### Confirmed model
+
+- The original Gate battle-type selector remains fixed metadata and has no RNG or previous-type input.
+- ARM9 function `0x02021A30` is a reusable unsigned-byte weighted-index selector. It accepts `r0 = count` and `r1 = weight pointer`, returns `-1` for a zero total, and otherwise returns the half-open cumulative bucket index.
+- Its 64-bit LCG state is stored at `0x020D42E8`. The production seed wrapper at `0x020219DC` uses the system timer; direct initializer `0x020219EC` supports deterministic isolated controls.
+- An explicit constructor type `0..5` bypasses the normal fallback; constructor type `-1` permits it.
+- Scripted override codes `1..6` supersede the provisional type.
+- The exact original Gate selector maintains no battle-type history.
+- Future history uses cache bytes `+0x38..+0x3B` for previous type, second previous type, consecutive count, and valid count. It updates once with the final selected type immediately before dispatch and does not overlap activation counters at `+0x2C..+0x37`.
+
+### Normalized implementation and evidence
+
+- `src/bakugan_ds/gates/history.py`
+- `src/bakugan_ds/gates/selector.py`
+- `analysis/gates/battle-history-and-rng.json`
+- `tests/unit/test_gate_history.py`
+- `tests/unit/test_gate_selector_precedence.py`
+- `tests/test_gate_history_artifact.py`
+- `tests/integration/test_gate_rng_reference.py`
+
+### Final verification
+
+GitHub Python CI run `30833671048` completed successfully at branch commit `e3b3c1dfb1f617c5cf72aa3e85d2ed1fd7eaebd7`.
+
+Python compilation, changed-file Ruff, strict mypy, the full test suite, and changed-file whitespace checks passed. Exact-binary tests are environment-gated in CI and were also validated locally against runtime ARM9 SHA-256 `7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e` and overlay-7 SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1`.
+
+Task 6 is the next pending runtime-context task. Static-only Tasks 10 and 11 may proceed independently while Tasks 6–9 await or collect live evidence.

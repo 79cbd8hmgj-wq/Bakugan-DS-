@@ -4,6 +4,9 @@ import pytest
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.loader import (
+    ARM9_DECODED_SHA256,
+    FS_FILE_SIZE,
+    ROM_ARCHIVE_ADDRESS,
     CacheLayout,
     append_validated_trailer,
     build_cache,
@@ -11,6 +14,7 @@ from bakugan_ds.gates.loader import (
     invalidate_cache,
     load_trailer_or_none,
     parse_cache,
+    reference_loader_evidence,
     validate_overlay_expansion,
 )
 from bakugan_ds.gates.record import GateRecordV1, build_trailer
@@ -135,3 +139,25 @@ def test_cache_layout_is_contiguous_and_below_arena() -> None:
     assert layout.module_start + layout.module_size == layout.cache_start
     assert layout.cache_start + layout.cache_size == layout.arena_low
     assert layout.arena_low < layout.arena_high
+
+
+def test_reference_loader_evidence_matches_confirmed_nitrofs_trace() -> None:
+    evidence = reference_loader_evidence()
+    evidence.validate()
+    assert ARM9_DECODED_SHA256 == (
+        "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e"
+    )
+    assert FS_FILE_SIZE == 72
+    assert ROM_ARCHIVE_ADDRESS == 0x020BFCB4
+    assert evidence.open_op.function == 0x0200AA24
+    assert evidence.read_op.function == 0x0200AC30
+    assert evidence.seek_op.function == 0x0200AC40
+    assert evidence.close_op.function == 0x0200AADC
+    assert evidence.stack_read_size == FS_FILE_SIZE
+    assert evidence.open_op.confidence == "confirmed"
+    assert evidence.read_op.confidence == "confirmed"
+    assert evidence.seek_op.confidence == "confirmed"
+    assert evidence.close_op.confidence == "confirmed"
+    assert "88040" in evidence.read_op.evidence
+    assert "cache initialization remains unresolved" in evidence.initialization
+    assert "cache invalidation remains unresolved" in evidence.invalidation

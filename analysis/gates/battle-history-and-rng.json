@@ -1,0 +1,184 @@
+{
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "0x022433AC returns card metadata field 2; the committed selector artifact has no RNG calls or random range.",
+      "name": "original_gate_selector_is_fixed_metadata"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "At 0x0223E338-0x0223E358, constructor type -1 invokes the normal fallback while any type 0-5 is stored directly.",
+      "name": "explicit_constructor_type_bypasses_future_weights"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The switch beginning 0x022417A8 maps codes 1-6 to fixed type IDs and writes battle object +0x20 after normal construction.",
+      "name": "scripted_override_supersedes_future_weights"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The safe future update boundary is immediately before six-way dispatch at 0x0224183C, after explicit and scripted override opportunities.",
+      "name": "history_records_only_final_type"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "History uses cache offsets +0x38-+0x3B; activation counters occupy +0x2C-+0x37; +0x3C-+0x3F remains reserved.",
+      "name": "future_history_storage_does_not_overlap_activation_counters"
+    }
+  ],
+  "direct_calls": [
+    {
+      "callsite": 35849940,
+      "component": "overlay_0007",
+      "role": "existing game weighted-table selection",
+      "target": 33692176
+    }
+  ],
+  "domain": "battle-history-and-rng",
+  "exact_regions": [
+    {
+      "component": "arm9",
+      "end": 33692344,
+      "role": "weighted index RNG",
+      "sha256": "44562a42147ade041be4cc565a65e8cff38a6b21b6f9cb60001a6ea370a9a009",
+      "start": 33692176
+    },
+    {
+      "component": "arm9",
+      "end": 33692176,
+      "role": "timer seed wrapper and direct initializer",
+      "sha256": "f2594a13d55f98488687ee8501422c0a4c5a7cd085abe424b867c22672f6ffb1",
+      "start": 33692124
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35850016,
+      "role": "existing weighted RNG callsite",
+      "sha256": "ddd80b4d62d62c7c59b5eb8d8d40ec7ac9c76059866a5b57889de285d9a9421e",
+      "start": 35849912
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35926984,
+      "role": "fixed metadata selector",
+      "sha256": "a2ca7b7b527814153df7c077fe02fa3b0617a7c51c808def3c3c6fccc5247e3c",
+      "start": 35926956
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35906400,
+      "role": "constructor fallback precedence",
+      "sha256": "b1fb46f46149a2cca760289f5d8cdb1d653010736dc2d861ee56e5ab68cfd56e",
+      "start": 35906368
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35919936,
+      "role": "scripted override precedence",
+      "sha256": "cb0e50a7e140fd1a7804cdbf40a49a46f8bb690b56a082561fd836f4f892e83f",
+      "start": 35919784
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35920188,
+      "role": "final six-way dispatch boundary",
+      "sha256": "beb63fdf101a88f72f60e91ffe9f3e39cfbe4e99c4eaefdde690a84149ca7a51",
+      "start": 35919932
+    }
+  ],
+  "fields": [
+    {
+      "access": "call 0x02021A30 with r0=count and r1=pointer to unsigned-byte weights; signed index returns in r0",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "ARM9 function 0x02021A30 sums unsigned-byte weights, returns -1 for a zero total, advances the global LCG, scales a roll into [0,total), and returns the cumulative bucket index. Exact function SHA-256 44562a42147ade041be4cc565a65e8cff38a6b21b6f9cb60001a6ea370a9a009; existing overlay-7 call at 0x022306D4 proves in-game weighted-index use.",
+      "initialization": "Wrapper 0x020219DC obtains the lower 32 bits from system-timer helper 0x02006BA4 and calls direct initializer 0x020219EC, which stores the seed as the low state word and clears the high word.",
+      "lifetime": "ARM9 module lifetime; shared by gameplay systems that call the helper.",
+      "mutations": [
+        "Each call advances the 64-bit state with multiplier 0x5D588B656C078965 and addend 0x00269EC3 before scaling the high state word by the summed weights."
+      ],
+      "name": "weighted_rng",
+      "owner_structure": "ARM9 global 64-bit linear-congruential state at 0x020D42E8 and pure weighted-index function 0x02021A30",
+      "player_ai_behavior": "The helper is control-identity agnostic and can service human or AI selection paths; its confirmed overlay-7 caller uses table-defined byte weights.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Direct initializer 0x020219EC deterministically replaces the state; production wrapper 0x020219DC reseeds from the timer helper.",
+      "scripted_behavior": "The original Gate battle-type selector does not call this RNG. Explicit constructor and scripted fixed-type paths therefore remain deterministic and bypass any future weighted fallback.",
+      "signed": true,
+      "width_bits": 32
+    },
+    {
+      "access": "none; the current type exists at battle object +0x20 but no previous-type ring or counter is read by selection, override, or dispatch",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The exact selector 0x022433AC, constructor selection block 0x0223E338-0x0223E358, scripted override block beginning 0x022417A8, and six-way dispatch at 0x0224183C contain no prior-type load, update, or reset. The original normal selector is fixed card metadata and has no RNG or history input.",
+      "initialization": "none",
+      "lifetime": "not present",
+      "mutations": [
+        "none in the original selector lifecycle"
+      ],
+      "name": "battle_type_history",
+      "owner_structure": "none in the original Gate battle-type selector lifecycle",
+      "player_ai_behavior": "The same fixed metadata, constructor override, and scripted override paths are used independently of human or AI identity and maintain no history.",
+      "presence": "absent",
+      "replacement_plan": "Reserve four match-local bytes in the approved 64-byte overlay-7 BSS cache 0x02293C20-0x02293C60: +0x38 previous final type, +0x39 type before previous, +0x3A consecutive count, +0x3B valid count. Preserve +0x2C-+0x37 for activation_count_by_arena_entry[12] and +0x3C-+0x3F as reserved. Clear history at session construction/cache initialization, retain it across round transitions, and update it once with the final type immediately before dispatch at 0x0224183C after constructor and scripted overrides.",
+      "reset": "none",
+      "scripted_behavior": "Scripted codes 1-6 overwrite the provisional current type; codes 0 and 7 preserve it; none records a prior type.",
+      "signed": null,
+      "width_bits": null
+    }
+  ],
+  "format_version": 1,
+  "future_history_layout": {
+    "cache_size": 64,
+    "cache_start": 36256800,
+    "consecutive_count_offset": 58,
+    "previous_type_offset": 56,
+    "reserved_end_offset": 64,
+    "reserved_start_offset": 60,
+    "second_previous_type_offset": 57,
+    "valid_count_offset": 59
+  },
+  "history": {
+    "capacity": null,
+    "confidence": "confirmed",
+    "entry_width_bits": null,
+    "evidence": "Bounded audit of the exact normal selector, constructor selection block, scripted override block, and dispatch found current-type storage only and no previous-type state.",
+    "player_ai_behavior": "Shared match-local history for the selector; no separate human or AI storage.",
+    "presence": "absent",
+    "replacement_plan": "Cache +0x38 previous type, +0x39 second previous type, +0x3A consecutive count, +0x3B valid count; unsigned saturating counters and 0-5 type IDs.",
+    "reset_timing": "No original reset. Future history clears at session construction 0x0225FD5C and cache initialization, persists across rounds, and clears again at match teardown/cache invalidation.",
+    "storage": "none in original Gate selector lifecycle",
+    "update_timing": "No original update. Future history updates once with the final selected type immediately before dispatch at 0x0224183C, after all override paths."
+  },
+  "precedence": [
+    "constructor type -1 permits the normal fallback; constructor type 0-5 bypasses it",
+    "future weighted selection may replace only the normal fixed-metadata fallback",
+    "scripted override codes 1-6 supersede the provisional type",
+    "history records the final type immediately before dispatch"
+  ],
+  "profile_id": "b6re_rev0",
+  "rng": {
+    "calling_convention": "r0=count, r1=pointer to unsigned-byte weights; returns signed index in r0, or -1 when total weight is zero",
+    "confidence": "confirmed",
+    "deterministic_controls": "Call 0x020219EC with a known r0 seed in isolated instrumentation, or reproduce the documented 64-bit LCG in host tests. Do not patch the production timer wrapper for gameplay.",
+    "evidence": "The helper advances state = state * 0x5D588B656C078965 + 0x00269EC3 modulo 2^64, scales the high state word by the total, then walks cumulative byte weights. Overlay-7 callsite 0x022306D4 supplies a byte count and byte-weight table.",
+    "function": {
+      "component": "arm9",
+      "component_offset": 137776,
+      "confidence": "confirmed",
+      "evidence": "Exact weighted-index implementation; function region SHA-256 44562a42147ade041be4cc565a65e8cff38a6b21b6f9cb60001a6ea370a9a009.",
+      "runtime_address": 33692176
+    },
+    "output_range": "-1 when total weight is zero; otherwise 0 through count-1 with half-open cumulative buckets",
+    "output_width_bits": 32,
+    "seed_source": "Production wrapper 0x020219DC uses the lower 32 bits returned by system-timer helper 0x02006BA4; direct initializer 0x020219EC clears the high state word."
+  },
+  "unresolved": [],
+  "weighted_selection": {
+    "fallback": "legacy_fixed_metadata",
+    "total_max": 1530,
+    "type_count": 6,
+    "weight_width_bits": 8
+  }
+}

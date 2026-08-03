@@ -1,0 +1,484 @@
+{
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "0x022445D0 selects; 0x0224460C consumes the accepted slot.",
+      "name": "selection_consumes_exact_slot"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "0x0221A6B4 and 0x0221A728 used the selected slot in both natural captures.",
+      "name": "activation_uses_selected_descriptor"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Both natural effects reached state 20 at 0x0221B8D0.",
+      "name": "resolution_has_terminal_boundary"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Script-disabled participant returned 0xFF from 0x0226A700.",
+      "name": "no_ability_control_returns_ff"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Participant 0x022E2640 consumed slot 2 Ability 169; count 3 to 2.",
+      "name": "natural_combatant_zero_ability_use"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Participant 0x022E24E0 consumed slot 0 Ability 126; count 3 to 2.",
+      "name": "natural_combatant_one_ability_use"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Gate totals exist before Ability preparation.",
+      "name": "ability_timing_is_after_gate_bonus"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Selected state can precede deferred in-battle activation.",
+      "name": "red_ability_can_defer_activation"
+    }
+  ],
+  "complete_runtime_ability_use_capture_committed": true,
+  "direct_calls": {
+    "ability_slot_selector": [
+      35918576,
+      35919004,
+      35931600
+    ],
+    "ability_state_setter": [
+      35759912,
+      35762512,
+      35925196,
+      35925296,
+      35925412,
+      35925536,
+      35931660
+    ]
+  },
+  "domain": "ability-card-state",
+  "exact_regions": [
+    {
+      "component": "overlay_0007",
+      "end": 36084680,
+      "role": "participant construction and Ability initialization",
+      "sha256": "ecd781540b86064b3c0f1335c991380d0eca817efead34fd606557ce43c869ab",
+      "start": 36083380
+    },
+    {
+      "component": "overlay_0007",
+      "end": 36086924,
+      "role": "Ability slot-state setter",
+      "sha256": "fb44234ac8a8b4789d5991668b1d91b9b0ccae279c2c625ffd3429c8dbb10c44",
+      "start": 36086856
+    },
+    {
+      "component": "overlay_0007",
+      "end": 36087272,
+      "role": "scripted Ability setup",
+      "sha256": "9b6c11ec85c8b6f4d68cc36651bb25abfc951d4ead644992022362f02c7be08c",
+      "start": 36086924
+    },
+    {
+      "component": "overlay_0007",
+      "end": 36088080,
+      "role": "Ability slot selector",
+      "sha256": "210a33fe99ee45210af97106949537dfab992ff0604fdd360dbdfc27840c37e1",
+      "start": 36087552
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35931680,
+      "role": "battle Ability preparation, selection, and slot consumption",
+      "sha256": "036a742138a44b99029e198147c8c8a23a7a6c33c8c097e48e971f4e8fd55db1",
+      "start": 35931200
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35760080,
+      "role": "effect activation",
+      "sha256": "4db8a18f98a9e6a11c488f4d1e2c0c86dd60ff82a428ef141227412951c1386b",
+      "start": 35759796
+    },
+    {
+      "component": "overlay_0007",
+      "end": 35764456,
+      "role": "effect state machine and resolution",
+      "sha256": "8b6f9b1515488fce952ff16b0d67b7854fa7ef3dc7b5fe716e32828cb71ff758",
+      "start": 35760080
+    }
+  ],
+  "fields": [
+    {
+      "access": "participant +0x6E + slot*4 state; participant +0xF9 count",
+      "confidence": "confirmed",
+      "evidence": "0x0226A700 selects state-0 slots; two natural uses changed one slot 0 to 2 and count 3 to 2.",
+      "initialization": "Participant construction initializes slots and count.",
+      "lifetime": "participant object",
+      "mutations": [
+        "0 to nonzero decrements +0xF9 through 0x0226A448.",
+        "nonzero to 0 increments +0xF9.",
+        "script setup may write state 2 and count 0."
+      ],
+      "name": "ability_available",
+      "owner_structure": "participant Ability slots and available-count cache",
+      "player_ai_behavior": "Shared by both participants.",
+      "presence": "present",
+      "reset": "new participant construction",
+      "scripted_behavior": "0x0226A48C can disable all slots.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "preparation +0x53 slot or 0xFF; descriptor +0x11 slot and +0x12 ID",
+      "confidence": "confirmed",
+      "evidence": "0x02244440 stores selector result and consumes accepted slot at 0x0224460C.",
+      "initialization": "No selection is 0xFF.",
+      "lifetime": "battle setup and effect scene",
+      "mutations": [
+        "0x022445D0 calls 0x0226A700.",
+        "Accepted slot and ID enter the descriptor.",
+        "0xFF preserves the no-card path."
+      ],
+      "name": "ability_selected",
+      "owner_structure": "battle preparation object and Ability descriptor",
+      "player_ai_behavior": "Shared descriptor geometry for both combatants.",
+      "presence": "present",
+      "reset": "new battle setup",
+      "scripted_behavior": "Disabled slots force 0xFF.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "scene +0x4D state, +0x4E combatant, +0x4F class, +0x56 Ability ID",
+      "confidence": "confirmed",
+      "evidence": "Natural captures activated Ability 169 slot 2 and Ability 126 slot 0 through the shared scene.",
+      "initialization": "Scene construction initializes state.",
+      "lifetime": "effect scene",
+      "mutations": [
+        "0x0221A6B4 copies selected metadata.",
+        "0x0221A728 consumes combatant-0 slot.",
+        "0x0221B150 is the combatant-1 equivalent."
+      ],
+      "name": "ability_activated",
+      "owner_structure": "Ability effect scene",
+      "player_ai_behavior": "Scene combatant identity resolves either participant.",
+      "presence": "present",
+      "reset": "new effect scene",
+      "scripted_behavior": "No-card paths bypass activation.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "scene +0x4D terminal state 20",
+      "confidence": "confirmed",
+      "evidence": "Both natural activations reached 0x0221B8D0 and normal execution resumed.",
+      "initialization": "Effect state machine starts from constructed state.",
+      "lifetime": "effect scene",
+      "mutations": [
+        "Effect-specific states execute.",
+        "State 19 performs cleanup.",
+        "0x0221B8D0 returns completion at state 20."
+      ],
+      "name": "ability_resolved",
+      "owner_structure": "Ability effect scene",
+      "player_ai_behavior": "Both combatants share terminal cleanup.",
+      "presence": "present",
+      "reset": "scene destruction",
+      "scripted_behavior": "Card-specific branches converge on cleanup.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "participant +0x6E + slot*4 state 2; +0xF9 count",
+      "confidence": "confirmed",
+      "evidence": "Natural uses changed only the selected slot to 2 and count 3 to 2.",
+      "initialization": "Ordinary available state is 0.",
+      "lifetime": "participant object",
+      "mutations": [
+        "Accepted selection writes state 2.",
+        "Activation idempotently writes state 2.",
+        "Normal use does not restore before reset."
+      ],
+      "name": "ability_used",
+      "owner_structure": "participant Ability slot and count cache",
+      "player_ai_behavior": "Shared state-2 consumption contract.",
+      "presence": "present",
+      "reset": "participant reset paths",
+      "scripted_behavior": "State 2 also represents script-disabled, so use requires provenance.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "participant +0x6C..+0x77 and +0xF9",
+      "confidence": "confirmed",
+      "evidence": "Constructor, setter callers, and script setup distinguish reset from override.",
+      "initialization": "Participant constructor initializes records.",
+      "lifetime": "participant construction to destruction",
+      "mutations": [
+        "Management callers can write state 0.",
+        "Script setup may override reset values.",
+        "Destruction frees the object."
+      ],
+      "name": "ability_reset",
+      "owner_structure": "participant Ability records",
+      "player_ai_behavior": "Shared constructor and setter.",
+      "presence": "present",
+      "reset": "new participant construction",
+      "scripted_behavior": "Tutorial setup replaces ordinary availability.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "no_ability_control": "Clean executable tutorial capture: participant 0x022E2640, Ability IDs 126/140/177, states 2/2/2, +0xF9=0, selector entry 0x0226A700, caller return 0x022412F4, result 0xFF.",
+  "profile_id": "b6re_rev0",
+  "runtime_ability_use_captures": [
+    {
+      "ability_ids": [
+        126,
+        141,
+        169
+      ],
+      "activation_pc": "0x0221A6B4",
+      "available_count_after": 2,
+      "available_count_before": 3,
+      "capture_id": "natural_combatant_0",
+      "combatant_index": 0,
+      "consumption_pc": "0x0221A728",
+      "execution_resumed_after_resolution": true,
+      "participant_object": "0x022E2640",
+      "requested_slot_state": 2,
+      "resolution_pc": "0x0221B8D0",
+      "selected_ability_id": 169,
+      "selected_slot": 2,
+      "setter_pc": "0x0226A448",
+      "slot_states_after": [
+        0,
+        0,
+        2
+      ],
+      "slot_states_before": [
+        0,
+        0,
+        0
+      ],
+      "terminal_scene_state": 20
+    },
+    {
+      "ability_ids": [
+        126,
+        140,
+        171
+      ],
+      "activation_pc": "0x0221A6B4",
+      "available_count_after": 2,
+      "available_count_before": 3,
+      "capture_id": "natural_combatant_1",
+      "combatant_index": 1,
+      "consumption_pc": "0x0221A728",
+      "execution_resumed_after_resolution": true,
+      "participant_object": "0x022E24E0",
+      "requested_slot_state": 2,
+      "resolution_pc": "0x0221B8D0",
+      "selected_ability_id": 126,
+      "selected_slot": 0,
+      "setter_pc": "0x0226A448",
+      "slot_states_after": [
+        2,
+        0,
+        0
+      ],
+      "slot_states_before": [
+        0,
+        0,
+        0
+      ],
+      "terminal_scene_state": 20
+    }
+  ],
+  "runtime_capture_source": {
+    "event_log_sha256": "438d032c901b9e649593652f48cb5192ec39b0337955e4bd0054aa22b9e8cc5c",
+    "method": "One clean executable DeSmuME ARM9 GDB session; execution breakpoints at selector, activation, state setter, and terminal resolution; no gameplay or register mutation.",
+    "post_resolution_participants_sha256": "bf78089f261a173c6ccffc8e95b85845df1e6b41b613d85a5aeb659a5ae593ed",
+    "raw_debugger_log_committed": false,
+    "save_or_state_committed": false,
+    "screenshot_committed": false
+  },
+  "scripted_paths": [
+    "Tutorial setup at 0x0226A48C seeds all three Ability states to 2 and available count to zero.",
+    "Scripted no-card setup therefore returns 0xFF from the ordinary selector without entering the effect scene.",
+    "Card-specific effect branches converge on common terminal cleanup."
+  ],
+  "states": [
+    {
+      "access": "slot state 0 and +0xF9",
+      "confidence": "confirmed",
+      "evidence": "selector/setter/runtime",
+      "initialization": "constructor",
+      "mutation": "setter transitions",
+      "owner_structure": "participant Ability slots",
+      "participant": "player",
+      "phase": "available",
+      "reset": "constructor",
+      "value_domain": "0..3",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x53 slot; descriptor +0x11/+0x12",
+      "confidence": "confirmed",
+      "evidence": "selection path/no-card control",
+      "initialization": "0xFF",
+      "mutation": "selector/preparation",
+      "owner_structure": "battle preparation descriptor",
+      "participant": "player",
+      "phase": "selected",
+      "reset": "new setup",
+      "value_domain": "slot 0..2 or 0xFF",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x4D/+0x4E/+0x4F/+0x56",
+      "confidence": "confirmed",
+      "evidence": "natural activations",
+      "initialization": "scene start",
+      "mutation": "0x0221A6B4",
+      "owner_structure": "Ability effect scene",
+      "participant": "player",
+      "phase": "activated",
+      "reset": "new scene",
+      "value_domain": "scene 0..20",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x4D state 20",
+      "confidence": "confirmed",
+      "evidence": "0x0221B8D0",
+      "initialization": "scene start",
+      "mutation": "state 19 cleanup",
+      "owner_structure": "Ability effect scene",
+      "participant": "player",
+      "phase": "resolved",
+      "reset": "scene destruction",
+      "value_domain": "terminal 20",
+      "width_bits": 8
+    },
+    {
+      "access": "slot state 2",
+      "confidence": "confirmed",
+      "evidence": "natural exact-slot use",
+      "initialization": "state 0",
+      "mutation": "setter writes 2",
+      "owner_structure": "participant Ability slot",
+      "participant": "player",
+      "phase": "used",
+      "reset": "participant reset",
+      "value_domain": "state 2 with provenance",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x6C..+0x77 and +0xF9",
+      "confidence": "confirmed",
+      "evidence": "constructor/caller audit",
+      "initialization": "constructor",
+      "mutation": "management reset",
+      "owner_structure": "participant Ability records",
+      "participant": "player",
+      "phase": "reset",
+      "reset": "constructor",
+      "value_domain": "ordinary 0; script override",
+      "width_bits": 8
+    },
+    {
+      "access": "slot state 0 and +0xF9",
+      "confidence": "confirmed",
+      "evidence": "selector/setter/runtime",
+      "initialization": "constructor",
+      "mutation": "setter transitions",
+      "owner_structure": "participant Ability slots",
+      "participant": "opponent",
+      "phase": "available",
+      "reset": "constructor",
+      "value_domain": "0..3",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x53 slot; descriptor +0x11/+0x12",
+      "confidence": "confirmed",
+      "evidence": "selection path/no-card control",
+      "initialization": "0xFF",
+      "mutation": "selector/preparation",
+      "owner_structure": "battle preparation descriptor",
+      "participant": "opponent",
+      "phase": "selected",
+      "reset": "new setup",
+      "value_domain": "slot 0..2 or 0xFF",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x4D/+0x4E/+0x4F/+0x56",
+      "confidence": "confirmed",
+      "evidence": "natural activations",
+      "initialization": "scene start",
+      "mutation": "0x0221A6B4",
+      "owner_structure": "Ability effect scene",
+      "participant": "opponent",
+      "phase": "activated",
+      "reset": "new scene",
+      "value_domain": "scene 0..20",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x4D state 20",
+      "confidence": "confirmed",
+      "evidence": "0x0221B8D0",
+      "initialization": "scene start",
+      "mutation": "state 19 cleanup",
+      "owner_structure": "Ability effect scene",
+      "participant": "opponent",
+      "phase": "resolved",
+      "reset": "scene destruction",
+      "value_domain": "terminal 20",
+      "width_bits": 8
+    },
+    {
+      "access": "slot state 2",
+      "confidence": "confirmed",
+      "evidence": "natural exact-slot use",
+      "initialization": "state 0",
+      "mutation": "setter writes 2",
+      "owner_structure": "participant Ability slot",
+      "participant": "opponent",
+      "phase": "used",
+      "reset": "participant reset",
+      "value_domain": "state 2 with provenance",
+      "width_bits": 8
+    },
+    {
+      "access": "+0x6C..+0x77 and +0xF9",
+      "confidence": "confirmed",
+      "evidence": "constructor/caller audit",
+      "initialization": "constructor",
+      "mutation": "management reset",
+      "owner_structure": "participant Ability records",
+      "participant": "opponent",
+      "phase": "reset",
+      "reset": "constructor",
+      "value_domain": "ordinary 0; script override",
+      "width_bits": 8
+    }
+  ],
+  "status": "complete",
+  "timing": {
+    "activation_boundary": "0x0221A6B4 copies selected metadata into the effect scene; 0x0221A728 resolves participant/slot and writes state 2, with 0x0221B150 providing the second-combatant equivalent.",
+    "battle_type_relation": "Immediate Ability effects resolve during pre-minigame setup and can alter later battle behavior; battle-type state remains separately owned.",
+    "gate_bonus_relation": "Gate bonus and target total are established by battle construction before Ability selection and effect processing.",
+    "minigame_relation": "Immediate effects resolve before minigame start; selected red cards can defer activation to the in-battle input path.",
+    "resolution_boundary": "State 19 cleanup advances scene +0x4D to 20 and returns completion at 0x0221B8D0.",
+    "result_relation": "Ability effect resolution precedes ordinary battle-result winner and capture bookkeeping.",
+    "selection_boundary": "Preparation function 0x02244440 calls selector 0x0226A700 at 0x022445D0, stores the slot at +0x53, and consumes accepted selections at 0x0224460C."
+  },
+  "unresolved": []
+}

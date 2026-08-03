@@ -1,6 +1,9 @@
 component,runtime_address,component_offset,name,confidence,evidence
 arm9,0x0202F134,0x0002F134,CountActiveMultiplayerParticipantSlots,confirmed,Counts active multiplayer slots used as the human-controlled prefix in modes 6 and 7.
 arm9,0x02065BF4,0x00065BF4,LookupGateAttributeBonus,confirmed,Pure six-value Gate-card and attribute-indexed lookup with no activation-state mutation.
+overlay_0007,0x0221A6B4,0x00001274,BeginAbilityEffectActivation,confirmed,Copies selected Ability metadata into the effect scene and dispatches shared execution.
+overlay_0007,0x0221A728,0x000012E8,ConsumeActivatedAbilitySlot,confirmed,Resolves the active participant and selected slot then requests state 2 through the shared setter.
+overlay_0007,0x0221B8D0,0x00002490,CompleteAbilityEffectResolution,confirmed,Returns completion after state-19 cleanup advances the effect scene to terminal state 20.
 overlay_0007,0x02230F58,0x00017B18,ConstructAIController,confirmed,Initializes the participant-owned AI decision object stored at participant +0xC8.
 overlay_0007,0x0223CFE8,0x00023BA8,ConstructBattleObject,confirmed,Derives Gate owner and constructs the two 20-byte combatant records.
 overlay_0007,0x0223E238,0x00024DF8,ConstructBattleResultController,confirmed,Initializes signed winner index +0x21 to -1 and stores the linked battle object at +0x38.
@@ -8,6 +11,8 @@ overlay_0007,0x0223F918,0x000264D8,AdvanceBattleResultState,confirmed,Resolves a
 overlay_0007,0x022423F0,0x00028FB0,FinalizeNormalGateResult,confirmed,Maps the settled winner to a participant and increments participant match score +0xEE before capture-history bookkeeping.
 overlay_0007,0x0224242C,0x00028FEC,AppendParticipantCaptureHistory,confirmed,Appends one six-byte losing-combatant record at participant +0x84 and increments capture-history count +0xF4.
 overlay_0007,0x02244440,0x0002B000,CalculateBattleWinnerIndex,confirmed,Evaluates the two combatant records and returns winner record index 0 or 1.
+overlay_0007,0x022445D0,0x0002B190,SelectCombatantAbilitySlot,confirmed,Calls the participant Ability selector during battle preparation and receives slot 0 to 2 or 0xFF.
+overlay_0007,0x0224460C,0x0002B1CC,ConsumeSelectedAbilitySlot,confirmed,Consumes the accepted prepared slot by requesting participant Ability state 2.
 overlay_0007,0x0225FD5C,0x0004691C,ConstructGateSessionState,confirmed,Clears arena-placement board-grid placement-count and descriptor state for a new Gate session.
 overlay_0007,0x02262638,0x000491F8,AllocateArenaPlacement,confirmed,Creates an occupied arena entry assigns owner Gate-slot state 1 and increments session +0x294.
 overlay_0007,0x022626B8,0x00049278,RemoveArenaPlacement,confirmed,Clears arena occupied and board-grid state writes owner Gate-slot state 2 and decrements session +0x294.
@@ -22,7 +27,9 @@ overlay_0007,0x02269734,0x000502F4,InitializeParticipantControlIdentity,confirme
 overlay_0007,0x02269C28,0x000507E8,DestroyParticipantMembers,confirmed,Destroys the optional AI controller without performing an authoritative in-place Gate-state reset.
 overlay_0007,0x02269C5C,0x0005081C,DeleteParticipant,confirmed,Cleans participant members and frees the participant object without an in-place score or Gate-state reset.
 overlay_0007,0x0226A404,0x00050FC4,SetParticipantGateSlotState,confirmed,Maintains Gate-slot states 0 1 and 2 and adjusts +0xF8 only across the zero/nonzero boundary.
+overlay_0007,0x0226A448,0x00051008,SetParticipantAbilitySlotState,confirmed,Maintains the three Ability slot-state bytes and available count +0xF9 across zero/nonzero transitions.
 overlay_0007,0x0226A48C,0x0005104C,ApplyScriptedGateSlotSetup,confirmed,Scripted setup can preassign unavailable state 2 and directly force participant +0xF8 to zero.
 overlay_0007,0x0226A5E8,0x000511A8,ChooseSelectableGateSlot,confirmed,Counts and chooses only participant Gate slots whose lifecycle state is zero.
+overlay_0007,0x0226A700,0x000512C0,SelectAvailableAbilitySlot,confirmed,Chooses among state-zero Ability slots or returns 0xFF when none are available.
 overlay_0007,0x0226B4AC,0x0005206C,BranchOnActiveParticipantAI,confirmed,Selects AI-specific battle setup when active participant +0xC8 is non-null.
 overlay_0007,0x0226E430,0x00054FF0,RunAIShotPlanner,confirmed,Returns for null +0xC8 and consumes the AI controller when non-null.

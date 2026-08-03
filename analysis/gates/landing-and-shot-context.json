@@ -1,0 +1,364 @@
+{
+  "arena_id": {
+    "access": "Deferred by the approved Milestone 6B arena-only exception; projected grid bytes are not promoted to a stable arena identifier.",
+    "allowed_exception": true,
+    "confidence": "candidate",
+    "evidence": "The primary and alternate evaluators derive transient grid coordinates, but no stable arena identity with confirmed lifecycle and reset behavior has been established.",
+    "initialization": "Not confirmed.",
+    "lifetime": "Not confirmed.",
+    "mutations": [
+      "Not confirmed."
+    ],
+    "name": "arena_id",
+    "owner_structure": "Arena context remains unresolved.",
+    "player_ai_behavior": "Not confirmed.",
+    "presence": "deferred",
+    "reset": "Not confirmed.",
+    "scripted_behavior": "Not confirmed."
+  },
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "At 0x0225A600, throw controller 0x022F02A0 held result code 3, selected slot 1, active participant 0, teammate 0, and shot-condition code 0 immediately before arena attachment; execution entered a contested Gate battle.",
+      "name": "battle_stand_result"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "At 0x0225A830, the same controller held result code 2, selected slot 1, active participant 1, teammate 1, and shot-condition code 0 immediately before arena attachment; execution completed an unopposed Stand without entering a battle.",
+      "name": "unopposed_stand_result"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The human path supplies participant shot-setup byte +0x10 and the AI path supplies AI-controller byte +0x7E to shot-controller byte +0x6198; 0x0226B5C4 and 0x0226D488 copy that byte into throw-controller +0x1DF.",
+      "name": "shot_condition_source"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Throw-controller +0x1D4 stores the active participant, +0x1D5 stores that participant's teammate index from participant +0xF2, and +0x1D3 stores the selected Bakugan slot. Runtime controls observed active participants 0 and 1 independently of selected slot 1.",
+      "name": "landing_participant_association"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Dispatcher 0x02255640 returns false at 0x02255684 or true at 0x0225568C after the primary and optional alternate evaluators have committed result, participant, shot-condition, and attachment state; the throw controller remains live until its later retry, presentation, or teardown path.",
+      "name": "landing_evaluation_boundary"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "A clean battery-save tutorial launch copied shot-condition code 0 at 0x0226B5C4 into throw controller 0x022F1E80, entered the same primary and alternate evaluators with result 0 and no attachment, displayed the guided retry path, and then reset the throw fields for another attempt.",
+      "name": "tutorial_scripted_path"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Arena ID is explicitly retained as the sole approved deferred field; no transient coordinate or descriptor index is promoted to arena identity.",
+      "name": "arena_id_is_only_deferred_field"
+    }
+  ],
+  "direct_call_inventory": {
+    "alternate_landing_evaluator_0x0225A278": [
+      "0x02255680"
+    ],
+    "arena_descriptor_attachment_0x02262768": [
+      "0x022588A8",
+      "0x0225A004",
+      "0x0225A074",
+      "0x0225A600",
+      "0x0225A6B8",
+      "0x0225A774",
+      "0x0225A830",
+      "0x02262E10",
+      "0x02262F00",
+      "0x02262F24",
+      "0x02263074",
+      "0x02263098",
+      "0x02265DD4"
+    ],
+    "primary_landing_evaluator_0x02259AF0": [
+      "0x02255670"
+    ],
+    "throw_controller_constructor_0x02252730": [
+      "0x0226BDAC"
+    ]
+  },
+  "domain": "landing-and-shot-context",
+  "evaluation_boundary": "After dispatcher 0x02255640 reaches its false return at 0x02255684 or successful return at 0x0225568C, throw-controller +0x1D2/+0x1D3/+0x1D4/+0x1D5/+0x1DF and any +0x1E8 attachment index contain the completed evaluation state. Read-only System 2.0 conditions must sample before the later retry, presentation reset, or controller teardown path.",
+  "exact_regions": [
+    {
+      "component": "overlay_0007",
+      "end": "0x02252AB4",
+      "purpose": "throw-controller construction and landing-field initialization",
+      "sha256": "bcadd852c13eee82eef1da6842b264e85bb710d4e61ff18a2269b6e2f1726b3b",
+      "start": "0x02252730"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x02253F2C",
+      "purpose": "post-result landing consumer",
+      "sha256": "2a78d1e68dd2937f53a20f60544b05fb85bb1f01cd444041b46050de7952757e",
+      "start": "0x02253DD4"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x02255694",
+      "purpose": "primary-then-alternate landing dispatcher and common return boundary",
+      "sha256": "a6bfa8d2ab961467819f197732a93dd5bb8e49b1272f89d2f546cc5bfc452842",
+      "start": "0x02255640"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x02257ADC",
+      "purpose": "natural Gate Card win result assignment",
+      "sha256": "ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14",
+      "start": "0x02257AB8"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0225A25C",
+      "purpose": "complete primary landing evaluator through common return",
+      "sha256": "ea6f7e9b1d9be93b6e999b77b4ff039e85e3eb4b48a6db3004c8bf55a04b54d3",
+      "start": "0x02259AF0"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0225A8BC",
+      "purpose": "alternate landing evaluator and attachment classification",
+      "sha256": "8cc6fe040dc8f83ee9cdcfa8b3783ba4d65ad04c63417a91ddf88d95a5e4eff9",
+      "start": "0x0225A278"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x02260B3C",
+      "purpose": "human and AI shot-condition source selection",
+      "sha256": "e0a0ed3abd5cadcb1cd7caad9c649eeb4042acdb1d7fa06a5d72fe3d7ddbfab4",
+      "start": "0x02260A30"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x02262828",
+      "purpose": "shared arena descriptor attachment allocator",
+      "sha256": "73afd39dec4e7dafbce85f2769f80840988c0439141cb048526260fcbf88aa2a",
+      "start": "0x02262768"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0226AAA4",
+      "purpose": "shot-controller construction and +0x6198 storage",
+      "sha256": "b18a82c8324782830a43c8d0438101e19b854b67084d4bc7e224ad92265e5b82",
+      "start": "0x0226A988"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0226B5D8",
+      "purpose": "ordinary shot-condition copy from +0x6198 to throw +0x1DF",
+      "sha256": "a0a7b8ddede4026e85379d2304816054d25f2fa1f7c54f8ea1c85468e8a85995",
+      "start": "0x0226B5BC"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0226BDC4",
+      "purpose": "throw-controller construction call and session publication",
+      "sha256": "027351e699e3002c7836d4551141488a8d6c67255bc1d3635c387465b935582a",
+      "start": "0x0226BD8C"
+    },
+    {
+      "component": "overlay_0007",
+      "end": "0x0226D48C",
+      "purpose": "alternate or scripted shot-condition copy to throw +0x1DF",
+      "sha256": "7e1ee354c412572f15fef8965a6bed325e5071a57c089bb9b1fc76e31c3596da",
+      "start": "0x0226D47C"
+    }
+  ],
+  "fields": [
+    {
+      "access": "throw controller +0x1D2",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The constructor initializes +0x1D2 to zero; the primary and alternate evaluators write codes 0 through 4 before arena attachment. Controlled runtime stops confirmed code 2 on an unopposed Stand and code 3 on a battle-triggering Stand, while an earlier natural control confirmed code 1 before GATE CARD WON! presentation.",
+      "initialization": "Throw-controller constructor 0x02252730 initializes +0x1D2 to zero.",
+      "lifetime": "Throw-controller construction through landing evaluation, arena attachment or retry presentation, and controller teardown.",
+      "mutations": [
+        "Primary evaluator 0x02259AF0 assigns result codes 0 through 4 according to landing and participant state.",
+        "Alternate evaluator 0x0225A278 assigns its result before attachment classification.",
+        "Natural Gate Card win path stores code 1 at 0x02257AC8.",
+        "Tutorial failed-throw path retains code 0 with no attachment before retry reset."
+      ],
+      "name": "landing_result",
+      "owner_structure": "496-byte throw controller",
+      "player_ai_behavior": "The same field and evaluator dispatcher apply to active participants 0 and 1; runtime standing controls covered both.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "New throw-controller construction initializes zero; retry or teardown paths clear or invalidate the object after presentation.",
+      "scripted_behavior": "The clean tutorial launch used the same primary and alternate evaluators, retained result 0 without attachment, displayed retry guidance, and reset the throw state for another attempt.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "main shot controller +0x6198 copied to throw controller +0x1DF",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Human setup at 0x02260A64 supplies shot-setup byte +0x10; AI setup at 0x02260B04 supplies AI-controller byte +0x7E. Constructor 0x0226A988 stores the category at +0x6198, and ordinary and alternate paths copy it to +0x1DF at 0x0226B5C4 and 0x0226D488. The executable accepts codes 0 through 6; runtime controls observed code 0.",
+      "initialization": "Shot-controller construction stores its category argument at +0x6198 and the initialization path later clears the field to zero; throw-controller construction initializes +0x1DF before the copy.",
+      "lifetime": "Active participant shot setup through the shot controller, throw controller, landing evaluation, and attachment classification.",
+      "mutations": [
+        "Human participant shot-setup byte +0x10 enters the shot-controller constructor.",
+        "AI-controller byte +0x7E enters the same constructor path.",
+        "0x0226B5C4 copies +0x6198 to throw +0x1DF in the ordinary path.",
+        "0x0226D488 performs the equivalent alternate or scripted copy.",
+        "Alternate landing evaluation distinguishes codes 5 and 6 from all other codes when choosing attachment class."
+      ],
+      "name": "shot_condition",
+      "owner_structure": "main shot controller and 496-byte throw controller",
+      "player_ai_behavior": "Human and AI source fields converge on the same +0x6198 category and +0x1DF landing-context byte.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Shot-controller initialization clears +0x6198; new throw-controller construction and later retry or teardown reset +0x1DF.",
+      "scripted_behavior": "The alternate state-machine path copies the same category at 0x0226D488. A clean tutorial launch observed ordinary copy code 0 before the scripted guided throw and retry path.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "Deferred by the approved Milestone 6B arena-only exception; projected grid bytes are not promoted to a stable arena identifier.",
+      "allowed_exception": true,
+      "confidence": "candidate",
+      "evidence": "The primary and alternate evaluators derive transient grid coordinates, but no stable arena identity with confirmed lifecycle and reset behavior has been established.",
+      "initialization": "Not confirmed.",
+      "lifetime": "Not confirmed.",
+      "mutations": [
+        "Not confirmed."
+      ],
+      "name": "arena_id",
+      "owner_structure": "Arena context remains unresolved.",
+      "player_ai_behavior": "Not confirmed.",
+      "presence": "deferred",
+      "replacement_plan": "",
+      "reset": "Not confirmed.",
+      "scripted_behavior": "Not confirmed.",
+      "signed": null,
+      "width_bits": null
+    }
+  ],
+  "format_version": 1,
+  "landing_fields": [
+    {
+      "access": "throw controller +0x1D2",
+      "confidence": "confirmed",
+      "evidence": "Exact evaluator hashes plus natural codes 2 and 3 and the tutorial code-0 retry control.",
+      "initialization": "0x02252730 initializes zero.",
+      "name": "landing_result",
+      "owner_structure": "496-byte throw controller",
+      "participant_source": "throw +0x1D4 active participant with selected Bakugan slot at +0x1D3",
+      "reset": "new throw construction or retry/teardown",
+      "scripted_behavior": "tutorial path uses the same evaluators and resets after failed guided throw",
+      "signed": false,
+      "value_domain": "unsigned codes 0 through 4; named runtime-proven labels are code 1 Gate Card won, code 2 unopposed Stand, and code 3 battle-triggering Stand; codes 0 and 4 remain numerically represented without universal labels",
+      "width_bits": 8
+    },
+    {
+      "access": "shot controller +0x6198 copied to throw controller +0x1DF",
+      "confidence": "confirmed",
+      "evidence": "Exact human/AI source, constructor, and copy-path hashes; runtime normal and tutorial controls observed code 0.",
+      "initialization": "shot constructor argument then zero-reset; throw construction initializes before copy",
+      "name": "shot_condition",
+      "owner_structure": "main shot controller and 496-byte throw controller",
+      "participant_source": "human participant shot setup +0x10 or AI controller +0x7E for the active participant",
+      "reset": "shot initialization and throw retry/teardown",
+      "scripted_behavior": "alternate/scripted copy at 0x0226D488; tutorial ordinary copy observed at 0x0226B5C4",
+      "signed": false,
+      "value_domain": "unsigned categorical codes 0 through 6; code 0 observed in normal and tutorial controls; codes 5 and 6 have distinct static attachment branches but no player-facing labels are assigned",
+      "width_bits": 8
+    }
+  ],
+  "outcome_codes": {
+    "0": {
+      "label": null,
+      "runtime_observation": "clean tutorial failed guided throw; no descriptor attachment and later retry reset"
+    },
+    "1": {
+      "label": "gate_card_won",
+      "runtime_observation": "natural Gate Card win presentation"
+    },
+    "2": {
+      "label": "unopposed_stand",
+      "runtime_observation": "natural standing placement without battle"
+    },
+    "3": {
+      "label": "battle_stand",
+      "runtime_observation": "natural standing placement that triggered a contested Gate battle"
+    },
+    "4": {
+      "label": null,
+      "runtime_observation": null
+    }
+  },
+  "profile_id": "b6re_rev0",
+  "runtime_capture_source": {
+    "natural_landing_events_sha256": "ce23e8b30b61fe3e445291a0ac5554c396450ca7a0af722d8be91541f734745c",
+    "natural_throw_constructor_sha256": "d8bd8f68b52d1130029fb17edf9227062060b74a67c14e5dbb20a4fba5c8ef13",
+    "raw_debugger_logs_committed": false,
+    "save_or_state_committed": false,
+    "screenshots_committed": false,
+    "tutorial_failure_state_sha256": "5b95d17231aae08f9b903303184b240562772b320ec467e6c7d97bddc814da8a",
+    "tutorial_landing_events_sha256": "e05d920fe59d377ee6fbbaf5d859fcf4dbbc127b763fd34878be668f28903d2b"
+  },
+  "runtime_controls": [
+    {
+      "active_participant": 0,
+      "attachment_boundary": "0x0225A600",
+      "controller": "0x022F02A0",
+      "landing_result": 3,
+      "outcome": "battle_stand",
+      "selected_bakugan_slot": 1,
+      "shot_condition": 0,
+      "teammate_participant": 0
+    },
+    {
+      "active_participant": 1,
+      "attachment_boundary": "0x0225A830",
+      "controller": "0x022F02A0",
+      "landing_result": 2,
+      "outcome": "unopposed_stand",
+      "selected_bakugan_slot": 1,
+      "shot_condition": 0,
+      "teammate_participant": 1
+    },
+    {
+      "active_participant_before_retry": 1,
+      "attachment_index": 0,
+      "controller": "0x022F1E80",
+      "copy_boundary": "0x0226B5C4",
+      "landing_result": 0,
+      "outcome": null,
+      "path": "clean battery-save tutorial guided throw and retry",
+      "selected_bakugan_slot_before_retry": 0,
+      "shot_condition": 0,
+      "teammate_participant_before_retry": 1,
+      "throw_fields_zero_after_retry_reset": true
+    }
+  ],
+  "scripted_paths": [
+    "The clean tutorial launch used the ordinary 0x0226B5C4 shot-condition copy, then the primary and alternate landing evaluator dispatcher, produced result 0 without descriptor attachment, displayed guided retry feedback, and reset the throw state.",
+    "The alternate state-machine path at 0x0226D488 copies the same shot-condition category into throw +0x1DF before alternate landing evaluation."
+  ],
+  "shot_condition_codes": {
+    "executable_domain": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "runtime_observed": [
+      0
+    ],
+    "special_static_branches": {
+      "5": "alternate attachment class 2",
+      "6": "alternate attachment class 3",
+      "other": "alternate attachment class 1"
+    }
+  },
+  "status": "complete_with_arena_id_deferred",
+  "unresolved": [
+    "arena_id"
+  ]
+}

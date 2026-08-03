@@ -13,7 +13,13 @@ overlay_0007,0x0224242C,0x00028FEC,AppendParticipantCaptureHistory,confirmed,App
 overlay_0007,0x02244440,0x0002B000,CalculateBattleWinnerIndex,confirmed,Evaluates the two combatant records and returns winner record index 0 or 1.
 overlay_0007,0x022445D0,0x0002B190,SelectCombatantAbilitySlot,confirmed,Calls the participant Ability selector during battle preparation and receives slot 0 to 2 or 0xFF.
 overlay_0007,0x0224460C,0x0002B1CC,ConsumeSelectedAbilitySlot,confirmed,Consumes the accepted prepared slot by requesting participant Ability state 2.
+overlay_0007,0x02252730,0x000392F0,ConstructThrowController,confirmed,Initializes the 496-byte throw controller including result participant shot-condition and attachment fields.
+overlay_0007,0x02255640,0x0003C200,DispatchLandingEvaluation,confirmed,Runs the primary landing evaluator then the alternate evaluator only when the primary path returns false.
+overlay_0007,0x02259AF0,0x000406B0,EvaluatePrimaryLanding,confirmed,Assigns landing-result codes and participant-associated arena attachment for the primary landing path.
+overlay_0007,0x0225A278,0x00040E38,EvaluateAlternateLanding,confirmed,Resolves the alternate landing path and uses shot-condition codes to choose attachment class.
 overlay_0007,0x0225FD5C,0x0004691C,ConstructGateSessionState,confirmed,Clears arena-placement board-grid placement-count and descriptor state for a new Gate session.
+overlay_0007,0x02260A64,0x00047624,LoadHumanShotCondition,confirmed,Reads the active human participant shot-setup category that enters the shared shot controller.
+overlay_0007,0x02260B04,0x000476C4,LoadAIShotCondition,confirmed,Reads the active AI controller shot category that enters the shared shot controller.
 overlay_0007,0x02262638,0x000491F8,AllocateArenaPlacement,confirmed,Creates an occupied arena entry assigns owner Gate-slot state 1 and increments session +0x294.
 overlay_0007,0x022626B8,0x00049278,RemoveArenaPlacement,confirmed,Clears arena occupied and board-grid state writes owner Gate-slot state 2 and decrements session +0x294.
 overlay_0007,0x02262714,0x000492D4,TransferActiveArenaPlacement,confirmed,Returns the old owner slot to 0 replaces arena owner and slot identity and assigns the replacement slot state 1.
@@ -31,5 +37,8 @@ overlay_0007,0x0226A448,0x00051008,SetParticipantAbilitySlotState,confirmed,Main
 overlay_0007,0x0226A48C,0x0005104C,ApplyScriptedGateSlotSetup,confirmed,Scripted setup can preassign unavailable state 2 and directly force participant +0xF8 to zero.
 overlay_0007,0x0226A5E8,0x000511A8,ChooseSelectableGateSlot,confirmed,Counts and chooses only participant Gate slots whose lifecycle state is zero.
 overlay_0007,0x0226A700,0x000512C0,SelectAvailableAbilitySlot,confirmed,Chooses among state-zero Ability slots or returns 0xFF when none are available.
+overlay_0007,0x0226A988,0x00051548,ConstructShotController,confirmed,Stores the human or AI shot-condition category at the shared main shot-controller field +0x6198.
 overlay_0007,0x0226B4AC,0x0005206C,BranchOnActiveParticipantAI,confirmed,Selects AI-specific battle setup when active participant +0xC8 is non-null.
+overlay_0007,0x0226B5C4,0x00052184,CopyShotConditionToThrowController,confirmed,Copies main shot-controller +0x6198 into throw-controller +0x1DF on the ordinary path.
+overlay_0007,0x0226D488,0x00054048,CopyAlternateShotConditionToThrowController,confirmed,Copies the same shot-condition category into throw-controller +0x1DF on the alternate or scripted path.
 overlay_0007,0x0226E430,0x00054FF0,RunAIShotPlanner,confirmed,Returns for null +0xC8 and consumes the AI controller when non-null.

@@ -31,21 +31,21 @@
       "callsite": 35849940,
       "component": "overlay_0007",
       "role": "existing game weighted-table selection",
-      "target": 33692176
+      "target": 33692208
     }
   ],
   "domain": "battle-history-and-rng",
   "exact_regions": [
     {
       "component": "arm9",
-      "end": 33692344,
+      "end": 33692408,
       "role": "weighted index RNG",
       "sha256": "44562a42147ade041be4cc565a65e8cff38a6b21b6f9cb60001a6ea370a9a009",
-      "start": 33692176
+      "start": 33692208
     },
     {
       "component": "arm9",
-      "end": 33692176,
+      "end": 33692208,
       "role": "timer seed wrapper and direct initializer",
       "sha256": "f2594a13d55f98488687ee8501422c0a4c5a7cd085abe424b867c22672f6ffb1",
       "start": 33692124
@@ -66,10 +66,10 @@
     },
     {
       "component": "overlay_0007",
-      "end": 35906400,
+      "end": 35906392,
       "role": "constructor fallback precedence",
       "sha256": "b1fb46f46149a2cca760289f5d8cdb1d653010736dc2d861ee56e5ab68cfd56e",
-      "start": 35906368
+      "start": 35906360
     },
     {
       "component": "overlay_0007",
@@ -168,7 +168,7 @@
       "component_offset": 137776,
       "confidence": "confirmed",
       "evidence": "Exact weighted-index implementation; function region SHA-256 44562a42147ade041be4cc565a65e8cff38a6b21b6f9cb60001a6ea370a9a009.",
-      "runtime_address": 33692176
+      "runtime_address": 33692208
     },
     "output_range": "-1 when total weight is zero; otherwise 0 through count-1 with half-open cumulative buckets",
     "output_width_bits": 32,

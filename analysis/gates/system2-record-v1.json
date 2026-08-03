@@ -1,0 +1,219 @@
+{
+  "calculation_trace": {
+    "format_version": 1,
+    "required_fields": [
+      "format_version",
+      "card_id",
+      "legacy_fallback",
+      "compressed_core_g",
+      "flat_bonus_g",
+      "percentage_bonus_g",
+      "attribute_modifier_g",
+      "conditional_modifier_g",
+      "drawback_modifier_g",
+      "effective_gate_bonus_g",
+      "provisional_battle_type",
+      "final_battle_type",
+      "validation_status"
+    ]
+  },
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "struct format <4s6H4I has size 32.",
+      "name": "header_is_exactly_32_bytes"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "struct format <BBHhh6b6B4Bhh4Bh2BhH has size 40.",
+      "name": "record_is_exactly_40_bytes"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "32 + 103 * 40 = 4152.",
+      "name": "full_trailer_is_4152_bytes"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Payload CRC covers all 4120 record bytes; header CRC covers all 32 header bytes with header_crc32 encoded as zero.",
+      "name": "crc_coverage_is_unambiguous"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "No arena ID, landing zone, shot path, or board-position field exists in the header or record.",
+      "name": "version_one_excludes_arena_dependent_fields"
+    }
+  ],
+  "domain": "system2-record-v1",
+  "enumeration_policy": {
+    "archetype_and_effect_ids": "0..254; 255 reserved",
+    "card_id": "1..103 exactly once and sorted",
+    "preferred_type": "0..5 or 255 for none",
+    "record_flags": "zero in version 1",
+    "reserved_fields": "zero",
+    "target_mode": "0..6",
+    "timing_phase": "0..11"
+  },
+  "fields": [
+    {
+      "access": "Little-endian header at trailer offset 0; readiness width records the 32-bit magic and CRC geometry rather than total structure size.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Approved Milestone 6B format fixes magic G2DT, version 1, 32-byte header, 40-byte records, first ID 1, count 103, CRC fields, and zero reserved values.",
+      "initialization": "Built deterministically by build_trailer.",
+      "lifetime": "Raw NitroFS trailer and host tooling.",
+      "mutations": [
+        "None after serialization."
+      ],
+      "name": "g2dt_header_geometry",
+      "owner_structure": "32-byte G2DT trailer header",
+      "player_ai_behavior": "Shared data format; not participant-specific.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Regenerated from authored records.",
+      "scripted_behavior": "Malformed or unsupported header must fall back to legacy Gate behavior.",
+      "signed": false,
+      "width_bits": 32
+    },
+    {
+      "access": "Record offset = 32 + (card_id - 1) * 40; readiness width records the 32-bit offset arithmetic rather than total record size.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The full roster requires 103 * 40 = 4120 payload bytes; with the 32-byte header the exact trailer size is 4152 bytes.",
+      "initialization": "Authoring serializer emits card IDs 1 through 103 in order.",
+      "lifetime": "Raw NitroFS trailer; one selected record may be cached for a battle.",
+      "mutations": [
+        "Host rebuild replaces the complete trailer atomically."
+      ],
+      "name": "gate_record_geometry",
+      "owner_structure": "103 fixed GateRecordV1 entries",
+      "player_ai_behavior": "Same record geometry for human and AI battles.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Cache reload on Gate identity change or invalidation.",
+      "scripted_behavior": "Scripted Gate IDs use the same validated lookup; invalid IDs fall back to legacy behavior.",
+      "signed": false,
+      "width_bits": 32
+    },
+    {
+      "access": "JSON Schema validation before binary serialization; readiness width is an unsigned one-byte pass/fail contract marker.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Schema bounds every scalar and six-entry vector and reserves ID 255 and nonzero reserved fields.",
+      "initialization": "Version 1 schema with all fields required and no additional properties.",
+      "lifetime": "Repository authoring interface.",
+      "mutations": [
+        "Schema changes require a new format version."
+      ],
+      "name": "authoring_schema",
+      "owner_structure": "schemas/gate-system2-v1.schema.json",
+      "player_ai_behavior": "Not participant-specific.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Not applicable.",
+      "scripted_behavior": "Arena-dependent fields are absent from version 1.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "serialize_header, parse_header, serialize_record, parse_record, build_trailer, and parse_trailer; readiness width is an unsigned one-byte success marker.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Round-trip tests require exact 32-byte and 40-byte geometry, sorted IDs 1-103, and a 4152-byte output.",
+      "initialization": "Pure deterministic host functions.",
+      "lifetime": "Build and validation tooling.",
+      "mutations": [
+        "None outside returned byte strings."
+      ],
+      "name": "serializer",
+      "owner_structure": "bakugan_ds.gates.record",
+      "player_ai_behavior": "Not participant-specific.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Not applicable.",
+      "scripted_behavior": "Exactly the same bytes are generated for identical records.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "Called by every parser and serializer; readiness width is an unsigned one-byte validation result marker.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Unit tests cover geometry, bounds, duplicate IDs, unsupported target mode, nonzero reserved data, and payload corruption.",
+      "initialization": "Fail-closed validation.",
+      "lifetime": "Host and future loader contract.",
+      "mutations": [
+        "None."
+      ],
+      "name": "validator",
+      "owner_structure": "G2DTHeader.validate and GateRecordV1.validate",
+      "player_ai_behavior": "Same failure policy for all battles.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "Not applicable.",
+      "scripted_behavior": "Unsupported version, flags, IDs, target modes, phases, reserved values, ordering, sizes, or CRCs are rejected.",
+      "signed": false,
+      "width_bits": 8
+    },
+    {
+      "access": "One object per Gate calculation with ordered integer components; readiness width is the unsigned trace format version byte.",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "The trace format uses integer source components and final results so runtime and host calculations can be compared without floating-point ambiguity.",
+      "initialization": "Trace version, card ID, legacy fallback flag, core G snapshot, flat, percentage, attribute, condition, drawback, final bonus, final type, and validation status.",
+      "lifetime": "Local debug report.",
+      "mutations": [
+        "Append-only diagnostic output; never authoritative gameplay state."
+      ],
+      "name": "calculation_trace_format",
+      "owner_structure": "Deterministic JSON calculation trace version 1",
+      "player_ai_behavior": "Identical fields for human and AI calculations.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "New trace per calculation.",
+      "scripted_behavior": "Records final post-override type and whether legacy fallback was used.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "first_card_id": 1,
+    "flags": 0,
+    "header_crc32": "CRC-32/ISO-HDLC over the complete 32-byte header with this field zeroed",
+    "header_size": 32,
+    "magic": "G2DT",
+    "payload_crc32": "CRC-32/ISO-HDLC over all 4120 record bytes",
+    "payload_size": 4120,
+    "record_count": 103,
+    "record_size": 40,
+    "reserved": 0,
+    "version": 1
+  },
+  "profile_id": "b6re_rev0",
+  "record_fields": [
+    ["card_id", "u8", 0],
+    ["archetype", "u8", 1],
+    ["flags", "u16", 2],
+    ["flat_bonus_g", "s16", 4],
+    ["percent_q8_8", "s16", 6],
+    ["attribute_modifiers", "s8[6]", 8],
+    ["battle_weights", "u8[6]", 14],
+    ["preferred_type", "u8", 20],
+    ["condition_id", "u8", 21],
+    ["effect_id", "u8", 22],
+    ["drawback_id", "u8", 23],
+    ["effect_value", "s16", 24],
+    ["drawback_value", "s16", 26],
+    ["activation_limit", "u8", 28],
+    ["fatigue_rate", "u8", 29],
+    ["target_mode", "u8", 30],
+    ["timing_phase", "u8", 31],
+    ["condition_value", "s16", 32],
+    ["secondary_effect_id", "u8", 34],
+    ["secondary_condition_id", "u8", 35],
+    ["secondary_value", "s16", 36],
+    ["reserved", "u16", 38]
+  ],
+  "unresolved": []
+}

@@ -229,10 +229,15 @@ def reference_loader_evidence() -> LoaderEvidence:
         stack_read_size=FS_FILE_SIZE,
         cache_layout=CacheLayout(),
         initialization=(
-            "FS_InitFile and the four NitroFS operations are confirmed; runtime "
-            "cache initialization remains unresolved."
+            "Controlled runtime validation loaded Gate ID 21 from the appended "
+            "G2DT trailer into the 64-byte cache at 0x0228BE14 with version 1, "
+            "valid flag 1, and selected arena entry 0."
         ),
-        invalidation="Runtime cache invalidation remains unresolved.",
+        invalidation=(
+            "The identical cache remained valid at battle-final-state entry "
+            "0x0228C020 and all 64 bytes were zero at 0x0228C068 before normal "
+            "post-battle execution resumed."
+        ),
         fallback=(
             "Any file-operation failure or invalid G2DT header, geometry, ID, or "
             "checksum leaves the cache invalid and preserves legacy Gate behavior."

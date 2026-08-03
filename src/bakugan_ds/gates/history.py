@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.discovery import Presence
-from bakugan_ds.gates.model import AddressRef, Confidence, SUPPORTED_PROFILE_ID
+from bakugan_ds.gates.model import SUPPORTED_PROFILE_ID, AddressRef, Confidence
 
 TYPE_COUNT = 6
 WEIGHT_WIDTH_BITS = 8

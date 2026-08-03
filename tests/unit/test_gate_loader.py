@@ -5,8 +5,17 @@ import pytest
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.loader import (
     ARM9_DECODED_SHA256,
+    CACHE_ADDRESS,
     FS_FILE_SIZE,
+    GATE_CLEAR_HOOK_ADDRESS,
+    GATE_CLEAR_RETURN_ADDRESS,
+    GATE_LOADER_HOOK_ADDRESS,
+    GATE_LOADER_RETURN_ADDRESS,
+    INITIALIZED_CACHE_SHA256,
+    INSTRUMENTED_ROM_SHA256,
+    INVALIDATED_CACHE_SHA256,
     ROM_ARCHIVE_ADDRESS,
+    SYSTEM2_RUNTIME_MODULE_SHA256,
     CacheLayout,
     append_validated_trailer,
     build_cache,
@@ -138,12 +147,14 @@ def test_cache_rejects_invalid_arena_entry_and_mismatched_id() -> None:
 def test_cache_layout_is_contiguous_and_below_arena() -> None:
     layout = CacheLayout()
     layout.validate()
+    assert layout.module_start == 0x0228BC20
     assert layout.module_start + layout.module_size == layout.cache_start
+    assert layout.cache_start == CACHE_ADDRESS
     assert layout.cache_start + layout.cache_size == layout.arena_low
     assert layout.arena_low < layout.arena_high
 
 
-def test_reference_loader_evidence_matches_confirmed_nitrofs_trace() -> None:
+def test_reference_loader_evidence_matches_confirmed_runtime_trace() -> None:
     evidence = reference_loader_evidence()
     evidence.validate()
     assert ARM9_DECODED_SHA256 == (
@@ -161,3 +172,27 @@ def test_reference_loader_evidence_matches_confirmed_nitrofs_trace() -> None:
     assert evidence.seek_op.confidence == "confirmed"
     assert evidence.close_op.confidence == "confirmed"
     assert "88040" in evidence.read_op.evidence
+    assert "0x0223D1D0" in evidence.initialization
+    assert "Gate ID 21" in evidence.initialization
+    assert "0x022424B8" in evidence.invalidation
+    assert "all 64 cache bytes zero" in evidence.invalidation
+
+
+def test_runtime_cache_lifecycle_constants_are_exact() -> None:
+    assert CACHE_ADDRESS == 0x02293C20
+    assert GATE_LOADER_HOOK_ADDRESS == 0x0223D1CC
+    assert GATE_LOADER_RETURN_ADDRESS == 0x0223D1D0
+    assert GATE_CLEAR_HOOK_ADDRESS == 0x022424B4
+    assert GATE_CLEAR_RETURN_ADDRESS == 0x022424B8
+    assert INSTRUMENTED_ROM_SHA256 == (
+        "8177aff2ca1c6cfe401c4401ccfca954e17d1d546612628d0bc6e032b2d15388"
+    )
+    assert SYSTEM2_RUNTIME_MODULE_SHA256 == (
+        "d18dd0f7eba1279295e2314fa2d125030f0d382e577fad2fd9d712a623202ca6"
+    )
+    assert INITIALIZED_CACHE_SHA256 == (
+        "8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d"
+    )
+    assert INVALIDATED_CACHE_SHA256 == (
+        "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+    )

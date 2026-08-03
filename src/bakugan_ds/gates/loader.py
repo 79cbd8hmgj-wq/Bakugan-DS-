@@ -40,6 +40,23 @@ FS_OPEN_FILE_FAST_ADDRESS = 0x0200AA24
 FS_CLOSE_FILE_ADDRESS = 0x0200AADC
 FS_READ_FILE_ADDRESS = 0x0200AC30
 FS_SEEK_FILE_ADDRESS = 0x0200AC40
+CACHE_ADDRESS = 0x02293C20
+GATE_LOADER_HOOK_ADDRESS = 0x0223D1CC
+GATE_LOADER_RETURN_ADDRESS = 0x0223D1D0
+GATE_CLEAR_HOOK_ADDRESS = 0x022424B4
+GATE_CLEAR_RETURN_ADDRESS = 0x022424B8
+INSTRUMENTED_ROM_SHA256 = (
+    "8177aff2ca1c6cfe401c4401ccfca954e17d1d546612628d0bc6e032b2d15388"
+)
+SYSTEM2_RUNTIME_MODULE_SHA256 = (
+    "d18dd0f7eba1279295e2314fa2d125030f0d382e577fad2fd9d712a623202ca6"
+)
+INITIALIZED_CACHE_SHA256 = (
+    "8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d"
+)
+INVALIDATED_CACHE_SHA256 = (
+    "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+)
 
 
 @dataclass(frozen=True)
@@ -49,7 +66,7 @@ class CacheLayout:
     preserved_bss_size: int = PRESERVED_BSS_SIZE
     module_start: int = 0x0228BC20
     module_size: int = SYSTEM2_MODULE_SIZE
-    cache_start: int = 0x02293C20
+    cache_start: int = CACHE_ADDRESS
     cache_size: int = CACHE_SIZE
     arena_low: int = 0x02293C60
     arena_high: int = 0x023E0000
@@ -229,14 +246,13 @@ def reference_loader_evidence() -> LoaderEvidence:
         stack_read_size=FS_FILE_SIZE,
         cache_layout=CacheLayout(),
         initialization=(
-            "Controlled runtime validation loaded Gate ID 21 from the appended "
-            "G2DT trailer into the 64-byte cache at 0x0228BE14 with version 1, "
+            "A single instrumented-ROM run returned at 0x0223D1D0 after loading "
+            "Gate ID 21 into the 64-byte cache at 0x02293C20 with version 1, "
             "valid flag 1, and selected arena entry 0."
         ),
         invalidation=(
-            "The identical cache remained valid at battle-final-state entry "
-            "0x0228C020 and all 64 bytes were zero at 0x0228C068 before normal "
-            "post-battle execution resumed."
+            "The same run returned at 0x022424B8 after battle completion with "
+            "all 64 cache bytes zero and the valid flag cleared."
         ),
         fallback=(
             "Any file-operation failure or invalid G2DT header, geometry, ID, or "

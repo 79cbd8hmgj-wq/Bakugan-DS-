@@ -2,7 +2,8 @@
   "bounded_conclusions": [
     "Overlay 7 constructs a dedicated 496-byte throw controller and publishes it through the battle session before shot and landing evaluation.",
     "The controller is evaluated by a primary routine at 0x02259AF0 and, only when that routine returns false, an alternate routine at 0x0225A278.",
-    "Controller byte +0x1D2 is initialized to zero, receives executable values 0 through 4, is read immediately before arena attachment, and produced two distinct runtime values at valid attachment boundaries. Its exact outcome labels remain unresolved.",
+    "Controller byte +0x1D2 is initialized to zero, receives executable values 0 through 4, is read immediately before arena attachment, and produced runtime values 1, 2, and 3 at valid execution boundaries.",
+    "A controlled natural throw confirmed +0x1D2 value 1 as the player-facing GATE CARD WON! result.",
     "Controller byte +0x1DF selects three alternate attachment classes through value 5, value 6, or all other values, but the writer and player-facing meaning of this byte are not yet mapped.",
     "Controller byte +0x1E8 stores the one-based descriptor index returned by 0x02262768 after attachment and is therefore separated from landing result or shot-condition semantics."
   ],
@@ -91,7 +92,10 @@
       "access": "throw controller +0x1D2",
       "candidate_name": "landing_or_resolution_code",
       "confidence": "probable",
-      "evidence": "Constructor 0x02252730 initializes the byte to 0. The primary evaluator writes immediate values 1, 2, 3, and 4 and also copies a branch result into it; the alternate evaluator writes values 1, 2, and 3. The byte is read before arena attachment. Runtime attachment-boundary captures observed values 3 and 2 in valid throw-controller objects.",
+      "confirmed_value_labels": {
+        "1": "gate_card_won"
+      },
+      "evidence": "Constructor 0x02252730 initializes the byte to 0. The primary evaluator writes immediate values 1, 2, 3, and 4 and also copies a branch result into it; the alternate evaluator writes values 1, 2, and 3. The byte is read before arena attachment. A controlled natural throw reached 0x02257AC8 with the prior byte equal to 0, stored value 1, resumed normally, and displayed GATE CARD WON!.",
       "executable_values": [
         0,
         1,
@@ -101,6 +105,7 @@
       ],
       "owner_structure": "496-byte throw controller",
       "runtime_observed_values": [
+        1,
         2,
         3
       ],
@@ -123,7 +128,7 @@
       "access": "throw controller +0x1D3",
       "candidate_name": "constructor_actor_or_shot_participant_selector",
       "confidence": "candidate",
-      "evidence": "Constructor 0x02252730 stores its fourth argument at +0x1D3. Both evaluators pass this byte to arena attachment. Runtime captures observed value 1, but the canonical participant mapping is not yet proven.",
+      "evidence": "Constructor 0x02252730 stores its fourth argument at +0x1D3. Both evaluators pass this byte to arena attachment. Runtime captures observed values 1 and 2, but the canonical participant mapping is not yet proven.",
       "owner_structure": "496-byte throw controller",
       "width_bits": 8
     },
@@ -202,6 +207,13 @@
       "runtime_end": "0x0226BDC4",
       "runtime_start": "0x0226BD8C",
       "sha256": "027351e699e3002c7836d4551141488a8d6c67255bc1d3635c387465b935582a"
+    },
+    {
+      "length": 36,
+      "purpose": "natural Gate Card win result assignment",
+      "runtime_end": "0x02257ADC",
+      "runtime_start": "0x02257AB8",
+      "sha256": "ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14"
     }
   ],
   "profile_id": "b6re_rev0",
@@ -241,10 +253,17 @@
       "event": "alternate attachment boundary",
       "instruction": "0x0225A830",
       "selected_evidence": "A later valid stop observed controller +0x1D2 as 2 and participant-association bytes +0x1D3/+0x1D4/+0x1D5 as 1/1/1 before attachment."
+    },
+    {
+      "capture_sha256": "3aa768b26565f0b60d63056153c56ba11b61cdc3c3317813e6b6f4017969be37",
+      "controller": "0x022F02A0",
+      "event": "natural Gate Card win result assignment",
+      "instruction": "0x02257AC8",
+      "selected_evidence": "Controller +0x1D2 was zero immediately before value 1 was stored. Execution resumed normally and displayed GATE CARD WON!. Raw debugger packets and the screenshot were not committed."
     }
   ],
   "unresolved": [
-    "Executable names for +0x1D2 values 0 through 4 and which values satisfy the required landing_result domain.",
+    "Executable names for +0x1D2 values 0, 2, 3, and 4.",
     "Whether +0x1DF is the authoritative shot_condition or only a lower-level alternate attachment subtype.",
     "The writer, initialization, full value domain, lifecycle, and scripted behavior of +0x1DF.",
     "A controlled reverse-participant capture proving exact labels for +0x1D3, +0x1D4, and +0x1D5.",

@@ -2,8 +2,7 @@
 
 ## Current summary
 
-- Tasks 1–6: complete
-- Task 7: in progress
+- Tasks 1–7: complete
 - Tasks 8–9: pending
 - Tasks 10–12: complete
 - Task 13: pending
@@ -153,61 +152,71 @@ No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committe
 
 ## Task 7 — landing and shot context
 
-**Status:** in progress.
-
-### Checkpoint 7A — static candidate inventory
-
 **Status:** complete.
 
-The bounded static and selected-runtime inventory is committed at:
+Confirmed runtime state:
 
+- throw-controller `+0x1D2` is the authoritative unsigned landing-result code;
+- selected Bakugan slot is `+0x1D3`;
+- active participant is `+0x1D4`;
+- teammate participant is `+0x1D5`;
+- main shot-controller `+0x6198` is copied to throw-controller `+0x1DF` as the authoritative shot-condition category;
+- `+0x1E8` is the one-based attachment-descriptor index and is not a landing result or arena ID;
+- dispatcher `0x02255640` provides the final common read-only evaluation boundary after the primary and optional alternate evaluators complete.
+
+Two distinct natural standing outcomes were captured:
+
+```text
+result 3
+active participant 0
+selected slot 1
+shot condition 0
+→ contested Gate battle
+```
+
+```text
+result 2
+active participant 1
+selected slot 1
+shot condition 0
+→ unopposed Stand without battle
+```
+
+An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receiving unsupported universal labels.
+
+Human and AI shot-condition sources converge on the same category:
+
+- human participant shot-setup byte `+0x10` at `0x02260A64`;
+- AI-controller byte `+0x7E` at `0x02260B04`;
+- shared shot-controller storage `+0x6198` through constructor `0x0226A988`;
+- ordinary copy to throw `+0x1DF` at `0x0226B5C4`;
+- alternate or scripted copy at `0x0226D488`.
+
+A clean battery-save tutorial launch used the same ordinary shot-condition copy and primary/alternate evaluator pipeline. The guided throw retained result `0`, produced no arena attachment, displayed the retry path, and reset the throw fields for another attempt. This confirms scripted behavior without falsely naming result code `0`.
+
+Arena ID remains the sole approved deferred field. Transient projected grid bytes and the attachment index are not promoted to arena identity.
+
+Primary normalized implementation and evidence:
+
+- `src/bakugan_ds/gates/landing.py`
+- `analysis/gates/landing-and-shot-context.json`
 - `analysis/gates/landing-shot-candidates.json`
-- evidence commit `ec827fdfd05146c623366a5234615bfa0075b177`
+- `analysis/symbols/gate_system2_context.csv`
+- `tests/unit/test_gate_landing.py`
+- `tests/test_gate_landing_artifact.py`
+- `tests/integration/test_gate_landing_reference.py`
 
-Confirmed or bounded at this checkpoint:
-
-- a dedicated 496-byte throw controller is constructed at `0x02252730` and published through the battle session;
-- dispatcher `0x02255640` tries primary evaluator `0x02259AF0` before alternate evaluator `0x0225A278`;
-- controller `+0x1D2` is the strongest landing/result-code candidate, with executable writes spanning values `0..4` and valid runtime attachment-boundary observations of `3` and `2`;
-- controller `+0x1DF` selects alternate attachment classes for value `5`, value `6`, and other values, but its writer and gameplay meaning remain unresolved;
-- controller `+0x1E8` is the one-based arena-descriptor attachment result and is explicitly rejected as landing-result or shot-condition state;
-- temporary projected grid bytes are not sufficient to promote an arena ID.
-
-Seven exact overlay-7 regions and all selected direct-call inventories were locally validated against decoded overlay SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1`.
-
-No value in `+0x1D2` or `+0x1DF` was assigned a player-facing semantic name at this checkpoint.
-
-### Checkpoint 7B — natural Gate Card win correlation
-
-**Status:** complete.
-
-Normalized evidence:
-
-- `analysis/gates/landing-runtime-gate-card-won.json`
-- evidence commit `ed66b094a6296b18b22e2f588a1b5391bcba3203`
-
-A controlled natural player throw reached `0x02257AC8` with:
+GitHub Python CI run `30859631532` passed at commit `d677edad0f8d16f3b8ca7f32a1eda401af6d8006` with:
 
 ```text
-controller:             0x022F02A0
-controller +0x1D2:      0 before the store
-r0:                     1
-selected-slot candidate: 2
-active participant:      0
-controller +0x1DF:       0
+347 passed
+23 expected environment-gated skips
+0 failed
 ```
 
-The exact instruction stored value `1` to controller `+0x1D2`. Breakpoint instrumentation was removed, execution resumed normally, and the game displayed:
+Compilation, changed-file Ruff, strict mypy, and whitespace checks passed. A fresh local exact-overlay verification against SHA-256 `82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1` confirmed all 12 committed instruction-region hashes and all 16 inventoried direct calls across the throw constructor, primary evaluator, alternate evaluator, and shared attachment helper.
 
-```text
-GATE CARD WON!
-```
-
-Therefore, `+0x1D2 == 1` is confirmed as the natural **Gate Card won** result for this branch. The guarded instruction region is `0x02257AB8–0x02257ADC`, SHA-256 `ae7b7e2219b15e129d0de679815863e847c95a2d38173741b4e8d742f9b5dd14`.
-
-This checkpoint does not name values `0`, `2`, `3`, or `4`; does not promote `+0x1DF`; and does not establish a boundary shared by every primary, alternate, and scripted path. Arena ID remains deferred.
-
-**Next checkpoint:** 7C — capture one distinct natural outcome and correlate its `+0x1D2` value. Stop after that reverse control; scripted behavior remains separate.
+No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
 
 ## Tasks 8–9
 
@@ -259,4 +268,4 @@ Primary files:
 
 **Status:** pending.
 
-Task 13 begins only after Tasks 7–9 are complete and the generated readiness report contains no failures with `arena_id` as the sole allowed deferred field.
+Task 13 begins only after Tasks 8–9 are complete and the generated readiness report contains no failures with `arena_id` as the sole allowed deferred field.

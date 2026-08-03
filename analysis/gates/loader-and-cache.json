@@ -14,7 +14,7 @@
       "start_offset": 56
     },
     "module_size": 32768,
-    "module_start": 36207648,
+    "module_start": 36224032,
     "record_end_offset": 40,
     "reserved_end_offset": 64,
     "reserved_start_offset": 60,
@@ -55,12 +55,22 @@
       "evidence": "The BLZ-decoded ARM9 and a clean-boot ARM9 GDB trace agree on FS_InitFile, FS_OpenFileFast, FS_ReadFile, FS_SeekFile, and FS_CloseFile calling conventions and return behavior.",
       "name": "runtime_nitrofs_interface_is_confirmed",
       "status": "confirmed"
+    },
+    {
+      "evidence": "A controlled tutorial battle loaded Gate ID 21 from the appended raw G2DT trailer into the 64-byte cache with version 1, valid flag 1, and arena entry 0 at breakpoint 0x0228BE14.",
+      "name": "runtime_cache_initialization_is_confirmed",
+      "status": "confirmed"
+    },
+    {
+      "evidence": "The same cache bytes remained intact until battle-final-state entry 0x0228C020, then all 64 bytes were zero at 0x0228C068 and execution resumed into responsive post-battle dialogue.",
+      "name": "runtime_cache_invalidation_is_confirmed",
+      "status": "confirmed"
     }
   ],
   "domain": "loader-and-cache",
   "format_version": 1,
   "overlay": {
-    "arena_low_original": 36207648,
+    "arena_low_original": 36224032,
     "arena_low_system2": 36256864,
     "cache_bss_size": 64,
     "expanded_payload_size": 501728,
@@ -71,6 +81,46 @@
     "overlay_base": 35755072
   },
   "profile_id": "b6re_rev0",
+  "runtime_cache_lifecycle": {
+    "initialization": {
+      "breakpoint": 36224532,
+      "cache_sha256": "8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d",
+      "format_version": 1,
+      "record_matches_raw_trailer": true,
+      "record_sha256": "53c0e7267b47cbc24937e7759ffa501195ce03a9a0adba320ecdf5d914720188",
+      "selected_arena_entry": 0,
+      "selected_card_id": 21,
+      "valid_flag": 1
+    },
+    "instrumentation": {
+      "cache_address": 36256800,
+      "init_hook_address": 35906356,
+      "init_hook_bytes_sha256": "935cc65b810415a34ddb3ef87d35a7c3682073f6da9d3e44cd53f46a361246fb",
+      "init_wrapper_address": 36224032,
+      "init_wrapper_sha256": "d7dca818a94a1bab9876035cfcf882c291a278ee9d26f6fd0621c846a39a1835",
+      "invalidation_hook_address": 35909340,
+      "invalidation_hook_bytes_sha256": "81fc28a82ae94b9558ef8ada4dad898b90f1c110db4cafda52b077d82177155b",
+      "invalidation_wrapper_address": 36225056,
+      "invalidation_wrapper_sha256": "a1d7f5763985ccab89b148466c8aba6f19d15984abd4e3b93752877086a4a3b4",
+      "module_sha256": "fe05eeed9afd5e3285ca4f3d6d31645ca53979e62da98260229ccb1d20c71f76"
+    },
+    "instrumented_rom_sha256": "6e04b2ce3d31b9577cbee7d48084f6d1127467fb0b7c9b3e650038d539d5e5cb",
+    "invalidation": {
+      "entry_breakpoint": 36225056,
+      "entry_cache_sha256": "8ecef0a63d0ba161fe000ab688d847fe774bbbd4a5da412d281eb68d9d1b657d",
+      "entry_valid_flag": 1,
+      "execution_resumed": true,
+      "post_clear_all_zero": true,
+      "post_clear_breakpoint": 36225128,
+      "post_clear_cache_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+      "post_clear_valid_flag": 0
+    },
+    "method": "Exact rebuilt ROM, one DeSmuME ARM9 GDB connection, execution breakpoints at the loader close boundary and before/after the battle-final-state clear, with no register or gameplay mutation.",
+    "raw_debugger_log_committed": false,
+    "save_or_state_committed": false,
+    "screenshot_committed": false,
+    "status": "confirmed"
+  },
   "runtime_io": {
     "arm9": {
       "decoded_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e",
@@ -163,9 +213,6 @@
     },
     "status": "confirmed"
   },
-  "status": "host_loader_and_layout_complete_runtime_io_confirmed_cache_lifecycle_pending",
-  "unresolved": [
-    "Runtime cache initialization on overlay load or battle construction",
-    "Runtime cache invalidation at battle completion"
-  ]
+  "status": "complete",
+  "unresolved": []
 }

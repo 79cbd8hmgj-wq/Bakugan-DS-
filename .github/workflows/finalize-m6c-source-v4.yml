@@ -1,0 +1,180 @@
+name: Finalize Milestone 6C source v4
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-m6c-source-v4-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.head_ref == 'milestone-6c-comeback-gate-implementation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Format, type-check, and verify complete source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/apply-m6c-crc-remediation.yml
+          rm -f .github/workflows/apply-m6c-finalize.yml
+          rm -f .github/workflows/finalize-m6c-source.yml
+          rm -f .github/workflows/finalize-m6c-source-v2.yml
+          rm -f .github/workflows/finalize-m6c-source-v3.yml
+          rm -f .github/workflows/finalize-m6c-source-v4.yml
+          rm -rf .sync
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT origin/main...HEAD -- '*.py')
+          if ((${#changed_python[@]})); then
+            python -m ruff check --fix --unsafe-fixes "${changed_python[@]}" || true
+            python -m ruff format "${changed_python[@]}"
+            python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/bakugan_ds/gates/install.py")
+          text = path.read_text()
+          old = "            handle = tempfile.NamedTemporaryFile(\n"
+          new = "            handle = tempfile.NamedTemporaryFile(  # noqa: SIM115\n"
+          if text.count(old) != 1:
+              raise SystemExit("unexpected install temporary-file layout")
+          path.write_text(text.replace(old, new, 1))
+
+          path = Path("src/bakugan_ds/workspace/overrides.py")
+          text = path.read_text()
+          old = (
+              "    handle = tempfile.NamedTemporaryFile("
+              "prefix=f\".{path.name}.tmp-\", dir=path.parent, delete=False)\n"
+          )
+          new = (
+              "    handle = tempfile.NamedTemporaryFile(  # noqa: SIM115\n"
+              "        prefix=f\".{path.name}.tmp-\", dir=path.parent, delete=False\n"
+              "    )\n"
+          )
+          if text.count(old) != 1:
+              raise SystemExit("unexpected override temporary-file layout")
+          text = text.replace(old, new, 1)
+          text = text.replace(
+              "        for override in self.raw_nitrofs:\n"
+              "            override.validate()\n"
+              "            if override.file_id in raw_ids:\n"
+              "                raise WorkspaceError(\n"
+              "                    f\"duplicate raw override file ID: {override.file_id}\"\n"
+              "                )\n"
+              "            if override.path in raw_paths:\n"
+              "                raise WorkspaceError(f\"duplicate raw override path: {override.path}\")\n"
+              "            raw_ids.add(override.file_id)\n"
+              "            raw_paths.add(override.path)\n",
+              "        for raw_override in self.raw_nitrofs:\n"
+              "            raw_override.validate()\n"
+              "            if raw_override.file_id in raw_ids:\n"
+              "                raise WorkspaceError(\n"
+              "                    f\"duplicate raw override file ID: {raw_override.file_id}\"\n"
+              "                )\n"
+              "            if raw_override.path in raw_paths:\n"
+              "                raise WorkspaceError(\n"
+              "                    f\"duplicate raw override path: {raw_override.path}\"\n"
+              "                )\n"
+              "            raw_ids.add(raw_override.file_id)\n"
+              "            raw_paths.add(raw_override.path)\n",
+              1,
+          )
+          text = text.replace(
+              "        for override in self.overlays:\n"
+              "            override.validate()\n"
+              "            if override.overlay_id in overlay_ids:\n"
+              "                raise WorkspaceError(\n"
+              "                    f\"duplicate overlay override ID: {override.overlay_id}\"\n"
+              "                )\n"
+              "            overlay_ids.add(override.overlay_id)\n",
+              "        for overlay_override in self.overlays:\n"
+              "            overlay_override.validate()\n"
+              "            if overlay_override.overlay_id in overlay_ids:\n"
+              "                raise WorkspaceError(\n"
+              "                    f\"duplicate overlay override ID: {overlay_override.overlay_id}\"\n"
+              "                )\n"
+              "            overlay_ids.add(overlay_override.overlay_id)\n",
+              1,
+          )
+          path.write_text(text)
+
+          path = Path("src/bakugan_ds/gates/system2.py")
+          text = path.read_text()
+          text = text.replace(
+              "from enum import IntEnum, StrEnum\n",
+              "from enum import IntEnum, StrEnum\nfrom typing import TypeGuard\n",
+              1,
+          )
+          text = text.replace(
+              "def _is_int(value: object) -> bool:\n",
+              "def _is_int(value: object) -> TypeGuard[int]:\n",
+              1,
+          )
+          path.write_text(text)
+
+          path = Path("src/bakugan_ds/gates/runtime_context.py")
+          text = path.read_text()
+          old = (
+              "        pairs = {\n"
+              "            frozenset((participant.index, participant.teammate_index))\n"
+              "            for participant in self.participants\n"
+              "        }\n"
+              "        return tuple(sorted(pairs, key=lambda pair: tuple(sorted(pair))))\n"
+          )
+          new = (
+              "        pairs: set[frozenset[int]] = set()\n"
+              "        for participant in self.participants:\n"
+              "            teammate_index = participant.teammate_index\n"
+              "            if teammate_index is None:\n"
+              "                raise WorkspaceError(\"team participant requires a teammate\")\n"
+              "            pairs.add(frozenset((participant.index, teammate_index)))\n"
+              "        return tuple(sorted(pairs, key=lambda pair: tuple(sorted(pair))))\n"
+          )
+          if text.count(old) != 1:
+              raise SystemExit("unexpected team-pair layout")
+          path.write_text(text.replace(old, new, 1))
+
+          path = Path("tests/test_gate_milestone_6c_artifacts.py")
+          text = path.read_text()
+          for value in ("0x0228BC20–0x02293C20", "0x02293C20–0x02293C60"):
+              old = f'        "{value}",\n'
+              new = f'        "{value}",  # noqa: RUF001\n'
+              if text.count(old) != 1:
+                  raise SystemExit(f"unexpected exact-range assertion: {value}")
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+            python -m ruff format "${changed_python[@]}"
+            python -m ruff check "${changed_python[@]}"
+          fi
+          mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)
+          if ((${#changed_source[@]})); then
+            python -m mypy "${changed_source[@]}"
+          fi
+          python -m compileall -q src tests tools
+          python -m pytest -q
+          git diff --check
+
+      - name: Commit verified implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: finalize runtime CRC validation"
+          git push origin HEAD:${{ github.head_ref }}

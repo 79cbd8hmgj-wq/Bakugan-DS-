@@ -104,7 +104,7 @@
         "code": 119,
         "file_id": 6004,
         "path": "Game/Card/Graphic/Large/card_l_119.nce_ncg1D.bin",
-        "sha256": "d071333b5ce22c6fcf1b2db99a23437d7ee0a6cdcf33b6e4083dbaeb440fb595"
+        "sha256": "fe7b8e0fb89808962b1daa06c8fc6a2d876cb7dfe676709ea46ba673ad14b62d"
       },
       "label": "Juggernoid",
       "raw_values": [8, 16, 7, 10, 7, 4]
@@ -125,7 +125,7 @@
         "code": 120,
         "file_id": 6007,
         "path": "Game/Card/Graphic/Large/card_l_120.nce_ncg1D.bin",
-        "sha256": "475dbb1c0d98641d78efd15232111e572b5ce43bc619de16206d5366a652818e"
+        "sha256": "dea7ab356fbfbe876606c9bccb2ce13e77afcebe676e2367179e5ae457daabc6"
       },
       "label": "Robotallion",
       "raw_values": [16, 11, 9, 12, 9, 4]
@@ -146,7 +146,7 @@
         "code": 122,
         "file_id": 6013,
         "path": "Game/Card/Graphic/Large/card_l_122.nce_ncg1D.bin",
-        "sha256": "397a043dcde6448f6b445de3ffafc638721a88de023afa9143932911fb7b6e9d"
+        "sha256": "de8f27d1ef9452fc3c2520d6aee95427a43c9c07da51a082d658fcb8759f7a79"
       },
       "label": "Serpenoid",
       "raw_values": [18, 6, 9, 14, 13, 5]

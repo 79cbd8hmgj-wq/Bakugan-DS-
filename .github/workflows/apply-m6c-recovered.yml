@@ -29,107 +29,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          wc -c .sync/parts/part-*
           cat .sync/parts/part-* > /tmp/m6c-final.patch.xz.b64
-          echo "base64_chars=$(wc -c < /tmp/m6c-final.patch.xz.b64)"
+          test "$(wc -c < /tmp/m6c-final.patch.xz.b64)" = "80780"
           base64 --decode /tmp/m6c-final.patch.xz.b64 > /tmp/m6c-final.patch.xz
-          actual_xz_sha="$(sha256sum /tmp/m6c-final.patch.xz | awk '{print $1}')"
-          echo "xz_sha256=${actual_xz_sha}"
-          test "${actual_xz_sha}" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
+          test "$(sha256sum /tmp/m6c-final.patch.xz | awk '{print $1}')" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
           xz -t /tmp/m6c-final.patch.xz
           xz -dc /tmp/m6c-final.patch.xz > /tmp/m6c-final.patch
-          actual_patch_sha="$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')"
-          echo "patch_sha256=${actual_patch_sha}"
-          test "${actual_patch_sha}" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
+          test "$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
           git apply --check /tmp/m6c-final.patch
           git apply /tmp/m6c-final.patch
+          python .sync/normalize_recovered_source.py
           rm -rf .sync .github/workflows/apply-m6c-recovered.yml
-
-      - name: Normalize type-distinct local names
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-
-          def replace_once(path: Path, old: str, new: str) -> None:
-              text = path.read_text()
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(
-                      f"{path}: expected one match, found {count}: {old!r}"
-                  )
-              path.write_text(text.replace(old, new, 1))
-
-          def rename_overlay_loop(path: Path, loop_header: str, end_marker: str) -> None:
-              text = path.read_text()
-              start = text.index(loop_header)
-              end = text.index(end_marker, start)
-              block = text[start:end]
-              block = block.replace(
-                  loop_header,
-                  loop_header.replace("entry", "overlay_entry"),
-                  1,
-              )
-              block = block.replace("entry.", "overlay_entry.")
-              path.write_text(text[:start] + block + text[end:])
-
-          rename_overlay_loop(
-              Path("src/bakugan_ds/workspace/validate.py"),
-              "    for entry in manifest.overlays:\n",
-              "    unmatched_overlay_ids =",
-          )
-          rename_overlay_loop(
-              Path("src/bakugan_ds/workspace/rebuild.py"),
-              "    for entry in validated.manifest.overlays:\n",
-              '    for kind in ("arm9", "arm7"):﻿',
-          )
-
-          cli = Path("src/bakugan_ds/gates/cli.py")
-          replace_once(
-              cli,
-              "        _, spec, records = _load_verified_legacy(arguments)\n",
-              "        _, spec, legacy_records = _load_verified_legacy(arguments)\n",
-          )
-          replace_once(
-              cli,
-              "        export_legacy_table(output, records, spec)\n",
-              "        export_legacy_table(output, legacy_records, spec)\n",
-          )
-          replace_once(
-              cli,
-              "        records = load_authoring_document(arguments.authoring)\n",
-              "        gate_records = load_authoring_document(arguments.authoring)\n",
-          )
-          replace_once(
-              cli,
-              "        trailer = build_trailer(records)\n",
-              "        trailer = build_trailer(gate_records)\n",
-          )
-          replace_once(
-              cli,
-              "        report = install_milestone_6c(\n",
-              "        install_report = install_milestone_6c(\n",
-          )
-          text = cli.read_text()
-          start = text.index('    if arguments.gate_command == "install-milestone-6c":')
-          end = text.index(
-              '    if arguments.gate_command == "validate-trailer":',
-              start,
-          )
-          block = text[start:end].replace("report.", "install_report.")
-          cli.write_text(text[:start] + block + text[end:])
-          replace_once(
-              cli,
-              "        report = generate_readiness_report(\n",
-              "        readiness_report = generate_readiness_report(\n",
-          )
-          text = cli.read_text()
-          start = text.index('    if arguments.gate_command == "readiness":')
-          end = text.index("    raise WorkspaceError", start)
-          block = text[start:end].replace("report.", "readiness_report.")
-          cli.write_text(text[:start] + block + text[end:])
-          PY
 
       - name: Verify synchronized source tree
         shell: bash
@@ -137,49 +47,10 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install -e '.[dev]'
-          python -m compileall -q src tests tools
           mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT HEAD -- '*.py')
           if ((${#changed_python[@]})); then
             python -m ruff check --fix --unsafe-fixes "${changed_python[@]}" || true
-            python - <<'PY'
-          from pathlib import Path
-
-          replacements = {
-              Path("src/bakugan_ds/gates/cli.py"): (
-                  "handle = tempfile.NamedTemporaryFile(",
-                  "handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
-                  1,
-              ),
-              Path("src/bakugan_ds/workspace/rebuild.py"): (
-                  "_handle = tempfile.NamedTemporaryFile(",
-                  "_handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
-                  2,
-              ),
-          }
-          for path, (needle, replacement, expected) in replacements.items():
-              text = path.read_text()
-              actual = text.count(needle)
-              if actual != expected:
-                  raise SystemExit(
-                      f"{path}: expected {expected} NamedTemporaryFile assignments, found {actual}"
-                  )
-              path.write_text(text.replace(needle, replacement))
-          PY
             python -m ruff format "${changed_python[@]}"
-            python - <<'PY'
-          from pathlib import Path
-
-          path = Path("src/bakugan_ds/workspace/validate.py")
-          needle = (
-              '                f"modified {name.upper()} size mismatch: '
-              'expected {expected_size}, got {len(modified)}"'
-          )
-          replacement = needle + "  # noqa: E501"
-          text = path.read_text()
-          if text.count(needle) != 1:
-              raise SystemExit("unexpected modified-size diagnostic layout")
-          path.write_text(text.replace(needle, replacement))
-          PY
             python -m ruff check "${changed_python[@]}"
           fi
           mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)

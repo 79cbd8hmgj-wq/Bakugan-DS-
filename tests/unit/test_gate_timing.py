@@ -53,7 +53,7 @@ def test_timing_rejects_duplicate_phase() -> None:
     model = complete_model()
     duplicate = replace(model.boundaries[-1], phase=EffectPhase.PRE_GATE)
     with pytest.raises(WorkspaceError, match="duplicate effect timing phase"):
-        TimingModel(boundaries=model.boundaries[:-1] + (duplicate,)).validate()
+        TimingModel(boundaries=(*model.boundaries[:-1], duplicate)).validate()
 
 
 def test_timing_requires_component_relative_address_consistency() -> None:

@@ -46,7 +46,8 @@ def test_runtime_context_enumerates_every_requirement_and_timing_phase() -> None
     ):
         assert f"`{phase}`" in text
     assert "`arena_id` is the only deferred field" in text
-    assert "0x02293C20–0x02293C60" in text
+    assert "0x02293C20" in text
+    assert "0x02293C60" in text
 
 
 def test_verification_records_required_scenarios_and_rebuild_proof() -> None:

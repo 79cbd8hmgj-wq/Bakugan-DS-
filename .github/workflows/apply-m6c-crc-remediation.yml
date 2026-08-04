@@ -49,23 +49,30 @@ jobs:
           mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT HEAD -- '*.py')
           if ((${#changed_python[@]})); then
             python -m ruff check --fix --unsafe-fixes "${changed_python[@]}" || true
-            python -m ruff format "${changed_python[@]}"
             python - <<'PY'
           from pathlib import Path
 
           path = Path("src/bakugan_ds/gates/runtime_module.py")
-          lines = path.read_text().splitlines()
-          matches = [
-              index
-              for index, line in enumerate(lines)
-              if "extra = (" in line and "range(4, 13)" in line
-          ]
-          if len(matches) != 1:
-              raise SystemExit(f"expected one loader trampoline tuple, found {len(matches)}")
-          index = matches[0]
-          lines[index] = f"{lines[index]}  # noqa: E501"
-          path.write_text("\n".join(lines) + "\n")
+          old = (
+              "    extra = (Register.R0, Register.R1, Register.R2, "
+              "*tuple(Register(value) for value in range(4, 13)))\n"
+          )
+          new = (
+              "    extra = (\n"
+              "        Register.R0,\n"
+              "        Register.R1,\n"
+              "        Register.R2,\n"
+              "        *tuple(Register(value) for value in range(4, 13)),\n"
+              "    )\n"
+          )
+          text = path.read_text()
+          if text.count(old) != 1:
+              raise SystemExit(
+                  f"expected one loader trampoline tuple, found {text.count(old)}"
+              )
+          path.write_text(text.replace(old, new))
           PY
+            python -m ruff format "${changed_python[@]}"
             python -m ruff check "${changed_python[@]}"
           fi
           mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)

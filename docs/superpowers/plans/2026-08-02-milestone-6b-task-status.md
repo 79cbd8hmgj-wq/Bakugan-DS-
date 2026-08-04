@@ -183,7 +183,7 @@ shot condition 0
 → unopposed Stand without battle
 ```
 
-An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receiving unsupported universal labels.
+An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receive unsupported universal labels.
 
 Human and AI shot-condition sources converge on the same category:
 

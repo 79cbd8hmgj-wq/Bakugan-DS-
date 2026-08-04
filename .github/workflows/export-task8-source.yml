@@ -1,0 +1,33 @@
+name: Export Task 8 Source
+
+on:
+  push:
+    branches:
+      - milestone-6b-task-8-difficulty-context
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Build source archive
+        run: |
+          set -euo pipefail
+          tar \
+            --exclude=.git \
+            --exclude=work \
+            --exclude='*.nds' \
+            --exclude='*.dsv' \
+            --exclude='*.ds?' \
+            -czf task8-source.tar.gz .
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: task8-source
+          path: task8-source.tar.gz
+          retention-days: 1
+          if-no-files-found: error

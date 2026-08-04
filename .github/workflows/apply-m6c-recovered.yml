@@ -29,11 +29,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .sync/parts/part-* | base64 --decode > /tmp/m6c-final.patch.xz
-          test "$(sha256sum /tmp/m6c-final.patch.xz | awk '{print $1}')" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
+          wc -c .sync/parts/part-*
+          cat .sync/parts/part-* > /tmp/m6c-final.patch.xz.b64
+          echo "base64_chars=$(wc -c < /tmp/m6c-final.patch.xz.b64)"
+          base64 --decode /tmp/m6c-final.patch.xz.b64 > /tmp/m6c-final.patch.xz
+          actual_xz_sha="$(sha256sum /tmp/m6c-final.patch.xz | awk '{print $1}')"
+          echo "xz_sha256=${actual_xz_sha}"
+          test "${actual_xz_sha}" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
           xz -t /tmp/m6c-final.patch.xz
           xz -dc /tmp/m6c-final.patch.xz > /tmp/m6c-final.patch
-          test "$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
+          actual_patch_sha="$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')"
+          echo "patch_sha256=${actual_patch_sha}"
+          test "${actual_patch_sha}" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
           git apply --check /tmp/m6c-final.patch
           git apply /tmp/m6c-final.patch
           rm -rf .sync .github/workflows/apply-m6c-recovered.yml

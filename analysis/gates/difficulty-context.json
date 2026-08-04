@@ -1,0 +1,199 @@
+{
+  "access": "unsigned byte at shared Battle Arena configuration +0x96 (0x020D43D2); overlay 1 stores it and overlay 7 reads it directly",
+  "ai_consumers": [
+    "Overlay-7 AI shot-parameter builder 0x02231E2C reads the authoritative byte directly at 0x02232664 and branches on values 0, 1, and 2.",
+    "The same function writes a derived three-halfword AI parameter tuple at 0x022327FC-0x02232818; the individual halfword semantics remain unnamed."
+  ],
+  "battle_load": "No separate battle-local copy was observed. During a live Battle Arena match, overlay 7 read shared configuration 0x020D433C +0x96 directly at 0x02232664.",
+  "checks": [
+    {
+      "confidence": "confirmed",
+      "evidence": "Overlay 1 decodes selected-opponent descriptor byte +0x0E bits 5-6 at 0x02221E08-0x02221E1C and stores the result through menu state +0x25C to shared configuration +0x96 at 0x02221E94.",
+      "name": "menu_selection_reaches_authoritative_field"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "At live PC 0x02232664, r4 was 0x020D433C. One instruction later r5 was 0 for the natural Easy control and 1 for the reversible Normal control.",
+      "name": "ai_reads_authoritative_field_directly"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "Easy and Normal followed the identical 0x02232664 read and 0x022327FC-0x02232818 output path. Their first six output bytes were 00000060aa0a and 00000060c711 respectively.",
+      "name": "two_settings_change_derived_ai_parameters"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The direct byte is distinct from the derived three-halfword tuple. Only the tuple's third halfword changed in the controlled comparison; no semantic name is assigned to that halfword.",
+      "name": "direct_setting_distinguished_from_derived_parameters"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "ARM9 writer analysis shows 0x020D4968 accumulates progression and unlock bits. A controlled 0x81-to-0xFF write did not unlock Normal or Hard, so it is rejected as the difficulty field or direct difficulty-unlock source.",
+      "name": "unlock_bitfield_candidate_rejected"
+    },
+    {
+      "confidence": "confirmed",
+      "evidence": "The executable accepts value 2 at the same AI branch, but Hard was locked in the available profile and was not promoted as a runtime-confirmed semantic value.",
+      "name": "hard_value_remains_outside_confirmed_value_list"
+    }
+  ],
+  "component_images": {
+    "overlay_0001": {
+      "load_address": "0x02219440",
+      "sha256": "65c807a92bce03d6e6d7d053c8c8c6c933d27de02089a39deca231f207cd139a",
+      "size": 65056
+    },
+    "overlay_0007": {
+      "load_address": "0x02219440",
+      "sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+      "size": 467360
+    }
+  },
+  "confidence": "confirmed",
+  "domain": "difficulty-context",
+  "evidence": "Exact overlay instructions plus controlled ARM9 GDB observations of one natural Easy selection and one reversible Normal value in the confirmed authoritative field.",
+  "exact_regions": [
+    {
+      "component": "overlay_0001",
+      "component_offset": "0x000089C0",
+      "end": "0x02221E20",
+      "name": "difficulty_selection_decode",
+      "sha256": "4b4adb6f97f8faece4df13e72f5b3f52d01881f63f0c2e6667c6e67e57b5fb4d",
+      "start": "0x02221E00"
+    },
+    {
+      "component": "overlay_0001",
+      "component_offset": "0x00008A4C",
+      "end": "0x02221E98",
+      "name": "difficulty_config_store",
+      "sha256": "76ac6ab0d3d715c880e99b4de0ff6bdc483c1c7a7eba3efa8977a072f28c6cca",
+      "start": "0x02221E8C"
+    },
+    {
+      "component": "overlay_0001",
+      "component_offset": "0x00008ACC",
+      "end": "0x02221F10",
+      "name": "difficulty_config_literal",
+      "sha256": "cb013da4cc1b28194e3cbdf1829bb6b1aea08af978235b1cd5a2781de8f15a1f",
+      "start": "0x02221F0C"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x000189EC",
+      "end": "0x02231E50",
+      "name": "ai_parameter_builder_prologue",
+      "sha256": "3fd4b5874ed62e9269e987b97c06929ff9bfdd42c922655ef06d0bd5c5f229c6",
+      "start": "0x02231E2C"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x00019214",
+      "end": "0x02232684",
+      "name": "difficulty_direct_ai_read",
+      "sha256": "7ebe28c726a63832b1563c9a45f25eca93e8810da2b7d8e6279469932b469a98",
+      "start": "0x02232654"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x000193BC",
+      "end": "0x0223281C",
+      "name": "difficulty_derived_output_store",
+      "sha256": "b18e43955f33e3145e3d70a00a431247be05d8d5795190c3fe3f33deb86f498b",
+      "start": "0x022327FC"
+    },
+    {
+      "component": "overlay_0007",
+      "component_offset": "0x0001946C",
+      "end": "0x022328B0",
+      "name": "difficulty_config_literal",
+      "sha256": "cb013da4cc1b28194e3cbdf1829bb6b1aea08af978235b1cd5a2781de8f15a1f",
+      "start": "0x022328AC"
+    }
+  ],
+  "fields": [
+    {
+      "access": "shared Battle Arena configuration 0x020D433C +0x96 (runtime 0x020D43D2)",
+      "allowed_exception": false,
+      "confidence": "confirmed",
+      "evidence": "Overlay-1 confirmation writes the selected descriptor's bits 5-6 at 0x02221E94. Overlay-7 AI planning reads the same unsigned byte directly at 0x02232664. Runtime controls observed r5=0 and r5=1 at that read.",
+      "initialization": "Battle Arena setup decodes selected-opponent descriptor byte +0x0E bits 5-6 into menu state +0x25C before confirmation.",
+      "lifetime": "Shared Battle Arena configuration from menu confirmation through the active battle and until a later setup replaces it.",
+      "mutations": [
+        "Overlay 1 stores menu state +0x25C to shared configuration +0x96 at 0x02221E94.",
+        "A controlled reversible runtime write changed the confirmed byte from Easy value 0 to Normal value 1 for the second AI-consumer control.",
+        "No overlay-7 mutation was observed; the battle AI reads the shared byte directly."
+      ],
+      "name": "difficulty",
+      "owner_structure": "shared Battle Arena configuration rooted at 0x020D433C",
+      "player_ai_behavior": "The menu-selected opponent difficulty is consumed by the AI shot-parameter builder; no corresponding human-control modifier was established.",
+      "presence": "present",
+      "replacement_plan": "",
+      "reset": "A subsequent Battle Arena setup confirmation replaces +0x96. Persistent profile or save ownership was not established.",
+      "scripted_behavior": "The available profile exposed Easy and kept Normal and Hard locked. No scripted bypass or alternate difficulty owner was promoted.",
+      "signed": false,
+      "width_bits": 8
+    }
+  ],
+  "format_version": 1,
+  "initialization": "Battle Arena setup decodes selected-opponent descriptor byte +0x0E bits 5-6 into temporary menu state +0x25C.",
+  "owner_structure": "shared Battle Arena configuration rooted at 0x020D433C",
+  "profile_change": "Battle Arena confirmation at 0x02221E94 replaces shared configuration byte +0x96 with temporary menu state +0x25C.",
+  "profile_id": "b6re_rev0",
+  "reset": "The next Battle Arena setup confirmation replaces the shared byte; no persistent save-field reset was claimed.",
+  "runtime_capture_source": {
+    "easy_config_window_sha256": "ac5109179e569689d9537de489c779bb936bab8fda0dbdf95ecadb2fa395cf92",
+    "normal_field_byte_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+    "raw_debugger_logs_committed": false,
+    "save_or_state_committed": false,
+    "screenshots_committed": false
+  },
+  "runtime_controls": [
+    {
+      "ai_output_first_three_halfwords": [
+        0,
+        24576,
+        2730
+      ],
+      "ai_output_prefix_hex": "00000060aa0a",
+      "ai_output_prefix_sha256": "6d966c8fc07c58268b7d7d629fb67370d9520abe9d9c123a86b0a4a3df4acee3",
+      "config_base_register": "r4=0x020D433C",
+      "difficulty_after_read": 0,
+      "difficulty_label": "easy",
+      "difficulty_read_pc": "0x02232664",
+      "difficulty_register": "r5",
+      "execution_path": "natural Battle Arena Easy selection and live AI turn",
+      "output_store_boundary": "0x0223281C"
+    },
+    {
+      "ai_output_first_three_halfwords": [
+        0,
+        24576,
+        4551
+      ],
+      "ai_output_prefix_hex": "00000060c711",
+      "ai_output_prefix_sha256": "b8e740639a25f9020c33117e50cb5356e1eae41dbd22398485efc3ddfdc81f45",
+      "config_base_register": "r4=0x020D433C",
+      "difficulty_after_read": 1,
+      "difficulty_label": "normal",
+      "difficulty_read_pc": "0x02232664",
+      "difficulty_register": "r5",
+      "execution_path": "reversible live write of value 1 to the confirmed authoritative field during the same clean Battle Arena session, followed by a natural AI turn",
+      "output_store_boundary": "0x0223281C"
+    }
+  ],
+  "status": "complete_with_locked_menu_limitations",
+  "unresolved": [],
+  "values": [
+    {
+      "evidence": "A natural Battle Arena Easy selection stored 0 at 0x020D43D2; live overlay-7 AI read returned r5=0.",
+      "label": "easy",
+      "value": 0
+    },
+    {
+      "evidence": "A reversible write of 1 to confirmed field 0x020D43D2 was read back as r5=1 by the same live overlay-7 AI path and changed the derived output tuple.",
+      "label": "normal",
+      "value": 1
+    }
+  ],
+  "width_bits": 8
+}

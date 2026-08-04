@@ -80,6 +80,20 @@ jobs:
               path.write_text(text.replace(needle, replacement))
           PY
             python -m ruff format "${changed_python[@]}"
+            python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/bakugan_ds/workspace/validate.py")
+          needle = (
+              '                f"modified {name.upper()} size mismatch: '
+              'expected {expected_size}, got {len(modified)}"'
+          )
+          replacement = needle + "  # noqa: E501"
+          text = path.read_text()
+          if text.count(needle) != 1:
+              raise SystemExit("unexpected modified-size diagnostic layout")
+          path.write_text(text.replace(needle, replacement))
+          PY
             python -m ruff check "${changed_python[@]}"
           fi
           mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 import zlib
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 
 from bakugan_ds.errors import WorkspaceError
 
@@ -10,6 +10,7 @@ G2DT_MAGIC = b"G2DT"
 G2DT_VERSION = 1
 G2DT_HEADER_SIZE = 32
 GATE_RECORD_SIZE = 40
+GATE_RECORD_BATTLE_WEIGHTS_OFFSET = 0x0E
 FIRST_CARD_ID = 1
 RECORD_COUNT = 103
 PAYLOAD_SIZE = GATE_RECORD_SIZE * RECORD_COUNT
@@ -34,9 +35,7 @@ def _require_int(value: int, label: str) -> None:
 def _require_range(value: int, minimum: int, maximum: int, label: str) -> None:
     _require_int(value, label)
     if not minimum <= value <= maximum:
-        raise WorkspaceError(
-            f"{label} must be between {minimum} and {maximum}, got {value}"
-        )
+        raise WorkspaceError(f"{label} must be between {minimum} and {maximum}, got {value}")
 
 
 def _require_id(value: int, label: str) -> None:
@@ -157,6 +156,9 @@ class GateRecordV1:
         _require_range(self.timing_phase, 0, 11, "timing phase")
         if self.reserved != 0:
             raise WorkspaceError("Gate record reserved field must be zero")
+
+
+GATE_RECORD_FIELD_NAMES = tuple(field.name for field in fields(GateRecordV1))
 
 
 def serialize_header(header: G2DTHeader, *, zero_crc: bool = False) -> bytes:

@@ -8,6 +8,7 @@ from bakugan_ds.inspection import RomInspection, inspect_rom
 from bakugan_ds.profile import RomProfile, sha256_file
 from bakugan_ds.workspace.manifest import WorkspaceManifest, load_workspace_manifest, sha256_bytes
 from bakugan_ds.workspace.model import WorkspaceLayout
+from bakugan_ds.workspace.overrides import BuildOverrides, load_build_overrides
 from bakugan_ds.workspace.paths import safe_relative_path
 
 
@@ -25,6 +26,7 @@ class ValidatedWorkspace:
     manifest: WorkspaceManifest
     inspection: RomInspection
     changes: tuple[WorkspaceChange, ...]
+    overrides: BuildOverrides | None
 
     @property
     def has_changes(self) -> bool:
@@ -57,6 +59,7 @@ def validate_workspace(
 ) -> ValidatedWorkspace:
     layout = WorkspaceLayout.from_root(workspace)
     manifest = load_workspace_manifest(layout.manifests / "workspace.json")
+    overrides = load_build_overrides(layout.build_overrides)
     if manifest.profile_id != profile.id:
         raise WorkspaceError(
             f"workspace profile mismatch: expected {profile.id}, got {manifest.profile_id}"
@@ -111,13 +114,21 @@ def validate_workspace(
             raise WorkspaceError(f"missing modified {name.upper()}: {path}") from exc
         if len(modified) != expected_size:
             raise WorkspaceError(
-                f"modified {name.upper()} size mismatch: expected {expected_size}, got {len(modified)}"
+                f"modified {name.upper()} size mismatch: expected {expected_size}, got {len(modified)}"  # noqa: E501
             )
         modified_hash = sha256_bytes(modified)
         if modified_hash != original_hash:
             changes.append(WorkspaceChange(name, name, original_hash, modified_hash))
 
+    raw_override_items = overrides.raw_nitrofs if overrides else ()
+    overlay_override_items = overrides.overlays if overrides else ()
+    raw_by_id = {item.file_id: item for item in raw_override_items}
+    raw_by_path = {item.path: item for item in raw_override_items}
+    overlay_by_id = {item.overlay_id: item for item in overlay_override_items}
+
     expected_modified_files: set[str] = set()
+    expected_raw_override_files: set[str] = set()
+    matched_raw_override_paths: set[str] = set()
     for entry in manifest.files:
         relative = safe_relative_path(entry.path)
         relative_path = Path(*relative.parts)
@@ -139,11 +150,51 @@ def validate_workspace(
         except OSError as exc:
             raise WorkspaceError(f"missing modified NitroFS file: {entry.path}") from exc
         modified_hash = sha256_bytes(modified)
-        if modified_hash != entry.decoded_sha256:
+        raw_override = raw_by_path.get(entry.path)
+        if raw_override is not None:
+            if (
+                raw_override.file_id != entry.file_id
+                or raw_by_id.get(entry.file_id) != raw_override
+            ):
+                raise WorkspaceError(
+                    f"raw override mapping does not match manifest for {entry.path}"
+                )
+            _read_verified(
+                layout.original_raw_nitrofs / relative_path,
+                raw_override.expected_size,
+                raw_override.expected_sha256,
+                f"original raw override NitroFS file {entry.path}",
+            )
+            _read_verified(
+                layout.modified_raw_nitrofs / relative_path,
+                raw_override.replacement_size,
+                raw_override.replacement_sha256,
+                f"modified raw override NitroFS file {entry.path}",
+            )
+            if modified_hash != entry.decoded_sha256:
+                raise WorkspaceError(
+                    f"simultaneous decoded and raw override for NitroFS file {entry.path}"
+                )
+            changes.append(
+                WorkspaceChange(
+                    "nitrofs_raw",
+                    entry.path,
+                    raw_override.expected_sha256,
+                    raw_override.replacement_sha256,
+                )
+            )
+            expected_raw_override_files.add(relative.as_posix())
+            matched_raw_override_paths.add(entry.path)
+        elif modified_hash != entry.decoded_sha256:
             changes.append(
                 WorkspaceChange("nitrofs", entry.path, entry.decoded_sha256, modified_hash)
             )
         expected_modified_files.add(relative.as_posix())
+    unmatched_raw_overrides = sorted(set(raw_by_path) - matched_raw_override_paths)
+    if unmatched_raw_overrides:
+        raise WorkspaceError(
+            f"raw overrides do not match workspace manifest: {unmatched_raw_overrides}"
+        )
     actual_modified_files = _scan_relative_files(layout.modified_nitrofs)
     extra_files = sorted(actual_modified_files - expected_modified_files)
     missing_files = sorted(expected_modified_files - actual_modified_files)
@@ -151,43 +202,70 @@ def validate_workspace(
         raise WorkspaceError(f"unmanifested modified NitroFS files: {extra_files}")
     if missing_files:
         raise WorkspaceError(f"missing modified NitroFS files: {missing_files}")
+    actual_raw_override_files = _scan_relative_files(layout.modified_raw_nitrofs)
+    extra_raw_override_files = sorted(actual_raw_override_files - expected_raw_override_files)
+    missing_raw_override_files = sorted(expected_raw_override_files - actual_raw_override_files)
+    if extra_raw_override_files:
+        raise WorkspaceError(f"unmanifested modified raw NitroFS files: {extra_raw_override_files}")
+    if missing_raw_override_files:
+        raise WorkspaceError(f"missing modified raw NitroFS files: {missing_raw_override_files}")
 
     expected_overlay_files: set[str] = set()
-    for entry in manifest.overlays:
-        filename = f"overlay_{entry.overlay_id:03d}.bin"
+    matched_overlay_ids: set[int] = set()
+    for overlay_entry in manifest.overlays:
+        filename = f"overlay_{overlay_entry.overlay_id:03d}.bin"
         _read_verified(
             layout.original_raw_overlays / filename,
-            entry.raw_size,
-            entry.raw_sha256,
-            f"original raw overlay {entry.overlay_id}",
+            overlay_entry.raw_size,
+            overlay_entry.raw_sha256,
+            f"original raw overlay {overlay_entry.overlay_id}",
         )
         _read_verified(
             layout.original_decoded_overlays / filename,
-            entry.decoded_size,
-            entry.decoded_sha256,
-            f"original decoded overlay {entry.overlay_id}",
+            overlay_entry.decoded_size,
+            overlay_entry.decoded_sha256,
+            f"original decoded overlay {overlay_entry.overlay_id}",
         )
         modified_path = layout.modified_overlays / filename
         try:
             modified = modified_path.read_bytes()
         except OSError as exc:
-            raise WorkspaceError(f"missing modified overlay {entry.overlay_id}: {modified_path}") from exc
-        if len(modified) != entry.ram_size:
             raise WorkspaceError(
-                f"modified overlay {entry.overlay_id} size mismatch: "
-                f"expected {entry.ram_size}, got {len(modified)}"
+                f"missing modified overlay {overlay_entry.overlay_id}: {modified_path}"
+            ) from exc
+        overlay_override = overlay_by_id.get(overlay_entry.overlay_id)
+        expected_size = overlay_entry.ram_size
+        if overlay_override is not None:
+            if (
+                overlay_override.expected_ram_size != overlay_entry.ram_size
+                or overlay_override.expected_bss_size != overlay_entry.bss_size
+            ):
+                raise WorkspaceError(
+                    f"overlay override {overlay_entry.overlay_id} original geometry mismatch"
+                )
+            expected_size = overlay_override.replacement_ram_size
+            matched_overlay_ids.add(overlay_entry.overlay_id)
+        if len(modified) != expected_size:
+            raise WorkspaceError(
+                f"modified overlay {overlay_entry.overlay_id} size mismatch: "
+                f"expected {expected_size}, got {len(modified)}"
             )
         modified_hash = sha256_bytes(modified)
-        if modified_hash != entry.decoded_sha256:
+        if modified_hash != overlay_entry.decoded_sha256:
             changes.append(
                 WorkspaceChange(
                     "overlay",
-                    str(entry.overlay_id),
-                    entry.decoded_sha256,
+                    str(overlay_entry.overlay_id),
+                    overlay_entry.decoded_sha256,
                     modified_hash,
                 )
             )
         expected_overlay_files.add(filename)
+    unmatched_overlay_ids = sorted(set(overlay_by_id) - matched_overlay_ids)
+    if unmatched_overlay_ids:
+        raise WorkspaceError(
+            f"overlay overrides do not match workspace manifest: {unmatched_overlay_ids}"
+        )
     actual_overlay_files = _scan_relative_files(layout.modified_overlays)
     extra_overlays = sorted(actual_overlay_files - expected_overlay_files)
     missing_overlays = sorted(expected_overlay_files - actual_overlay_files)
@@ -196,10 +274,11 @@ def validate_workspace(
     if missing_overlays:
         raise WorkspaceError(f"missing modified overlays: {missing_overlays}")
 
-    order = {"arm9": 0, "arm7": 1, "nitrofs": 2, "overlay": 3}
+    order = {"arm9": 0, "arm7": 1, "nitrofs": 2, "nitrofs_raw": 3, "overlay": 4}
     return ValidatedWorkspace(
         layout=layout,
         manifest=manifest,
         inspection=inspection,
         changes=tuple(sorted(changes, key=lambda item: (order[item.kind], item.identifier))),
+        overrides=overrides,
     )

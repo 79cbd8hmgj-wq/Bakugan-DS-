@@ -114,6 +114,10 @@ The cache loads only after trailer validation, remains match-local, and clears a
 - Missing, malformed, truncated, or CRC-invalid data preserves legacy behavior.
 - `arena_id` is the only deferred field; version 1 has no arena-dependent condition/effect.
 
-## Milestone 6C entry
+## Milestone 6C implementation boundary
 
-One experimental data-driven Gate may use only the confirmed fields/phases above, with record/cache validation and legacy rollback.
+Milestone 6C uses only the confirmed fields and phases above for Gate ID `19`, Juggernoid. The live module reads the compressed core-G snapshot, attribute, current participant, Gate owner, solo/team captured-Gate score, and reciprocal teammate mapping. It writes only the current combatant's battle-local Gate bonus and target total.
+
+The first prototype is limited to flat and Q8.8 scaling, Aquos `+30 G`, an owner-behind `+40 G` rider, and weighted type selection. Every invalid context uses complete legacy calculation fallback. Every unrelated Gate bypasses System 2.0 weighting. Arena ID, Ability state, fatigue, history, AI, presentation, and saves remain unused by the prototype.
+
+See `docs/gate-card-system-2-prototype.md` for the exact values, formulas, install procedure, rollback, validation methods, and exclusions.

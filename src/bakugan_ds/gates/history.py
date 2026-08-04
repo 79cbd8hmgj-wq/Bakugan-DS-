@@ -47,12 +47,8 @@ def _parse_address(value: object, label: str) -> AddressRef:
     try:
         result = AddressRef(
             component=str(item["component"]),
-            runtime_address=_parse_int(
-                item["runtime_address"], f"{label}.runtime_address"
-            ),
-            component_offset=_parse_int(
-                item["component_offset"], f"{label}.component_offset"
-            ),
+            runtime_address=_parse_int(item["runtime_address"], f"{label}.runtime_address"),
+            component_offset=_parse_int(item["component_offset"], f"{label}.component_offset"),
             confidence=Confidence(str(item["confidence"])),
             evidence=str(item["evidence"]),
         )
@@ -84,9 +80,7 @@ class RngEvidence:
         ):
             _require_text(value, label)
         if self.output_width_bits not in {8, 16, 32, 64}:
-            raise WorkspaceError(
-                "RNG output width must be 8, 16, 32, or 64 bits"
-            )
+            raise WorkspaceError("RNG output width must be 8, 16, 32, or 64 bits")
         if self.confidence is not Confidence.CONFIRMED:
             raise WorkspaceError("weighted RNG evidence must be confirmed")
         if self.function.confidence is not Confidence.CONFIRMED:
@@ -121,9 +115,7 @@ class HistoryEvidence:
             raise WorkspaceError("battle-type history evidence must be confirmed")
         if self.presence is Presence.ABSENT:
             if self.entry_width_bits is not None or self.capacity is not None:
-                raise WorkspaceError(
-                    "absent original history cannot define original geometry"
-                )
+                raise WorkspaceError("absent original history cannot define original geometry")
             _require_text(self.replacement_plan, "absent history replacement plan")
             return
         if self.entry_width_bits not in {8, 16, 32}:
@@ -143,19 +135,13 @@ class WeightedSelectionSpec:
 
     def validate(self) -> None:
         if self.type_count != TYPE_COUNT:
-            raise WorkspaceError(
-                "weighted selection requires exactly six battle types"
-            )
+            raise WorkspaceError("weighted selection requires exactly six battle types")
         if self.weight_width_bits != WEIGHT_WIDTH_BITS:
             raise WorkspaceError("weighted selection weights must be 8-bit")
         if self.total_max != TOTAL_MAX:
-            raise WorkspaceError(
-                f"weighted selection total maximum must be {TOTAL_MAX}"
-            )
+            raise WorkspaceError(f"weighted selection total maximum must be {TOTAL_MAX}")
         if self.fallback != "legacy_fixed_metadata":
-            raise WorkspaceError(
-                "weighted selection fallback must be legacy_fixed_metadata"
-            )
+            raise WorkspaceError("weighted selection fallback must be legacy_fixed_metadata")
 
 
 @dataclass(frozen=True)
@@ -169,12 +155,8 @@ class HistoryModel:
         self.rng.validate()
         self.history.validate()
         self.selection.validate()
-        if len(self.precedence) != 4 or any(
-            not value.strip() for value in self.precedence
-        ):
-            raise WorkspaceError(
-                "selector precedence must contain four nonempty stages"
-            )
+        if len(self.precedence) != 4 or any(not value.strip() for value in self.precedence):
+            raise WorkspaceError("selector precedence must contain four nonempty stages")
         if len(set(self.precedence)) != len(self.precedence):
             raise WorkspaceError("selector precedence stages must be unique")
 
@@ -182,10 +164,7 @@ class HistoryModel:
 def validate_weight_vector(weights: tuple[int, ...]) -> None:
     if len(weights) != TYPE_COUNT:
         raise WorkspaceError("weight vector must contain exactly six entries")
-    if any(
-        isinstance(weight, bool) or not isinstance(weight, int)
-        for weight in weights
-    ):
+    if any(isinstance(weight, bool) or not isinstance(weight, int) for weight in weights):
         raise WorkspaceError("weights must be integers")
     if any(weight < 0 for weight in weights):
         raise WorkspaceError("weights cannot be negative")
@@ -227,16 +206,12 @@ def normalize_history_artifact(payload: object) -> HistoryModel:
         raise WorkspaceError("unsupported history artifact profile")
     rng_raw = _require_object(root.get("rng"), "rng")
     history_raw = _require_object(root.get("history"), "history")
-    selection_raw = _require_object(
-        root.get("weighted_selection"), "weighted_selection"
-    )
+    selection_raw = _require_object(root.get("weighted_selection"), "weighted_selection")
     try:
         rng = RngEvidence(
             function=_parse_address(rng_raw["function"], "rng.function"),
             calling_convention=str(rng_raw["calling_convention"]),
-            output_width_bits=_parse_int(
-                rng_raw["output_width_bits"], "rng.output_width_bits"
-            ),
+            output_width_bits=_parse_int(rng_raw["output_width_bits"], "rng.output_width_bits"),
             output_range=str(rng_raw["output_range"]),
             seed_source=str(rng_raw["seed_source"]),
             deterministic_controls=str(rng_raw["deterministic_controls"]),
@@ -250,9 +225,7 @@ def normalize_history_artifact(payload: object) -> HistoryModel:
                 history_raw.get("entry_width_bits"),
                 "history.entry_width_bits",
             ),
-            capacity=_optional_int(
-                history_raw.get("capacity"), "history.capacity"
-            ),
+            capacity=_optional_int(history_raw.get("capacity"), "history.capacity"),
             update_timing=str(history_raw["update_timing"]),
             reset_timing=str(history_raw["reset_timing"]),
             player_ai_behavior=str(history_raw["player_ai_behavior"]),
@@ -261,21 +234,16 @@ def normalize_history_artifact(payload: object) -> HistoryModel:
             replacement_plan=str(history_raw.get("replacement_plan", "")),
         )
         selection = WeightedSelectionSpec(
-            type_count=_parse_int(
-                selection_raw["type_count"], "weighted_selection.type_count"
-            ),
+            type_count=_parse_int(selection_raw["type_count"], "weighted_selection.type_count"),
             weight_width_bits=_parse_int(
                 selection_raw["weight_width_bits"],
                 "weighted_selection.weight_width_bits",
             ),
-            total_max=_parse_int(
-                selection_raw["total_max"], "weighted_selection.total_max"
-            ),
+            total_max=_parse_int(selection_raw["total_max"], "weighted_selection.total_max"),
             fallback=str(selection_raw["fallback"]),
         )
         precedence = tuple(
-            str(value)
-            for value in _require_array(root.get("precedence"), "precedence")
+            str(value) for value in _require_array(root.get("precedence"), "precedence")
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise WorkspaceError(f"invalid history artifact: {exc}") from exc
@@ -287,3 +255,34 @@ def normalize_history_artifact(payload: object) -> HistoryModel:
     )
     model.validate()
     return model
+
+
+WEIGHTED_SELECTOR_ADDRESS = 0x02021A30
+
+_WEIGHTED_LCG_MULTIPLIER = 0x5D588B656C078965
+_WEIGHTED_LCG_ADDEND = 0x00269EC3
+_U64_MASK = 0xFFFFFFFFFFFFFFFF
+_U32_MAX = 0xFFFFFFFF
+
+
+def advance_weighted_lcg(seed: int) -> int:
+    """Advance the confirmed ARM9 64-bit weighted-selection LCG once."""
+
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise WorkspaceError("weighted RNG state must be an integer")
+    if not 0 <= seed <= _U64_MASK:
+        raise WorkspaceError("weighted RNG state must fit unsigned 64-bit")
+    return (seed * _WEIGHTED_LCG_MULTIPLIER + _WEIGHTED_LCG_ADDEND) & _U64_MASK
+
+
+def weighted_roll_from_state(seed: int, total: int) -> tuple[int, int]:
+    """Advance the LCG and scale its high word into the half-open total range."""
+
+    if isinstance(total, bool) or not isinstance(total, int):
+        raise WorkspaceError("weighted total must be an integer")
+    if not 0 < total <= _U32_MAX:
+        raise WorkspaceError("weighted total must be between 1 and 0xFFFFFFFF")
+    next_state = advance_weighted_lcg(seed)
+    high_word = next_state >> 32
+    roll = (high_word * total) >> 32
+    return next_state, roll

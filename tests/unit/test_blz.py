@@ -11,7 +11,7 @@ def make_footer(compressed_length: int, header_length: int, added_length: int) -
 
 
 def test_blz_parses_verified_overlay_7_footer() -> None:
-    data = b"x" * (255740 - 11) + b"\xFF" * 3 + bytes.fromhex("fc e6 03 0b a4 3a 03 00")
+    data = b"x" * (255740 - 11) + b"\xff" * 3 + bytes.fromhex("fc e6 03 0b a4 3a 03 00")
     footer = parse_blz_footer(data)
 
     assert footer.compressed_length == 255740
@@ -71,3 +71,85 @@ def test_blz_rejects_invalid_displacement() -> None:
     data = bytes.fromhex("00 f0 41 40") + make_footer(12, 8, 7)
     with pytest.raises(RomFormatError, match="displacement"):
         decompress_blz(data)
+
+
+def test_blz_encoder_round_trips_repeated_suffix() -> None:
+    from bakugan_ds.compression.blz import compress_blz
+
+    decoded = b"PRE" + b"ABC" * 200
+    encoded = compress_blz(decoded, passthrough_length=3)
+    assert is_blz(encoded) is True
+    assert decompress_blz(encoded) == decoded
+    assert encoded == compress_blz(decoded, passthrough_length=3)
+
+
+def test_blz_encoder_can_pad_to_exact_target_size() -> None:
+    from bakugan_ds.compression.blz import compress_blz
+
+    decoded = b"HEAD" + b"0123456789ABCDEF" * 100
+    minimal = compress_blz(decoded, passthrough_length=4)
+    target = len(minimal) + 37
+    encoded = compress_blz(
+        decoded,
+        passthrough_length=4,
+        target_size=target,
+    )
+    assert len(encoded) == target
+    assert decompress_blz(encoded) == decoded
+
+
+def test_blz_encoder_rejects_target_smaller_than_compressed_stream() -> None:
+    from bakugan_ds.compression.blz import compress_blz
+
+    decoded = b"A" * 200
+    minimal = compress_blz(decoded)
+    with pytest.raises(ValueError, match="target size"):
+        compress_blz(decoded, target_size=len(minimal) - 1)
+
+
+def _moderately_redundant_payload(seed: int = 3) -> bytes:
+    import random
+
+    randomizer = random.Random(seed)
+    blocks = [
+        bytes(randomizer.randrange(32) for _ in range(randomizer.randrange(3, 20)))
+        for _ in range(40)
+    ]
+    data = bytearray(b"HEAD" * 4)
+    for _ in range(300):
+        if randomizer.random() < 0.55:
+            data.extend(randomizer.choice(blocks))
+        else:
+            data.extend(randomizer.randrange(256) for _ in range(randomizer.randrange(1, 16)))
+    return bytes(data)
+
+
+def test_blz_encoder_rejects_stream_unsafe_for_in_place_runtime_decode() -> None:
+    from bakugan_ds.compression.blz import compress_blz
+
+    decoded = _moderately_redundant_payload()
+    with pytest.raises(ValueError, match="in-place"):
+        compress_blz(decoded, passthrough_length=16)
+
+
+def test_exact_patched_arm9_blz_stream_is_runtime_safe() -> None:
+    import os
+    from pathlib import Path
+
+    from bakugan_ds.compression.blz import (
+        compress_blz,
+        decompress_blz_in_place,
+    )
+
+    value = os.environ.get("BAKUGAN_DS_RUNTIME_ARM9")
+    if value is None:
+        pytest.skip("set BAKUGAN_DS_RUNTIME_ARM9 to validate ARM9 BLZ encoding")
+    decoded = bytearray(Path(value).read_bytes())
+    decoded[0x6264:0x6268] = bytes.fromhex("603c2902")
+    encoded = compress_blz(
+        decoded,
+        passthrough_length=0x8000,
+        target_size=448_192,
+    )
+    assert len(encoded) == 448_192
+    assert decompress_blz_in_place(encoded) == bytes(decoded)

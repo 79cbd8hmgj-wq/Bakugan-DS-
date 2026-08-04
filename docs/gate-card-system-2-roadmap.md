@@ -20,7 +20,7 @@ moderate scalable G bonus
 + optional condition or drawback
 ```
 
-No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B.
+No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B. Milestone 6C is now complete and enables only the reviewed Juggernoid prototype; it does not authorize the full roster or the Milestone 6D balance framework.
 
 ## Milestone 6A — reverse-engineering foundation
 
@@ -119,22 +119,24 @@ Milestone 6B ends with an automated readiness report that fails closed unless:
 
 The complete design is documented in `docs/superpowers/specs/2026-08-02-gate-card-system-2-complete-discovery-design.md`.
 
-## Milestone 6C — engine and first prototype
+## Milestone 6C — engine and first prototype — complete
 
-Milestone 6C begins only after the Milestone 6B readiness validator passes.
+Completed deliverables:
 
-It will implement:
+- deterministic 4,152-byte `G2DT` trailer and 103-record authoring roster;
+- selected-record NitroFS loader and 64-byte match-local cache;
+- guarded `0x8000`-byte overlay-7 runtime module;
+- fixed-point hybrid Gate calculation using compressed core G;
+- Aquos `+30 G` attribute modifier;
+- Gate-owner-behind `+40 G` condition and target rule;
+- weighted Scratch preference `(50, 30, 30, 30, 30, 30)`;
+- explicit-constructor and scripted-override precedence;
+- complete record-, calculation-, and selector-phase fallback;
+- exact-ROM deterministic rebuild proof;
+- controlled emitted-ARM runtime matrix;
+- live rebuilt-ROM Battle Arena, tutorial-completion, cache-clear, and responsive-exit smoke tests.
 
-- the data-driven raw-trailer loader and selected-record cache;
-- the version-1 record parser;
-- fixed-point hybrid G calculation;
-- attribute modifiers;
-- weighted battle-type selection;
-- the condition and effect dispatcher;
-- one experimental Gate using confirmed context only;
-- complete legacy fallback for every unrelated Gate and malformed-data path.
-
-The first prototype must not depend on arena ID.
+Only Gate ID `19`, Juggernoid, is active. Arena ID remains deferred. Ability interaction, fatigue, history penalties, AI, presentation, saves, reusable effects, power budgets, and the full roster remain excluded.
 
 ## Milestone 6D — core balance framework
 

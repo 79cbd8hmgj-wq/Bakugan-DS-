@@ -116,3 +116,89 @@ def test_report_context_writes_included_and_excluded_fields(
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert [item["name"] for item in payload["included"]] == ["gate_bonus_g"]
     assert [item["name"] for item in payload["excluded"]] == ["gate_owner"]
+
+
+def test_build_trailer_command_writes_exact_repeatable_binary(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    authoring = Path("config/gates/milestone-6c-system2-v1.json")
+    first = tmp_path / "first.g2dt"
+    second = tmp_path / "second.g2dt"
+
+    for output in (first, second):
+        arguments = Namespace(
+            gate_command="build-trailer",
+            authoring=authoring,
+            output=output,
+        )
+        assert gate_cli.run_gate_command(arguments) == 0
+
+    assert first.read_bytes() == second.read_bytes()
+    assert len(first.read_bytes()) == 4152
+    printed = capsys.readouterr().out
+    assert "record_count=103" in printed
+    assert "size=4152" in printed
+    assert "sha256=" in printed
+    assert "payload_crc32=0x" in printed
+
+
+def test_gate_parser_accepts_build_trailer_command() -> None:
+    parser = gate_cli.build_gate_parser()
+    arguments = parser.parse_args(
+        [
+            "build-trailer",
+            "config/gates/milestone-6c-system2-v1.json",
+            "work/system2.g2dt",
+        ]
+    )
+    assert arguments.gate_command == "build-trailer"
+
+
+def test_gate_parser_and_runner_support_milestone_6c_install(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from types import SimpleNamespace
+
+    parser = gate_cli.build_gate_parser()
+    arguments = parser.parse_args(
+        [
+            "install-milestone-6c",
+            str(tmp_path / "workspace"),
+            "--authoring",
+            "config/gates/milestone-6c-system2-v1.json",
+            "--dry-run",
+        ]
+    )
+    assert arguments.gate_command == "install-milestone-6c"
+    calls: list[tuple[Path, Path, bool]] = []
+
+    def fake_install(workspace: Path, authoring: Path, *, dry_run: bool):
+        calls.append((workspace, authoring, dry_run))
+        return SimpleNamespace(
+            trailer_sha256="a" * 64,
+            module_sha256="b" * 64,
+            raw_carrier_size=6992,
+            overlay_size=501728,
+            cache_range=(0x02293C20, 0x02293C60),
+            binary_patches=tuple(range(7)),
+            no_op=False,
+            dry_run=True,
+        )
+
+    monkeypatch.setattr(gate_cli, "install_milestone_6c", fake_install)
+    assert gate_cli.run_gate_command(arguments) == 0
+    assert calls == [
+        (
+            tmp_path / "workspace",
+            Path("config/gates/milestone-6c-system2-v1.json"),
+            True,
+        )
+    ]
+    output = capsys.readouterr().out
+    assert "raw_size=6992" in output
+    assert "overlay_size=501728" in output
+    assert "cache=0x02293C20-0x02293C60" in output
+    assert "patches=7" in output

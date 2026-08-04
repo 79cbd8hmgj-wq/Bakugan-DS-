@@ -1,7 +1,7 @@
 import json
-from pathlib import Path
 import stat
 import struct
+from pathlib import Path
 
 import pytest
 
@@ -109,7 +109,10 @@ def test_extract_workspace_writes_raw_decoded_and_modified_data(
     assert len(manifest.files) == 2
     assert manifest.files[0].compression == "lz10"
     assert manifest.overlays[0].compression == "blz"
-    assert json.loads((workspace / "manifests/workspace.json").read_text())["profile_id"] == "b6re_rev0"
+    assert (
+        json.loads((workspace / "manifests/workspace.json").read_text())["profile_id"]
+        == "b6re_rev0"
+    )
     assert not ((workspace / "original/arm9.bin").stat().st_mode & stat.S_IWUSR)
 
 
@@ -185,3 +188,21 @@ def test_extract_workspace_rejects_path_traversal(
         )
 
     assert not (tmp_path / "evil.bin").exists()
+
+
+def test_extract_workspace_creates_empty_raw_override_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rom_path, inspection = make_fixture(tmp_path)
+    patch_inspection(monkeypatch, inspection)
+    workspace = tmp_path / "workspace"
+
+    extract_workspace(
+        rom_path,
+        load_profile(Path("config/b6re_rev0.json")),
+        ExtractionOptions(workspace),
+    )
+
+    assert (workspace / "modified/raw/nitrofs").is_dir()
+    assert list((workspace / "modified/raw/nitrofs").rglob("*")) == []
+    assert not (workspace / "manifests/build-overrides.json").exists()

@@ -75,6 +75,23 @@ block = text[start:end].replace("report.", "install_report.")
 cli.write_text(text[:start] + block + text[end:])
 replace_once(
     cli,
+    "        cache_start, cache_end = install_report.cache_range\n        print(\n",
+    "        if install_report.no_op:\n"
+    '            install_state = "no-op"\n'
+    "        elif install_report.dry_run:\n"
+    '            install_state = "prepared"\n'
+    "        else:\n"
+    '            install_state = "complete"\n'
+    "        cache_start, cache_end = install_report.cache_range\n"
+    "        print(\n",
+)
+replace_once(
+    cli,
+    "            f\"{'no-op' if install_report.no_op else 'prepared' if install_report.dry_run else 'complete'}; \"\n",
+    '            f"{install_state}; "\n',
+)
+replace_once(
+    cli,
     "        report = generate_readiness_report(\n",
     "        readiness_report = generate_readiness_report(\n",
 )

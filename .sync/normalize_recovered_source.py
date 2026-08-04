@@ -39,7 +39,7 @@ rename_overlay_loop(
 rename_overlay_loop(
     Path("src/bakugan_ds/workspace/rebuild.py"),
     "    for entry in validated.manifest.overlays:\n",
-    '    for kind in ("arm9", "arm7"): ',
+    '    for kind in ("arm9", "arm7"):',
 )
 
 cli = Path("src/bakugan_ds/gates/cli.py")

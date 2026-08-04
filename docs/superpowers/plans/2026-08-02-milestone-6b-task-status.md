@@ -3,10 +3,8 @@
 ## Current summary
 
 - Tasks 1–7: complete
-- Task 8: complete
-- Task 9: pending
-- Tasks 10–12: complete
-- Task 13: pending
+- Tasks 8–13: complete
+- Milestone 6B: complete; ready for Milestone 6C
 
 All remaining work follows `docs/superpowers/plans/2026-08-02-milestone-6b-checkpoint-policy.md`, but execution continues across completed task boundaries unless runtime evidence or an external dependency is genuinely required.
 
@@ -183,7 +181,7 @@ shot condition 0
 → unopposed Stand without battle
 ```
 
-An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receive unsupported universal labels.
+An earlier natural control confirmed result `1` immediately before the `GATE CARD WON!` presentation. Codes `0` and `4` remain numeric rather than receiving unsupported universal labels.
 
 Human and AI shot-condition sources converge on the same category:
 
@@ -223,39 +221,27 @@ No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committe
 
 **Status:** complete.
 
-Confirmed:
+The authoritative unsigned difficulty byte is shared Battle Arena configuration `0x020D433C +0x96` (`0x020D43D2`). Overlay 1 writes the selected value and overlay 7 consumes it directly in the AI shot-parameter builder. Natural Easy value `0` and a reversible Normal value `1` control reached the same consumer and changed its derived output. Hard remains outside the semantically confirmed list because it was locked in the available profile.
 
-- the authoritative unsigned difficulty byte is shared Battle Arena configuration `0x020D433C +0x96` (`0x020D43D2`);
-- overlay 1 decodes selected-opponent descriptor byte `+0x0E` bits 5–6 and stores the result through menu state `+0x25C`;
-- overlay 7 reads the same shared byte directly at `0x02232664`;
-- the AI consumer accepts the numeric domain `0`, `1`, and `2`, then writes a separate derived three-halfword parameter tuple;
-- Easy value `0` was observed from a natural menu selection;
-- Normal value `1` was observed through a reversible write to the confirmed authoritative field and changed the derived AI output;
-- the available profile kept Hard locked, so value `2` remains executable-accepted but is not promoted as a runtime-confirmed semantic label;
-- `0x020D4968` is a progression/unlock-bit accumulator and is rejected as either the difficulty field or the direct Normal/Hard unlock source.
-
-Primary normalized implementation and evidence:
+Primary files:
 
 - `src/bakugan_ds/gates/difficulty.py`
 - `analysis/gates/difficulty-context.json`
-- `analysis/symbols/gate_system2_context.csv`
-- `tests/unit/test_gate_difficulty.py`
-- `tests/test_gate_difficulty_artifact.py`
 - `tests/integration/test_gate_difficulty_reference.py`
-
-Local final verification completed with:
-
-```text
-360 passed
-27 expected environment-gated skips
-0 failed
-```
-
-Compilation, changed-file Ruff, strict mypy, whitespace checks, 13 focused model/artifact tests, and four exact-overlay integration checks passed. No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
 
 ## Task 9 — effect timing boundaries
 
-**Status:** pending.
+**Status:** complete.
+
+Twelve distinct confirmed boundaries now define pre/post Gate calculation, pre/post battle-type selection, battle start, Ability activation/resolution, settled battle result, Gate capture/removal, round teardown, and match reset. Each boundary records live context, valid fields, allowed mutations, scripted behavior, fail-closed rollback, and an exact overlay-7 instruction hash.
+
+Primary files:
+
+- `src/bakugan_ds/gates/timing.py`
+- `analysis/gates/effect-timing.json`
+- `tests/unit/test_gate_timing.py`
+- `tests/test_gate_timing_artifact.py`
+- `tests/integration/test_gate_timing_reference.py`
 
 ## Task 10 — System 2.0 record format
 
@@ -298,6 +284,15 @@ Primary files:
 
 ## Task 13 — final documentation and Milestone 6C handoff
 
-**Status:** pending.
+**Status:** complete.
 
-Task 13 begins only after Tasks 8–9 are complete and the generated readiness report contains no failures with `arena_id` as the sole allowed deferred field.
+The generated readiness report confirms `ready_for_milestone_6c = true`, `deferred = ["arena_id"]`, and `failures = []`. The runtime-context document enumerates all confirmed fields, confirmed-absent original state with replacement storage, and all twelve effect timing boundaries. Two no-change rebuilds and their build reports were byte-identical.
+
+Primary files:
+
+- `docs/gate-card-system-2-runtime-context.md`
+- `docs/superpowers/plans/2026-08-02-milestone-6b-verification.md`
+- `analysis/gates/milestone-6c-readiness.json`
+- `tests/test_milestone_6b_handoff.py`
+
+Milestone 6B implements no live System 2.0 gameplay effect. The first experimental data-driven Gate is the next separately reviewed Milestone 6C task.

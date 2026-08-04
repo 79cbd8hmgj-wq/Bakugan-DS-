@@ -47,3 +47,15 @@ overlay_0007,0x0226B4AC,0x0005206C,BranchOnActiveParticipantAI,confirmed,Selects
 overlay_0007,0x0226B5C4,0x00052184,CopyShotConditionToThrowController,confirmed,Copies main shot-controller +0x6198 into throw-controller +0x1DF on the ordinary path.
 overlay_0007,0x0226D488,0x00054048,CopyAlternateShotConditionToThrowController,confirmed,Copies the same shot-condition category into throw-controller +0x1DF on the alternate or scripted path.
 overlay_0007,0x0226E430,0x00054FF0,RunAIShotPlanner,confirmed,Returns for null +0xC8 and consumes the AI controller when non-null.
+overlay_0007,0x0223D1D0,0x00023D90,TimingPreGate,confirmed,Pre-Gate boundary after Gate identity and cache availability but before contribution evaluation.
+overlay_0007,0x0223D290,0x00023E50,TimingPostGate,confirmed,Post-Gate boundary immediately after the target-total G store.
+overlay_0007,0x0223E338,0x00024EF8,TimingPreBattleType,confirmed,Boundary before explicit or fallback battle-type assignment.
+overlay_0007,0x0224183C,0x000283FC,TimingPostBattleType,confirmed,Final battle-type boundary after scripted overrides and before dispatch.
+overlay_0007,0x02241908,0x000284C8,TimingBattleStart,confirmed,Common convergence after the battle-type controller is constructed.
+overlay_0007,0x0221A6B4,0x00001274,TimingAbilityActivation,confirmed,Shared Ability activation timing boundary.
+overlay_0007,0x0221B8D0,0x00002490,TimingAbilityResolution,confirmed,Shared terminal Ability resolution boundary.
+overlay_0007,0x022423E0,0x00028FA0,TimingBattleResult,confirmed,Settled-result boundary before capture-score mutation.
+overlay_0007,0x022423F0,0x00028FB0,TimingGateCapture,confirmed,Capture boundary before score and ledger updates.
+overlay_0007,0x022626B8,0x00049278,TimingGateRemoval,confirmed,Physical arena-placement removal boundary.
+overlay_0007,0x0223D3F4,0x00023FB4,TimingRoundReset,confirmed,Battle-object destructor boundary ending per-round pointer validity.
+overlay_0007,0x0225FD5C,0x0004691C,TimingMatchReset,confirmed,Gate-session constructor boundary clearing match-local state.

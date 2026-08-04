@@ -23,11 +23,11 @@ jobs:
             --exclude='*.nds' \
             --exclude='*.dsv' \
             --exclude='*.ds?' \
-            -czf task8-source.tar.gz .
+            -czf "$RUNNER_TEMP/task8-source.tar.gz" .
       - name: Upload source archive
         uses: actions/upload-artifact@v4
         with:
           name: task8-source
-          path: task8-source.tar.gz
+          path: ${{ runner.temp }}/task8-source.tar.gz
           retention-days: 1
           if-no-files-found: error

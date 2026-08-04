@@ -1,0 +1,48 @@
+name: Apply recovered Milestone 6C patch
+
+on:
+  push:
+    branches:
+      - milestone-6c-comeback-gate-implementation
+    paths:
+      - .sync/run
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-m6c-recovered-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify and apply recovered source patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum .sync/m6c-final.patch.xz | awk '{print $1}')" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
+          xz -dc .sync/m6c-final.patch.xz > /tmp/m6c-final.patch
+          test "$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
+          git apply --check /tmp/m6c-final.patch
+          git apply /tmp/m6c-final.patch
+          rm -rf .sync .github/workflows/apply-m6c-recovered.yml
+
+      - name: Commit synchronized implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: implement Milestone 6C Comeback Gate"
+          git push origin HEAD:milestone-6c-comeback-gate-implementation

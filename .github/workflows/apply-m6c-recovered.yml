@@ -1,27 +1,27 @@
 name: Apply recovered Milestone 6C patch
 
 on:
-  push:
+  pull_request:
     branches:
-      - milestone-6c-comeback-gate-implementation
-    paths:
-      - .sync/run
+      - main
 
 permissions:
   contents: write
 
 concurrency:
-  group: apply-m6c-recovered-${{ github.ref }}
+  group: apply-m6c-recovered-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   apply:
+    if: github.head_ref == 'milestone-6c-comeback-gate-implementation'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out implementation branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -36,6 +36,24 @@ jobs:
           git apply /tmp/m6c-final.patch
           rm -rf .sync .github/workflows/apply-m6c-recovered.yml
 
+      - name: Verify synchronized source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          python -m compileall -q src tests tools
+          mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT HEAD -- '*.py')
+          if ((${#changed_python[@]})); then
+            python -m ruff check "${changed_python[@]}"
+          fi
+          mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)
+          if ((${#changed_source[@]})); then
+            python -m mypy "${changed_source[@]}"
+          fi
+          python -m pytest -q
+          git diff --check
+
       - name: Commit synchronized implementation
         shell: bash
         run: |
@@ -45,4 +63,4 @@ jobs:
           git add -A
           git diff --cached --check
           git commit -m "feat: implement Milestone 6C Comeback Gate"
-          git push origin HEAD:milestone-6c-comeback-gate-implementation
+          git push origin HEAD:${{ github.head_ref }}

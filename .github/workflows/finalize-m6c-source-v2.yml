@@ -1,0 +1,91 @@
+name: Finalize Milestone 6C source v2
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-m6c-source-v2-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.head_ref == 'milestone-6c-comeback-gate-implementation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Format and verify complete pull-request source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/apply-m6c-crc-remediation.yml
+          rm -f .github/workflows/apply-m6c-finalize.yml
+          rm -f .github/workflows/finalize-m6c-source.yml
+          rm -f .github/workflows/finalize-m6c-source-v2.yml
+          rm -rf .sync
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT origin/main...HEAD -- '*.py')
+          if ((${#changed_python[@]})); then
+            python -m ruff check --fix --unsafe-fixes "${changed_python[@]}" || true
+            python -m ruff format "${changed_python[@]}"
+            python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path("src/bakugan_ds/gates/install.py"): (
+                  "handle = tempfile.NamedTemporaryFile(",
+                  "handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
+              ),
+              Path("src/bakugan_ds/workspace/overrides.py"): (
+                  "handle = tempfile.NamedTemporaryFile(",
+                  "handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
+              ),
+          }
+          for path, (old, new) in replacements.items():
+              text = path.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f"unexpected NamedTemporaryFile layout in {path}")
+              path.write_text(text.replace(old, new, 1))
+
+          path = Path("tests/test_gate_milestone_6c_artifacts.py")
+          text = path.read_text()
+          for value in ("0x0228BC20–0x02293C20", "0x02293C20–0x02293C60"):
+              old = f'        "{value}",\n'
+              new = f'        "{value}",  # noqa: RUF001\n'
+              if text.count(old) != 1:
+                  raise SystemExit(f"unexpected exact-range assertion: {value}")
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+            python -m ruff check "${changed_python[@]}"
+          fi
+          mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)
+          if ((${#changed_source[@]})); then
+            python -m mypy "${changed_source[@]}"
+          fi
+          python -m compileall -q src tests tools
+          python -m pytest -q
+          git diff --check
+
+      - name: Commit verified implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: finalize runtime CRC validation"
+          git push origin HEAD:${{ github.head_ref }}

@@ -54,12 +54,15 @@ jobs:
           python -m compileall -q src tests tools
           mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT HEAD -- '*.py')
           if ((${#changed_python[@]})); then
+            python -m ruff check --fix --unsafe-fixes "${changed_python[@]}"
+            python -m ruff format "${changed_python[@]}"
             python -m ruff check "${changed_python[@]}"
           fi
           mapfile -t changed_source < <(printf '%s\n' "${changed_python[@]}" | grep '^src/bakugan_ds/.*\.py$' || true)
           if ((${#changed_source[@]})); then
             python -m mypy "${changed_source[@]}"
           fi
+          python -m compileall -q src tests tools
           python -m pytest -q
           git diff --check
 

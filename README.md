@@ -166,10 +166,14 @@ bakugan-ds gate report-context work/bakugan \
   --evidence analysis/gates/battle-context.json
 ```
 
-See [the legacy Gate system documentation](docs/gate-card-legacy-system.md) and
-[the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md). Milestone 6B now
-completes all required runtime discovery except arena ID; the first experimental
-System 2.0 Gate is deferred to a separately reviewed Milestone 6C.
+See [the legacy Gate system documentation](docs/gate-card-legacy-system.md),
+[the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md), and the
+[complete runtime-context contract](docs/gate-card-system-2-runtime-context.md).
+Milestone 6B confirms every required context and timing boundary except the
+explicitly deferred `arena_id`. The generated
+[Milestone 6C readiness report](analysis/gates/milestone-6c-readiness.json) has
+no failures. Milestone 6B implements no live System 2.0 gameplay effect; the
+first experimental Gate remains a separately reviewed Milestone 6C change.
 
 ## Build the runtime debugger
 

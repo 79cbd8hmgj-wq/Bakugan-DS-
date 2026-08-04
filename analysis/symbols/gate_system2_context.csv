@@ -1,10 +1,15 @@
 component,runtime_address,component_offset,name,confidence,evidence
 arm9,0x0202F134,0x0002F134,CountActiveMultiplayerParticipantSlots,confirmed,Counts active multiplayer slots used as the human-controlled prefix in modes 6 and 7.
 arm9,0x02065BF4,0x00065BF4,LookupGateAttributeBonus,confirmed,Pure six-value Gate-card and attribute-indexed lookup with no activation-state mutation.
+overlay_0001,0x02221E08,0x000089C8,DecodeBattleArenaDifficultySelection,confirmed,Extracts selected-opponent descriptor byte +0x0E bits 5-6 into menu state +0x25C.
+overlay_0001,0x02221E94,0x00008A54,StoreBattleArenaDifficulty,confirmed,Stores menu difficulty state +0x25C into shared Battle Arena configuration 0x020D433C +0x96.
 overlay_0007,0x0221A6B4,0x00001274,BeginAbilityEffectActivation,confirmed,Copies selected Ability metadata into the effect scene and dispatches shared execution.
 overlay_0007,0x0221A728,0x000012E8,ConsumeActivatedAbilitySlot,confirmed,Resolves the active participant and selected slot then requests state 2 through the shared setter.
 overlay_0007,0x0221B8D0,0x00002490,CompleteAbilityEffectResolution,confirmed,Returns completion after state-19 cleanup advances the effect scene to terminal state 20.
 overlay_0007,0x02230F58,0x00017B18,ConstructAIController,confirmed,Initializes the participant-owned AI decision object stored at participant +0xC8.
+overlay_0007,0x02231E2C,0x000189EC,BuildAIShotParameters,confirmed,AI parameter builder that directly consumes shared opponent difficulty and emits a derived three-halfword tuple.
+overlay_0007,0x02232664,0x00019224,ReadBattleDifficultyForAI,confirmed,Reads unsigned shared configuration byte 0x020D433C +0x96 and branches on values 0 1 and 2.
+overlay_0007,0x022327FC,0x000193BC,StoreDerivedAIShotParameters,confirmed,Stores the three derived halfwords after difficulty-sensitive AI parameter calculation.
 overlay_0007,0x0223CFE8,0x00023BA8,ConstructBattleObject,confirmed,Derives Gate owner and constructs the two 20-byte combatant records.
 overlay_0007,0x0223E238,0x00024DF8,ConstructBattleResultController,confirmed,Initializes signed winner index +0x21 to -1 and stores the linked battle object at +0x38.
 overlay_0007,0x0223F918,0x000264D8,AdvanceBattleResultState,confirmed,Resolves and consumes winner and loser combatant indices through result finalization.

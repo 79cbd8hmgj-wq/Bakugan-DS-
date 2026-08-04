@@ -3,7 +3,8 @@
 ## Current summary
 
 - Tasks 1–7: complete
-- Tasks 8–9: pending
+- Task 8: complete
+- Task 9: pending
 - Tasks 10–12: complete
 - Task 13: pending
 
@@ -218,12 +219,43 @@ Compilation, changed-file Ruff, strict mypy, and whitespace checks passed. A fre
 
 No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
 
-## Tasks 8–9
+## Task 8 — difficulty context
+
+**Status:** complete.
+
+Confirmed:
+
+- the authoritative unsigned difficulty byte is shared Battle Arena configuration `0x020D433C +0x96` (`0x020D43D2`);
+- overlay 1 decodes selected-opponent descriptor byte `+0x0E` bits 5–6 and stores the result through menu state `+0x25C`;
+- overlay 7 reads the same shared byte directly at `0x02232664`;
+- the AI consumer accepts the numeric domain `0`, `1`, and `2`, then writes a separate derived three-halfword parameter tuple;
+- Easy value `0` was observed from a natural menu selection;
+- Normal value `1` was observed through a reversible write to the confirmed authoritative field and changed the derived AI output;
+- the available profile kept Hard locked, so value `2` remains executable-accepted but is not promoted as a runtime-confirmed semantic label;
+- `0x020D4968` is a progression/unlock-bit accumulator and is rejected as either the difficulty field or the direct Normal/Hard unlock source.
+
+Primary normalized implementation and evidence:
+
+- `src/bakugan_ds/gates/difficulty.py`
+- `analysis/gates/difficulty-context.json`
+- `analysis/symbols/gate_system2_context.csv`
+- `tests/unit/test_gate_difficulty.py`
+- `tests/test_gate_difficulty_artifact.py`
+- `tests/integration/test_gate_difficulty_reference.py`
+
+Local final verification completed with:
+
+```text
+360 passed
+27 expected environment-gated skips
+0 failed
+```
+
+Compilation, changed-file Ruff, strict mypy, whitespace checks, 13 focused model/artifact tests, and four exact-overlay integration checks passed. No ROM, save, save state, screenshot, raw debugger log, or RAM dump was committed.
+
+## Task 9 — effect timing boundaries
 
 **Status:** pending.
-
-- Task 8: difficulty context
-- Task 9: effect timing boundaries
 
 ## Task 10 — System 2.0 record format
 

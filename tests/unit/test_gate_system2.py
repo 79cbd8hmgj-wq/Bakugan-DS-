@@ -52,9 +52,7 @@ def calculation_context(
         (525, 1, True, 171),
     ],
 )
-def test_juggernoid_vectors(
-    core_g: int, attribute_id: int, behind: bool, expected: int
-) -> None:
+def test_juggernoid_vectors(core_g: int, attribute_id: int, behind: bool, expected: int) -> None:
     context = calculation_context(
         core_g=core_g,
         attribute_id=attribute_id,
@@ -98,9 +96,7 @@ def test_tied_owner_does_not_satisfy_owner_behind() -> None:
 
 
 def test_legacy_passthrough_returns_record_fallback_without_components() -> None:
-    result = calculate_gate_bonus(
-        legacy_passthrough_record(1), calculation_context()
-    )
+    result = calculate_gate_bonus(legacy_passthrough_record(1), calculation_context())
 
     assert result.effective_gate_bonus is None
     assert result.target_total_g is None
@@ -264,9 +260,7 @@ def test_confirmed_lcg_transition() -> None:
     from bakugan_ds.gates.history import advance_weighted_lcg
 
     next_state = advance_weighted_lcg(0x0000000012345678)
-    assert next_state == (
-        0x0000000012345678 * 0x5D588B656C078965 + 0x00269EC3
-    ) & 0xFFFFFFFFFFFFFFFF
+    assert next_state == (0x0000000012345678 * 0x5D588B656C078965 + 0x00269EC3) & 0xFFFFFFFFFFFFFFFF
     assert next_state == 0xF287E3062E5AF41B
 
 
@@ -354,9 +348,7 @@ def test_passthrough_battle_type_uses_legacy_without_rng() -> None:
 def test_invalid_weight_vector_uses_phase_local_legacy_fallback() -> None:
     from bakugan_ds.gates.selector import select_system2_battle_type
 
-    record = replace(
-        approved_juggernoid_record(), battle_weights=(0, 0, 0, 0, 0, 0)
-    )
+    record = replace(approved_juggernoid_record(), battle_weights=(0, 0, 0, 0, 0, 0))
     result = select_system2_battle_type(
         record,
         constructor_type=-1,
@@ -376,9 +368,7 @@ def test_invalid_weight_vector_uses_phase_local_legacy_fallback() -> None:
 def test_scripted_override_still_applies_after_phase_local_fallback() -> None:
     from bakugan_ds.gates.selector import select_system2_battle_type
 
-    record = replace(
-        approved_juggernoid_record(), battle_weights=(0, 0, 0, 0, 0, 0)
-    )
+    record = replace(approved_juggernoid_record(), battle_weights=(0, 0, 0, 0, 0, 0))
     result = select_system2_battle_type(
         record,
         constructor_type=-1,
@@ -420,10 +410,7 @@ def test_battle_type_trace_has_approved_fields() -> None:
 def test_gate_runtime_core_compression_matches_merged_curve() -> None:
     from bakugan_ds.gates.system2 import compress_core_g_for_gate
 
-    assert {
-        value: compress_core_g_for_gate(value)
-        for value in (0, 190, 400, 401, 650, 990)
-    } == {
+    assert {value: compress_core_g_for_gate(value) for value in (0, 190, 400, 401, 650, 990)} == {
         0: 0,
         190: 190,
         400: 400,

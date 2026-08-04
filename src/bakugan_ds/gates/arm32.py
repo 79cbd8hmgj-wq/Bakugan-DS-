@@ -167,9 +167,7 @@ def encode_rotated_immediate(value: int) -> int:
         candidate = _rotate_left(immediate, amount)
         if candidate <= 0xFF and _rotate_right(candidate, amount) == immediate:
             return (rotation << 8) | candidate
-    raise WorkspaceError(
-        f"value 0x{immediate:08X} is not an ARM rotated immediate"
-    )
+    raise WorkspaceError(f"value 0x{immediate:08X} is not an ARM rotated immediate")
 
 
 def encode_data_processing_immediate(
@@ -443,12 +441,7 @@ class _LiteralLoadItem:
 
 
 ArmItem: TypeAlias = (
-    _LabelItem
-    | _WordItem
-    | _AlignItem
-    | _LiteralItem
-    | _BranchItem
-    | _LiteralLoadItem
+    _LabelItem | _WordItem | _AlignItem | _LiteralItem | _BranchItem | _LiteralLoadItem
 )
 
 
@@ -552,9 +545,7 @@ class ArmProgram:
                 continue
             if isinstance(item, _AlignItem):
                 continue
-            if isinstance(item, _WordItem):
-                encoded = item.value
-            elif isinstance(item, _LiteralItem):
+            if isinstance(item, (_WordItem, _LiteralItem)):
                 encoded = item.value
             elif isinstance(item, _BranchItem):
                 target = symbols.get(item.symbol)
@@ -598,9 +589,7 @@ class ArmProgram:
                 raise WorkspaceError("unknown ARM program item")
             struct.pack_into("<I", image, item_offset, encoded)
 
-        ordered_symbols = dict(
-            sorted(symbols.items(), key=lambda item: (item[1], item[0]))
-        )
+        ordered_symbols = dict(sorted(symbols.items(), key=lambda item: (item[1], item[0])))
         return BuiltArmProgram(
             image=bytes(image),
             symbols=ordered_symbols,

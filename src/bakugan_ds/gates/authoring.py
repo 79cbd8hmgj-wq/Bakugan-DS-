@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.record import GATE_RECORD_FIELD_NAMES, GateRecordV1, RECORD_COUNT
+from bakugan_ds.gates.record import GATE_RECORD_FIELD_NAMES, RECORD_COUNT, GateRecordV1
 
 _RECORD_FIELDS = frozenset(GATE_RECORD_FIELD_NAMES)
 _ROOT_FIELDS = frozenset({"format_version", "records"})
@@ -81,9 +81,7 @@ def validate_milestone_6c_roster(records: tuple[GateRecordV1, ...]) -> None:
             if record != approved_juggernoid_record():
                 raise WorkspaceError("Gate 19 does not match the approved prototype")
         elif record != legacy_passthrough_record(record.card_id):
-            raise WorkspaceError(
-                f"Gate {record.card_id} must remain canonical legacy passthrough"
-            )
+            raise WorkspaceError(f"Gate {record.card_id} must remain canonical legacy passthrough")
 
 
 def _require_object(value: object, label: str) -> dict[str, object]:
@@ -123,50 +121,26 @@ def _parse_record(value: object, index: int) -> GateRecordV1:
             card_id=_integer(item["card_id"], f"records[{index}].card_id"),
             archetype=_integer(item["archetype"], f"records[{index}].archetype"),
             flags=_integer(item["flags"], f"records[{index}].flags"),
-            flat_bonus_g=_integer(
-                item["flat_bonus_g"], f"records[{index}].flat_bonus_g"
-            ),
-            percent_q8_8=_integer(
-                item["percent_q8_8"], f"records[{index}].percent_q8_8"
-            ),
+            flat_bonus_g=_integer(item["flat_bonus_g"], f"records[{index}].flat_bonus_g"),
+            percent_q8_8=_integer(item["percent_q8_8"], f"records[{index}].percent_q8_8"),
             attribute_modifiers=_vector(
                 item["attribute_modifiers"],
                 f"records[{index}].attribute_modifiers",
             ),
-            battle_weights=_vector(
-                item["battle_weights"], f"records[{index}].battle_weights"
-            ),
-            preferred_type=_integer(
-                item["preferred_type"], f"records[{index}].preferred_type"
-            ),
-            condition_id=_integer(
-                item["condition_id"], f"records[{index}].condition_id"
-            ),
+            battle_weights=_vector(item["battle_weights"], f"records[{index}].battle_weights"),
+            preferred_type=_integer(item["preferred_type"], f"records[{index}].preferred_type"),
+            condition_id=_integer(item["condition_id"], f"records[{index}].condition_id"),
             effect_id=_integer(item["effect_id"], f"records[{index}].effect_id"),
-            drawback_id=_integer(
-                item["drawback_id"], f"records[{index}].drawback_id"
-            ),
-            effect_value=_integer(
-                item["effect_value"], f"records[{index}].effect_value"
-            ),
-            drawback_value=_integer(
-                item["drawback_value"], f"records[{index}].drawback_value"
-            ),
+            drawback_id=_integer(item["drawback_id"], f"records[{index}].drawback_id"),
+            effect_value=_integer(item["effect_value"], f"records[{index}].effect_value"),
+            drawback_value=_integer(item["drawback_value"], f"records[{index}].drawback_value"),
             activation_limit=_integer(
                 item["activation_limit"], f"records[{index}].activation_limit"
             ),
-            fatigue_rate=_integer(
-                item["fatigue_rate"], f"records[{index}].fatigue_rate"
-            ),
-            target_mode=_integer(
-                item["target_mode"], f"records[{index}].target_mode"
-            ),
-            timing_phase=_integer(
-                item["timing_phase"], f"records[{index}].timing_phase"
-            ),
-            condition_value=_integer(
-                item["condition_value"], f"records[{index}].condition_value"
-            ),
+            fatigue_rate=_integer(item["fatigue_rate"], f"records[{index}].fatigue_rate"),
+            target_mode=_integer(item["target_mode"], f"records[{index}].target_mode"),
+            timing_phase=_integer(item["timing_phase"], f"records[{index}].timing_phase"),
+            condition_value=_integer(item["condition_value"], f"records[{index}].condition_value"),
             secondary_effect_id=_integer(
                 item["secondary_effect_id"],
                 f"records[{index}].secondary_effect_id",
@@ -175,9 +149,7 @@ def _parse_record(value: object, index: int) -> GateRecordV1:
                 item["secondary_condition_id"],
                 f"records[{index}].secondary_condition_id",
             ),
-            secondary_value=_integer(
-                item["secondary_value"], f"records[{index}].secondary_value"
-            ),
+            secondary_value=_integer(item["secondary_value"], f"records[{index}].secondary_value"),
             reserved=_integer(item["reserved"], f"records[{index}].reserved"),
         )
     except KeyError as exc:
@@ -188,9 +160,7 @@ def _parse_record(value: object, index: int) -> GateRecordV1:
 
 def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
     try:
-        root = _require_object(
-            json.loads(path.read_text(encoding="utf-8")), "authoring document"
-        )
+        root = _require_object(json.loads(path.read_text(encoding="utf-8")), "authoring document")
     except (OSError, json.JSONDecodeError) as exc:
         raise WorkspaceError(f"cannot load Gate authoring document {path}: {exc}") from exc
     actual_root_fields = frozenset(root)

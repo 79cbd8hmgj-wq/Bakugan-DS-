@@ -19,6 +19,7 @@ def test_milestone_6c_authoring_is_new_configuration_and_exact_scope() -> None:
     for forbidden in ("raw_bytes", "ram_dump", "save_state", "arena_id"):
         assert forbidden not in text
 
+
 RUNTIME_CONTRACT = Path("analysis/gates/milestone-6c-runtime-contract.json")
 
 
@@ -26,12 +27,8 @@ def test_runtime_contract_records_task_9_live_calculation_boundary() -> None:
     payload = json.loads(RUNTIME_CONTRACT.read_text(encoding="utf-8"))
     boundary = payload["task_9_boundary"]
     assert boundary["prototype_gate_id"] == 19
-    assert boundary["live_system2_behavior"] == (
-        "juggernoid_hybrid_gate_calculation"
-    )
-    assert boundary["battle_type_selection"] == (
-        "legacy_fixed_metadata_until_task_10"
-    )
+    assert boundary["live_system2_behavior"] == ("juggernoid_hybrid_gate_calculation")
+    assert boundary["battle_type_selection"] == ("legacy_fixed_metadata_until_task_10")
     assert boundary["mutable_modifier_scaled"] is False
     assert boundary["tie_activates"] is False
     assert boundary["complete_legacy_fallback"] is True
@@ -71,9 +68,8 @@ def test_runtime_contract_records_task_10_weighted_selector_boundary() -> None:
         "weight_pointer": "cache +0x0E",
         "weighted_helper": "0x02021A30",
     }
-    assert payload["symbols"]["g2_select_battle_type"].startswith(
-        "Uses the approved Gate 19"
-    )
+    assert payload["symbols"]["g2_select_battle_type"].startswith("Uses the approved Gate 19")
+
 
 BUILD_CONTRACT = Path("analysis/gates/milestone-6c-build-contract.json")
 HOOK_PATCHES = Path("patches/gate-system2-milestone-6c-hooks.json")
@@ -111,9 +107,7 @@ def test_milestone_6c_build_contract_has_exact_install_scope() -> None:
         "stored_size": 448192,
         "passthrough_length": 32768,
         "header_length": 193,
-        "stored_sha256": (
-            "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8"
-        ),
+        "stored_sha256": ("95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8"),
         "in_place_decode_matches": True,
     }
     assert contract["guarded_change_count"] == 7
@@ -131,12 +125,11 @@ def test_milestone_6c_build_contract_has_exact_install_scope() -> None:
     for forbidden in ("module_binary", "rom_bytes", "ram_dump", "save_state"):
         assert forbidden not in text
 
+
 PROTOTYPE_DOC = Path("docs/gate-card-system-2-prototype.md")
 ROADMAP_DOC = Path("docs/gate-card-system-2-roadmap.md")
 RUNTIME_CONTEXT_DOC = Path("docs/gate-card-system-2-runtime-context.md")
-VERIFICATION_DOC = Path(
-    "docs/superpowers/plans/2026-08-03-milestone-6c-verification.md"
-)
+VERIFICATION_DOC = Path("docs/superpowers/plans/2026-08-03-milestone-6c-verification.md")
 README = Path("README.md")
 
 
@@ -149,8 +142,8 @@ def test_milestone_6c_prototype_document_records_exact_live_contract() -> None:
         "attribute_modifiers:  [0, 30, 0, 0, 0, 0]",
         "battle_weights:       [50, 30, 30, 30, 30, 30]",
         "Gate-owner side is behind",
-        "0x0228BC20–0x02293C20",
-        "0x02293C20–0x02293C60",
+        "0x0228BC20–0x02293C20",  # noqa: RUF001
+        "0x02293C20–0x02293C60",  # noqa: RUF001
         "Record-level fallback",
         "Calculation-level fallback",
         "Selector-phase fallback",

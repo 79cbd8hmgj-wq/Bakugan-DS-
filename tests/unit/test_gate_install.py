@@ -54,9 +54,9 @@ def _synthetic_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pat
         start = patch.offset
         original_overlay[start : start + len(patch.expected)] = patch.expected
     for hook in module.hook_replacements:
-        original_overlay[
-            hook.component_offset : hook.component_offset + len(hook.expected)
-        ] = hook.expected
+        original_overlay[hook.component_offset : hook.component_offset + len(hook.expected)] = (
+            hook.expected
+        )
     patched_overlay = bytearray(original_overlay)
     for patch in core_patch.patches:
         start = patch.offset
@@ -64,12 +64,8 @@ def _synthetic_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pat
         patched_overlay[start : start + len(patch.replacement)] = patch.replacement
     original_overlay_bytes = bytes(original_overlay)
     patched_overlay_bytes = bytes(patched_overlay)
-    (layout.original_decoded_overlays / "overlay_007.bin").write_bytes(
-        original_overlay_bytes
-    )
-    (layout.modified_overlays / "overlay_007.bin").write_bytes(
-        patched_overlay_bytes
-    )
+    (layout.original_decoded_overlays / "overlay_007.bin").write_bytes(original_overlay_bytes)
+    (layout.modified_overlays / "overlay_007.bin").write_bytes(patched_overlay_bytes)
 
     decoded_arm9 = bytearray(0x7000)
     decoded_arm9[0x6264:0x6268] = bytes.fromhex("20bc2802")
@@ -121,9 +117,7 @@ def _synthetic_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pat
             ),
         ),
     )
-    (layout.manifests / "workspace.json").write_text(
-        manifest.to_json(), encoding="utf-8"
-    )
+    (layout.manifests / "workspace.json").write_text(manifest.to_json(), encoding="utf-8")
     readiness = tmp_path / "readiness.json"
     readiness.write_text(
         json.dumps(

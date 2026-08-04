@@ -20,9 +20,7 @@ def _require_int(value: object, label: str) -> int:
 def _participant_index(value: object, label: str) -> int:
     result = _require_int(value, label)
     if not 0 <= result <= _MAX_PARTICIPANT_INDEX:
-        raise WorkspaceError(
-            f"{label} must be between 0 and {_MAX_PARTICIPANT_INDEX}"
-        )
+        raise WorkspaceError(f"{label} must be between 0 and {_MAX_PARTICIPANT_INDEX}")
     return result
 
 
@@ -59,17 +57,13 @@ class BattleSnapshot:
         expected_count = 4 if self.team_mode else 2
         if len(self.participants) != expected_count:
             label = "team mode" if self.team_mode else "solo mode"
-            raise WorkspaceError(
-                f"{label} requires exactly {expected_count} participants"
-            )
+            raise WorkspaceError(f"{label} requires exactly {expected_count} participants")
 
         by_index: dict[int, ParticipantSnapshot] = {}
         for participant in self.participants:
             participant.validate()
             if participant.index in by_index:
-                raise WorkspaceError(
-                    f"duplicate participant index: {participant.index}"
-                )
+                raise WorkspaceError(f"duplicate participant index: {participant.index}")
             by_index[participant.index] = participant
         if owner not in by_index:
             raise WorkspaceError("Gate owner is not an active participant")
@@ -81,9 +75,7 @@ class BattleSnapshot:
         for participant in self.participants:
             teammate_index = participant.teammate_index
             if teammate_index is None:
-                raise WorkspaceError(
-                    f"team participant {participant.index} requires a teammate"
-                )
+                raise WorkspaceError(f"team participant {participant.index} requires a teammate")
             if teammate_index == participant.index:
                 raise WorkspaceError("team participants require distinct teammates")
             teammate = by_index.get(teammate_index)
@@ -109,10 +101,12 @@ class BattleSnapshot:
         self.validate()
         if not self.team_mode:
             raise WorkspaceError("solo mode has no teammate pairs")
-        pairs = {
-            frozenset((participant.index, participant.teammate_index))
-            for participant in self.participants
-        }
+        pairs: set[frozenset[int]] = set()
+        for participant in self.participants:
+            teammate_index = participant.teammate_index
+            if teammate_index is None:
+                raise WorkspaceError("team participant requires a teammate")
+            pairs.add(frozenset((participant.index, teammate_index)))
         return tuple(sorted(pairs, key=lambda pair: tuple(sorted(pair))))
 
 

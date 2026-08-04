@@ -24,9 +24,7 @@ def test_exact_overlay_hook_guards_and_module_layout() -> None:
         "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1"
     )
     for hook in module.hook_replacements:
-        actual = overlay[
-            hook.component_offset : hook.component_offset + len(hook.expected)
-        ]
+        actual = overlay[hook.component_offset : hook.component_offset + len(hook.expected)]
         assert actual == hook.expected
     assert len(module.image) == 0x8000
     assert module.symbols["g2_clear_cache"].address == 0x0228BC20
@@ -73,22 +71,23 @@ def test_exact_overlay_module_activates_task_9_gate_path() -> None:
         hook for hook in module.hook_replacements if hook.target_symbol == "g2_gate_bonus_hook"
     )
     context_hook = next(
-        hook
-        for hook in module.hook_replacements
-        if hook.target_symbol == "g2_context_store_hook"
+        hook for hook in module.hook_replacements if hook.target_symbol == "g2_context_store_hook"
     )
-    assert overlay[
-        gate_hook.component_offset : gate_hook.component_offset + len(gate_hook.expected)
-    ] == gate_hook.expected
-    assert overlay[
-        context_hook.component_offset : context_hook.component_offset + len(context_hook.expected)
-    ] == context_hook.expected
+    assert (
+        overlay[gate_hook.component_offset : gate_hook.component_offset + len(gate_hook.expected)]
+        == gate_hook.expected
+    )
+    assert (
+        overlay[
+            context_hook.component_offset : context_hook.component_offset
+            + len(context_hook.expected)
+        ]
+        == context_hook.expected
+    )
 
     gate_entry = module.symbols["g2_gate_bonus_hook"]
     gate_word = int.from_bytes(
-        module.image[
-            gate_entry.address - MODULE_BASE : gate_entry.address - MODULE_BASE + 4
-        ],
+        module.image[gate_entry.address - MODULE_BASE : gate_entry.address - MODULE_BASE + 4],
         "little",
     )
     assert decode_branch_target(gate_entry.address, gate_word) == (

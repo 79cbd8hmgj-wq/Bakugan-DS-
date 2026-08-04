@@ -110,9 +110,7 @@ def test_team_context_compares_owner_pair_with_other_pair() -> None:
 
     assert context.owner_side_score == 1
     assert context.opposing_side_score == 2
-    assert calculate_gate_bonus(
-        approved_juggernoid_record(), context
-    ).effective_gate_bonus == 141
+    assert calculate_gate_bonus(approved_juggernoid_record(), context).effective_gate_bonus == 141
 
 
 def test_tied_team_score_does_not_activate_comeback() -> None:
@@ -279,8 +277,7 @@ def test_context_projection_is_independent_of_combatant_evaluation_order() -> No
 
     assert contexts_first == contexts_reversed
     results = tuple(
-        calculate_gate_bonus(approved_juggernoid_record(), context)
-        for context in contexts_first
+        calculate_gate_bonus(approved_juggernoid_record(), context) for context in contexts_first
     )
     assert results[0].effective_gate_bonus == 74
     assert results[1].effective_gate_bonus == 147

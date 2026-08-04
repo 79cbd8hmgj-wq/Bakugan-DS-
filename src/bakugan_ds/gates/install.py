@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
 import json
-from pathlib import Path
 import tempfile
+from dataclasses import asdict, dataclass, replace
+from pathlib import Path
 
 from bakugan_ds.compression.blz import (
     compress_blz,
@@ -38,9 +38,7 @@ from bakugan_ds.workspace.overrides import (
 )
 
 SUPPORTED_PROFILE_ID = "b6re_rev0"
-CORE_PATCHED_OVERLAY_SHA256 = (
-    "7e310ef95fcc3304870b98d11046ed453b1dc2d270f42a438af161b603437f2e"
-)
+CORE_PATCHED_OVERLAY_SHA256 = "7e310ef95fcc3304870b98d11046ed453b1dc2d270f42a438af161b603437f2e"
 DEFAULT_READINESS_PATH = Path("analysis/gates/milestone-6c-readiness.json")
 DEFAULT_PATCH_PATH = Path("patches/gate-system2-milestone-6c-hooks.json")
 CORE_PATCH_PATH = Path("patches/core-g-compression-400.json")
@@ -191,9 +189,7 @@ def _load_install_patches(path: Path) -> tuple[InstallPatch, ...]:
                 target=str(raw["target"]),
                 offset=int(raw["offset"]),
                 expected=_decode_hex(raw["expected"], f"patches[{index}].expected"),
-                replacement=_decode_hex(
-                    raw["replacement"], f"patches[{index}].replacement"
-                ),
+                replacement=_decode_hex(raw["replacement"], f"patches[{index}].replacement"),
                 rationale=str(raw["rationale"]),
             )
         except (KeyError, TypeError, ValueError) as exc:
@@ -213,9 +209,9 @@ def _apply_core_patch(original_overlay: bytes) -> bytes:
         if patch.target != "overlay:7":
             raise WorkspaceError("core-G patch contains a non-overlay-7 target")
         end = patch.offset + len(patch.expected)
-        if bytes(buffer[patch.offset:end]) != patch.expected:
+        if bytes(buffer[patch.offset : end]) != patch.expected:
             raise WorkspaceError("core-G patch expected bytes do not match overlay 7")
-        buffer[patch.offset:end] = patch.replacement
+        buffer[patch.offset : end] = patch.replacement
     result = bytes(buffer)
     if sha256_bytes(result) != CORE_PATCHED_OVERLAY_SHA256:
         raise WorkspaceError("core-G patched overlay SHA-256 does not match")
@@ -255,9 +251,9 @@ def _patch_overlay(core_overlay: bytes, patches: tuple[InstallPatch, ...]) -> by
         if patch.target != "overlay:7":
             continue
         end = patch.offset + len(patch.expected)
-        if bytes(buffer[patch.offset:end]) != patch.expected:
+        if bytes(buffer[patch.offset : end]) != patch.expected:
             raise WorkspaceError(f"stale overlay hook: {patch.patch_id}")
-        buffer[patch.offset:end] = patch.replacement
+        buffer[patch.offset : end] = patch.replacement
     return bytes(buffer)
 
 
@@ -367,9 +363,9 @@ def _prepare_install(
         overlays=(overlay_override,),
     )
     overrides.validate()
-    override_bytes = (
-        json.dumps(overrides.to_dict(), indent=2, sort_keys=True) + "\n"
-    ).encode("utf-8")
+    override_bytes = (json.dumps(overrides.to_dict(), indent=2, sort_keys=True) + "\n").encode(
+        "utf-8"
+    )
 
     report = InstallReport(
         format_version=1,
@@ -415,7 +411,7 @@ def _write_transaction(targets: tuple[tuple[Path, bytes], ...]) -> None:
         for path, data in targets:
             path.parent.mkdir(parents=True, exist_ok=True)
             snapshots[path] = path.read_bytes() if path.exists() else None
-            handle = tempfile.NamedTemporaryFile(
+            handle = tempfile.NamedTemporaryFile(  # noqa: SIM115
                 prefix=f".{path.name}.tmp-",
                 dir=path.parent,
                 delete=False,
@@ -478,7 +474,8 @@ def install_milestone_6c(
         return prepared.report
 
     installed_report = replace(prepared.report, dry_run=False, no_op=False)
-    targets = expected_targets + (
+    targets = (
+        *expected_targets,
         (prepared.report_path, installed_report.to_json().encode("utf-8")),
     )
     _write_transaction(targets)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum, StrEnum
+from typing import TypeGuard
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.record import GateRecordV1
@@ -60,7 +61,7 @@ class FallbackReason(StrEnum):
     INVALID_RNG_STATE = "invalid_rng_state"
 
 
-def _is_int(value: object) -> bool:
+def _is_int(value: object) -> TypeGuard[int]:
     return isinstance(value, int) and not isinstance(value, bool)
 
 

@@ -100,10 +100,14 @@ def test_reference_raw_and_overlay_overrides_preserve_unrelated_payloads(
     for original_entry, rebuilt_entry in zip(source_fat, rebuilt_fat, strict=True):
         if original_entry.file_id in changed_ids:
             continue
-        assert source[original_entry.start : original_entry.end] == rebuilt[
-            rebuilt_entry.start : rebuilt_entry.end
-        ]
+        assert (
+            source[original_entry.start : original_entry.end]
+            == rebuilt[rebuilt_entry.start : rebuilt_entry.end]
+        )
     assert rebuilt[rebuilt_fat[2762].start : rebuilt_fat[2762].end] == replacement_raw
-    assert rebuilt[
-        rebuilt_fat[overlay_manifest.file_id].start : rebuilt_fat[overlay_manifest.file_id].end
-    ] == replacement_overlay
+    assert (
+        rebuilt[
+            rebuilt_fat[overlay_manifest.file_id].start : rebuilt_fat[overlay_manifest.file_id].end
+        ]
+        == replacement_overlay
+    )

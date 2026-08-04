@@ -65,60 +65,64 @@ def test_branch_rejects_thumb_unaligned_and_out_of_range_targets() -> None:
 
 
 def test_data_processing_exact_words() -> None:
-    assert encode_data_processing_immediate(
-        DataOpcode.MOV, rd=Register.R0, immediate=1
-    ) == 0xE3A00001
-    assert encode_data_processing_immediate(
-        DataOpcode.ADD, rd=Register.R1, rn=Register.R2, immediate=4
-    ) == 0xE2821004
-    assert encode_data_processing_immediate(
-        DataOpcode.CMP,
-        rn=Register.R3,
-        immediate=6,
-        set_flags=True,
-    ) == 0xE3530006
-    assert encode_data_processing_register(
-        DataOpcode.MOV,
-        rd=Register.R4,
-        rm=Register.R5,
-        condition=Condition.NE,
-    ) == 0x11A04005
+    assert (
+        encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=1) == 0xE3A00001
+    )
+    assert (
+        encode_data_processing_immediate(
+            DataOpcode.ADD, rd=Register.R1, rn=Register.R2, immediate=4
+        )
+        == 0xE2821004
+    )
+    assert (
+        encode_data_processing_immediate(
+            DataOpcode.CMP,
+            rn=Register.R3,
+            immediate=6,
+            set_flags=True,
+        )
+        == 0xE3530006
+    )
+    assert (
+        encode_data_processing_register(
+            DataOpcode.MOV,
+            rd=Register.R4,
+            rm=Register.R5,
+            condition=Condition.NE,
+        )
+        == 0x11A04005
+    )
 
 
 def test_data_processing_rejects_unencodable_immediate() -> None:
     with pytest.raises(WorkspaceError, match="rotated immediate"):
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R0, immediate=0x12345678
-        )
+        encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0x12345678)
 
 
 def test_multiply_and_memory_transfer_exact_words() -> None:
     assert encode_mul(Register.R0, Register.R1, Register.R2) == 0xE0000291
-    assert encode_load_store(
-        Register.R0, Register.R1, offset=4, load=True
-    ) == 0xE5910004
-    assert encode_load_store(
-        Register.R2,
-        Register.R3,
-        offset=-1,
-        load=False,
-        byte=True,
-    ) == 0xE5432001
-    assert encode_halfword_transfer(
-        Register.R0, Register.R1, offset=2, load=True
-    ) == 0xE1D100B2
-    assert encode_halfword_transfer(
-        Register.R2, Register.R3, offset=4, load=False
-    ) == 0xE1C320B4
+    assert encode_load_store(Register.R0, Register.R1, offset=4, load=True) == 0xE5910004
+    assert (
+        encode_load_store(
+            Register.R2,
+            Register.R3,
+            offset=-1,
+            load=False,
+            byte=True,
+        )
+        == 0xE5432001
+    )
+    assert encode_halfword_transfer(Register.R0, Register.R1, offset=2, load=True) == 0xE1D100B2
+    assert encode_halfword_transfer(Register.R2, Register.R3, offset=4, load=False) == 0xE1C320B4
 
 
 def test_stack_register_list_encodings() -> None:
-    assert encode_push(
-        (Register.R4, Register.R5, Register.R6, Register.R7, Register.LR)
-    ) == 0xE92D40F0
-    assert encode_pop(
-        (Register.R4, Register.R5, Register.R6, Register.R7, Register.PC)
-    ) == 0xE8BD80F0
+    assert (
+        encode_push((Register.R4, Register.R5, Register.R6, Register.R7, Register.LR)) == 0xE92D40F0
+    )
+    assert (
+        encode_pop((Register.R4, Register.R5, Register.R6, Register.R7, Register.PC)) == 0xE8BD80F0
+    )
     with pytest.raises(WorkspaceError, match="duplicate"):
         encode_push((Register.R4, Register.R4))
     with pytest.raises(WorkspaceError, match="nonempty"):
@@ -154,9 +158,10 @@ def test_program_build_resolves_labels_literals_and_zero_padding() -> None:
         "done": MODULE_BASE + 0x14,
     }
     assert struct.unpack_from("<I", built.image, 0)[0] == 0xE59F0008
-    assert decode_branch_target(
-        MODULE_BASE + 4, struct.unpack_from("<I", built.image, 4)[0]
-    ) == MODULE_BASE + 0x14
+    assert (
+        decode_branch_target(MODULE_BASE + 4, struct.unpack_from("<I", built.image, 4)[0])
+        == MODULE_BASE + 0x14
+    )
     assert struct.unpack_from("<I", built.image, 0x10)[0] == 0x02293C20
     assert struct.unpack_from("<I", built.image, 0x14)[0] == 0xE12FFF1E
     assert built.image[0x18:] == b"\0" * (MODULE_SIZE - 0x18)
@@ -207,26 +212,35 @@ def test_shifted_register_data_processing_encodes_exact_arm_words() -> None:
         encode_data_processing_shifted_register,
     )
 
-    assert encode_data_processing_shifted_register(
-        DataOpcode.MOV,
-        rd=Register.R0,
-        rm=Register.R0,
-        shift_type=ShiftType.LSR,
-        shift_amount=8,
-    ) == 0xE1A00420
-    assert encode_data_processing_shifted_register(
-        DataOpcode.MOV,
-        rd=Register.R0,
-        rm=Register.R0,
-        shift_type=ShiftType.LSR,
-        shift_amount=1,
-        condition=Condition.HI,
-    ) == 0x81A000A0
-    assert encode_data_processing_shifted_register(
-        DataOpcode.ADD,
-        rd=Register.R1,
-        rn=Register.R1,
-        rm=Register.R0,
-        shift_type=ShiftType.LSL,
-        shift_amount=2,
-    ) == 0xE0811100
+    assert (
+        encode_data_processing_shifted_register(
+            DataOpcode.MOV,
+            rd=Register.R0,
+            rm=Register.R0,
+            shift_type=ShiftType.LSR,
+            shift_amount=8,
+        )
+        == 0xE1A00420
+    )
+    assert (
+        encode_data_processing_shifted_register(
+            DataOpcode.MOV,
+            rd=Register.R0,
+            rm=Register.R0,
+            shift_type=ShiftType.LSR,
+            shift_amount=1,
+            condition=Condition.HI,
+        )
+        == 0x81A000A0
+    )
+    assert (
+        encode_data_processing_shifted_register(
+            DataOpcode.ADD,
+            rd=Register.R1,
+            rn=Register.R1,
+            rm=Register.R0,
+            shift_type=ShiftType.LSL,
+            shift_amount=2,
+        )
+        == 0xE0811100
+    )

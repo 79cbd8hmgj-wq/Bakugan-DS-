@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import json
-from pathlib import Path
 import tempfile
+from dataclasses import asdict, dataclass
+from pathlib import Path
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.workspace.paths import safe_relative_path
@@ -38,9 +38,7 @@ class RawNitroFsOverride:
         if min(self.expected_size, self.replacement_size) < 0:
             raise WorkspaceError("raw override sizes must be nonnegative")
         expected = _require_sha256(self.expected_sha256, "expected raw SHA-256")
-        replacement = _require_sha256(
-            self.replacement_sha256, "replacement raw SHA-256"
-        )
+        replacement = _require_sha256(self.replacement_sha256, "replacement raw SHA-256")
         if self.expected_size == self.replacement_size and expected == replacement:
             raise WorkspaceError("raw override replacement must change size or content")
 
@@ -57,12 +55,15 @@ class OverlayLayoutOverride:
     def validate(self) -> None:
         if isinstance(self.overlay_id, bool) or self.overlay_id < 0:
             raise WorkspaceError("overlay override ID must be nonnegative")
-        if min(
-            self.expected_ram_size,
-            self.expected_bss_size,
-            self.replacement_ram_size,
-            self.replacement_bss_size,
-        ) < 0:
+        if (
+            min(
+                self.expected_ram_size,
+                self.expected_bss_size,
+                self.replacement_ram_size,
+                self.replacement_bss_size,
+            )
+            < 0
+        ):
             raise WorkspaceError("overlay override geometry must be nonnegative")
         if self.expected_ram_size == 0 or self.replacement_ram_size == 0:
             raise WorkspaceError("overlay RAM sizes must be positive")
@@ -100,41 +101,35 @@ class BuildOverrides:
                 f"unsupported build override format version: {self.format_version}"
             )
         if self.profile_id != SUPPORTED_PROFILE_ID:
-            raise WorkspaceError(
-                f"unsupported build override profile: {self.profile_id}"
-            )
+            raise WorkspaceError(f"unsupported build override profile: {self.profile_id}")
         raw_ids: set[int] = set()
         raw_paths: set[str] = set()
-        for override in self.raw_nitrofs:
-            override.validate()
-            if override.file_id in raw_ids:
-                raise WorkspaceError(
-                    f"duplicate raw override file ID: {override.file_id}"
-                )
-            if override.path in raw_paths:
-                raise WorkspaceError(f"duplicate raw override path: {override.path}")
-            raw_ids.add(override.file_id)
-            raw_paths.add(override.path)
+        for raw_override in self.raw_nitrofs:
+            raw_override.validate()
+            if raw_override.file_id in raw_ids:
+                raise WorkspaceError(f"duplicate raw override file ID: {raw_override.file_id}")
+            if raw_override.path in raw_paths:
+                raise WorkspaceError(f"duplicate raw override path: {raw_override.path}")
+            raw_ids.add(raw_override.file_id)
+            raw_paths.add(raw_override.path)
         overlay_ids: set[int] = set()
-        for override in self.overlays:
-            override.validate()
-            if override.overlay_id in overlay_ids:
+        for overlay_override in self.overlays:
+            overlay_override.validate()
+            if overlay_override.overlay_id in overlay_ids:
                 raise WorkspaceError(
-                    f"duplicate overlay override ID: {override.overlay_id}"
+                    f"duplicate overlay override ID: {overlay_override.overlay_id}"
                 )
-            overlay_ids.add(override.overlay_id)
+            overlay_ids.add(overlay_override.overlay_id)
 
     def to_dict(self) -> dict[str, object]:
         return {
             "format_version": self.format_version,
             "profile_id": self.profile_id,
             "raw_nitrofs": [
-                asdict(item)
-                for item in sorted(self.raw_nitrofs, key=lambda item: item.file_id)
+                asdict(item) for item in sorted(self.raw_nitrofs, key=lambda item: item.file_id)
             ],
             "overlays": [
-                asdict(item)
-                for item in sorted(self.overlays, key=lambda item: item.overlay_id)
+                asdict(item) for item in sorted(self.overlays, key=lambda item: item.overlay_id)
             ],
         }
 
@@ -179,9 +174,7 @@ def load_build_overrides(path: Path) -> BuildOverrides | None:
                 ),
                 replacement_sha256=str(item["replacement_sha256"]),
             )
-            for index, value in enumerate(
-                _require_array(root.get("raw_nitrofs"), "raw_nitrofs")
-            )
+            for index, value in enumerate(_require_array(root.get("raw_nitrofs"), "raw_nitrofs"))
             for item in (_require_object(value, f"raw_nitrofs[{index}]"),)
         )
         overlays = tuple(
@@ -223,16 +216,14 @@ def load_build_overrides(path: Path) -> BuildOverrides | None:
 def write_build_overrides(path: Path, overrides: BuildOverrides) -> None:
     overrides.validate()
     path.parent.mkdir(parents=True, exist_ok=True)
-    handle = tempfile.NamedTemporaryFile(
+    handle = tempfile.NamedTemporaryFile(  # noqa: SIM115
         prefix=f".{path.name}.tmp-", dir=path.parent, delete=False
     )
     temporary = Path(handle.name)
     try:
         with handle:
             handle.write(
-                (json.dumps(overrides.to_dict(), indent=2, sort_keys=True) + "\n").encode(
-                    "utf-8"
-                )
+                (json.dumps(overrides.to_dict(), indent=2, sort_keys=True) + "\n").encode("utf-8")
             )
             handle.flush()
         temporary.replace(path)

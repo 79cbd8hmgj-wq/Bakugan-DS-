@@ -139,6 +139,8 @@ class ArmCpu:
         right = self._operand2(instruction)
         if opcode == 0x0:
             result = left & right
+        elif opcode == 0x1:
+            result = left ^ right
         elif opcode == 0x2:
             result = (left - right) & _U32
         elif opcode == 0x4:

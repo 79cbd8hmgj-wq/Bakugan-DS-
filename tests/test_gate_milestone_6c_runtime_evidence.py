@@ -3,13 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-EVIDENCE = Path(
-    "analysis/runtime-observations/gate-system2-milestone-6c-validation.json"
-)
+EVIDENCE = Path("analysis/runtime-observations/gate-system2-milestone-6c-validation.json")
 SOURCE_ROM_SHA256 = "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
-REBUILT_ROM_SHA256 = "78f9ac00bbfd1eed86ee2977016af3395198158bb25c12cef82eb55ac14eeceb"
+REBUILT_ROM_SHA256 = "d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41"
 TRAILER_SHA256 = "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b"
-MODULE_SHA256 = "ed4c0f5c1779eed6028d9b5e525fa94581c68664f5e98419747f74ffacb843f2"
+MODULE_SHA256 = "cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178"
 FORBIDDEN_KEYS = {
     "raw_bytes",
     "ram_dump",
@@ -116,12 +114,33 @@ def test_runtime_evidence_proves_weighting_and_precedence() -> None:
         assert item["rng_state_before"] != item["rng_state_after"]
     precedence = _load()["precedence_controls"]
     assert precedence["explicit_constructor"]["weighted_helper_calls"] == 0
-    assert precedence["explicit_constructor"]["final_type"] == (
-        precedence["explicit_constructor"]["constructor_type"]
+    assert (
+        precedence["explicit_constructor"]["final_type"]
+        == (precedence["explicit_constructor"]["constructor_type"])
     )
-    assert precedence["scripted_override"]["final_type"] == (
-        precedence["scripted_override"]["scripted_type"]
+    assert (
+        precedence["scripted_override"]["final_type"]
+        == (precedence["scripted_override"]["scripted_type"])
     )
+
+
+def test_runtime_evidence_proves_complete_payload_crc_fallback() -> None:
+    control = _load()["payload_crc_control"]
+    assert control == {
+        "algorithm": "IEEE CRC32, reflected polynomial 0xEDB88320",
+        "capture_method": "exact emitted ARM32 loader in repository interpreter",
+        "record_count": 103,
+        "payload_size": 4120,
+        "valid_payload_cache_valid_flag": 1,
+        "corrupted_record_card_id": 21,
+        "selected_card_id": 19,
+        "corruption_scope": (
+            "one byte in an unrelated record while the selected Gate 19 record "
+            "and stored header remain unchanged"
+        ),
+        "corrupted_payload_cache_valid_flag": 0,
+        "all_64_cache_bytes_zero_after_failure": True,
+    }
 
 
 def test_runtime_evidence_proves_legacy_and_malformed_fallbacks() -> None:

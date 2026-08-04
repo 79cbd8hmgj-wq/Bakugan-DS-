@@ -36,7 +36,7 @@
     "original_size": 2840,
     "replacement_size": 6992
   },
-  "runtime_module_sha256": "ed4c0f5c1779eed6028d9b5e525fa94581c68664f5e98419747f74ffacb843f2",
+  "runtime_module_sha256": "cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178",
   "trailer_sha256": "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b",
   "transaction_policy": "validate and stage every product before replacing workspace targets; identical reinstall is a no-op and partial divergence fails closed"
 }

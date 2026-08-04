@@ -38,13 +38,15 @@
     "g2_clear_cache": "Clears exactly sixteen cache words and returns.",
     "g2_clear_hook": "Clears all cache bytes, replays the displaced result-path load, and returns.",
     "g2_context_store_hook": "Clamps the successful System 2.0 target total to unsigned 16-bit; legacy fallback replays the original wrapping add/store.",
+    "g2_crc32_update": "Updates a reflected IEEE CRC32 across a bounded byte buffer for runtime payload verification.",
     "g2_gate_bonus_hook": "Routes the normal Gate lookup boundary through the approved Gate 19 calculation with complete legacy fallback.",
     "g2_legacy_gate_bonus": "Exact relocated legacy lookup, scale, and store; returns r3=0 to identify the complete fallback path.",
-    "g2_load_selected_record": "Loads one selected record through confirmed NitroFS calls and validates supported semantics.",
+    "g2_load_selected_record": "Reads all 103 ordered records through confirmed NitroFS calls, recomputes the complete payload CRC32, stages the selected record, and marks the cache valid only after close succeeds.",
     "g2_loader_trampoline": "Replays the selector prologue, validates cache identity, reloads on mismatch, and continues.",
     "g2_select_battle_type": "Uses the approved Gate 19 six-byte weight vector with confirmed ARM9 helper 0x02021A30; invalid cache or result uses fixed metadata without history updates.",
     "g2_selector_hook": "Stable normal-fallback selector entry routed through weighted Gate 19 selection.",
-    "g2_validate_cache": "Validates cache valid/version bytes and selected record identity."
+    "g2_validate_cache": "Validates cache valid/version bytes and selected record identity.",
+    "g2_validate_selected_record": "Validates a canonical passthrough record or the exact approved Gate 19 prototype after complete payload verification."
   },
   "task_10_boundary": {
     "battle_history_updated": false,
@@ -69,7 +71,7 @@
     "failure_policy": "clear all 64 cache bytes",
     "gate_calculation": "legacy",
     "live_system2_behavior": "loader_and_cache_only",
-    "payload_crc_runtime_policy": "compare the complete approved 32-byte header, including payload CRC32",
+    "payload_crc_runtime_policy": "recompute IEEE CRC32 across all 103 ordered records and compare it to the approved header payload CRC32",
     "selected_record_validation": "canonical passthrough or exact approved Gate 19 record"
   },
   "task_9_boundary": {

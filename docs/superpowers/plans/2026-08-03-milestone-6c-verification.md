@@ -48,9 +48,9 @@ Generated G2DT trailer SHA-256:     c67d3bad47ad318ea782a938fc3412a6244509e96b0d
 Installed carrier size:             6992 bytes
 Installed carrier SHA-256:          6961673e91f0ced7afa299d371ba54d73b3e64ab75c79e14224e59c56003b634
 Generated module size:              32768 bytes
-Generated module SHA-256:           ed4c0f5c1779eed6028d9b5e525fa94581c68664f5e98419747f74ffacb843f2
+Generated module SHA-256:           cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178
 Expanded overlay 7 size:            501728 bytes
-Expanded overlay 7 SHA-256:         5a19d4dd58d7d26c46c90d1890636f29a54209ca6c54a136c20cc5800ae39f8e
+Expanded overlay 7 SHA-256:         78d8e5963673c77a14fb36548b269fb8ab9abca9968b40167494531196b11b96
 Patched stored ARM9 size:            448192 bytes
 Patched stored ARM9 SHA-256:         95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8
 Patched ARM9 BLZ passthrough:        32768 bytes
@@ -83,16 +83,16 @@ Two rebuilds from the unchanged installed workspace produced byte-identical ROMs
 
 ```text
 Rebuilt ROM A SHA-256:
-78f9ac00bbfd1eed86ee2977016af3395198158bb25c12cef82eb55ac14eeceb
+d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41
 
 Rebuilt ROM B SHA-256:
-78f9ac00bbfd1eed86ee2977016af3395198158bb25c12cef82eb55ac14eeceb
+d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41
 
 Build report A SHA-256:
-858491ec0792d63ebdee1a1df8df107230dcfc9fe8dd30b10bc7aa198e68de63
+b12900aadfc38a4499b455247fe42415ab8a84cbba2e48f6bd0ad67d821cc97f
 
 Build report B SHA-256:
-858491ec0792d63ebdee1a1df8df107230dcfc9fe8dd30b10bc7aa198e68de63
+b12900aadfc38a4499b455247fe42415ab8a84cbba2e48f6bd0ad67d821cc97f
 
 ROM size:
 134217728 bytes

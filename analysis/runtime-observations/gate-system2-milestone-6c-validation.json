@@ -208,7 +208,19 @@
     "system2_calculation_used": false,
     "weighted_helper_calls": 0
   },
-  "module_sha256": "ed4c0f5c1779eed6028d9b5e525fa94581c68664f5e98419747f74ffacb843f2",
+  "module_sha256": "cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178",
+  "payload_crc_control": {
+    "algorithm": "IEEE CRC32, reflected polynomial 0xEDB88320",
+    "all_64_cache_bytes_zero_after_failure": true,
+    "capture_method": "exact emitted ARM32 loader in repository interpreter",
+    "corrupted_payload_cache_valid_flag": 0,
+    "corrupted_record_card_id": 21,
+    "corruption_scope": "one byte in an unrelated record while the selected Gate 19 record and stored header remain unchanged",
+    "payload_size": 4120,
+    "record_count": 103,
+    "selected_card_id": 19,
+    "valid_payload_cache_valid_flag": 1
+  },
   "persistent_control_scope": "The prototype Battle Arena control used only match-local arena/slot writes, exited through the standard quit path, and declined the save prompt. The separate tutorial-completion smoke is excluded from this save-data control.",
   "persistent_controls": {
     "gate_inventory_unchanged": true,
@@ -256,7 +268,7 @@
     "target": "gate_owner_combatant",
     "timing": "pre_gate"
   },
-  "rebuilt_rom_sha256": "78f9ac00bbfd1eed86ee2977016af3395198158bb25c12cef82eb55ac14eeceb",
+  "rebuilt_rom_sha256": "d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41",
   "repository_boundary": "Only normalized values, formulas, addresses, methods, and hashes are committed. ROMs, rebuilt ROMs, screenshots, states, battery saves, selected live-memory files, and debugger output are not committed and remain local.",
   "source_rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
   "trailer_sha256": "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b",

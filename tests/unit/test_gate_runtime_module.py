@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import struct
 from pathlib import Path
@@ -20,7 +21,9 @@ CONTRACT = Path("analysis/gates/milestone-6c-runtime-contract.json")
 REQUIRED_SYMBOLS = {
     "g2_clear_cache",
     "g2_validate_cache",
+    "g2_crc32_update",
     "g2_load_selected_record",
+    "g2_validate_selected_record",
     "g2_legacy_gate_bonus",
     "g2_calculate_gate_bonus",
     "g2_gate_bonus_hook",
@@ -47,9 +50,7 @@ def test_runtime_module_has_fixed_layout_and_symbols() -> None:
     assert len(module.image) == SYSTEM2_MODULE_SIZE == 0x8000
     assert module.symbols["g2_clear_cache"].address == MODULE_BASE
     assert set(module.symbols) == REQUIRED_SYMBOLS
-    assert max(
-        symbol.address + symbol.size for symbol in module.symbols.values()
-    ) <= MODULE_END
+    assert max(symbol.address + symbol.size for symbol in module.symbols.values()) <= MODULE_END
     assert module.sha256 == hashlib.sha256(module.image).hexdigest()
 
 
@@ -57,7 +58,7 @@ def test_runtime_symbols_do_not_overlap_and_unused_bytes_are_zero() -> None:
     module = build_milestone_6c_module()
     symbols = sorted(module.symbols.values(), key=lambda symbol: symbol.address)
 
-    for left, right in zip(symbols, symbols[1:]):
+    for left, right in itertools.pairwise(symbols):
         assert left.address + left.size <= right.address
 
     covered = bytearray(len(module.image))
@@ -80,9 +81,7 @@ def test_all_approved_and_cache_hooks_are_guarded_and_target_symbols() -> None:
         assert hook.return_address == return_address
         assert len(hook.expected) == len(hook.replacement) == length
         assert hashlib.sha256(hook.expected).hexdigest() == hook.expected_sha256
-        target = decode_branch_target(
-            address, struct.unpack_from("<I", hook.replacement)[0]
-        )
+        target = decode_branch_target(address, struct.unpack_from("<I", hook.replacement)[0])
         assert target == module.symbols[hook.target_symbol].address
         assert MODULE_BASE <= target < MODULE_END
         assert hook.rollback.strip()
@@ -129,8 +128,7 @@ def test_context_and_loader_replay_stubs_preserve_displaced_words() -> None:
     )
     legacy_pair = (0xE0820001, 0xE1C500BE)
     assert any(
-        context_words[index : index + 2] == legacy_pair
-        for index in range(len(context_words) - 1)
+        context_words[index : index + 2] == legacy_pair for index in range(len(context_words) - 1)
     )
     assert context.branch_targets.count(0x0223D290) == 2
 
@@ -139,9 +137,7 @@ def test_context_and_loader_replay_stubs_preserve_displaced_words() -> None:
         f"<{loader.size // 4}I", module.image, loader.address - MODULE_BASE
     )
     assert loader_words[0] == 0xE1C600B4
-    assert decode_branch_target(loader.address + 4, loader_words[1]) == (
-        loader.address + 8
-    )
+    assert decode_branch_target(loader.address + 4, loader_words[1]) == (loader.address + 8)
 
     trampoline = module.symbols["g2_loader_trampoline"]
     trampoline_words = struct.unpack_from(
@@ -232,12 +228,105 @@ def test_runtime_loader_accepts_prototype_and_canonical_passthrough() -> None:
     assert passthrough is not None and passthrough.card_id == 21
 
 
+def _execute_emitted_loader(carrier: bytes, *, card_id: int) -> bytes:
+    from bakugan_ds.gates.loader import (
+        FS_CLOSE_FILE_ADDRESS,
+        FS_INIT_FILE_ADDRESS,
+        FS_OPEN_FILE_FAST_ADDRESS,
+        FS_READ_FILE_ADDRESS,
+        FS_SEEK_FILE_ADDRESS,
+    )
+    from tests.support.arm32_interpreter import ArmCpu, SparseMemory
+
+    module = build_milestone_6c_module()
+    memory = SparseMemory()
+    memory.map(MODULE_BASE, module.image)
+    memory.map(CACHE_ADDRESS, b"\0" * 64)
+
+    state = {"position": 0, "open": False}
+
+    def return_to_caller(cpu: ArmCpu, value: int) -> None:
+        cpu.registers[0] = value & 0xFFFFFFFF
+        cpu.registers[15] = cpu.registers[14]
+
+    def init_file(cpu: ArmCpu) -> None:
+        return_to_caller(cpu, 1)
+
+    def open_file(cpu: ArmCpu) -> None:
+        state["position"] = 0
+        state["open"] = True
+        return_to_caller(cpu, 1)
+
+    def seek_file(cpu: ArmCpu) -> None:
+        if not state["open"] or cpu.registers[2] != 0:
+            return_to_caller(cpu, 0)
+            return
+        offset = cpu.registers[1]
+        if offset > len(carrier):
+            return_to_caller(cpu, 0)
+            return
+        state["position"] = offset
+        return_to_caller(cpu, 1)
+
+    def read_file(cpu: ArmCpu) -> None:
+        if not state["open"]:
+            return_to_caller(cpu, 0xFFFFFFFF)
+            return
+        destination = cpu.registers[1]
+        requested = cpu.registers[2]
+        start = state["position"]
+        chunk = carrier[start : start + requested]
+        memory.map(destination, chunk)
+        state["position"] = start + len(chunk)
+        return_to_caller(cpu, len(chunk))
+
+    def close_file(cpu: ArmCpu) -> None:
+        was_open = state["open"]
+        state["open"] = False
+        return_to_caller(cpu, int(was_open))
+
+    cpu = ArmCpu(
+        memory,
+        external_calls={
+            FS_INIT_FILE_ADDRESS: init_file,
+            FS_OPEN_FILE_FAST_ADDRESS: open_file,
+            FS_SEEK_FILE_ADDRESS: seek_file,
+            FS_READ_FILE_ADDRESS: read_file,
+            FS_CLOSE_FILE_ADDRESS: close_file,
+        },
+    )
+    stop = 0x0BADF00C
+    cpu.registers[0] = card_id
+    cpu.registers[13] = 0x03010000
+    cpu.registers[14] = stop
+    loader = module.symbols["g2_load_selected_record"]
+    cpu.run(loader.address + 8, stop_addresses={stop}, max_steps=1_000_000)
+    return bytes(memory.read8(CACHE_ADDRESS + offset) for offset in range(64))
+
+
+def test_emitted_loader_recomputes_complete_payload_crc() -> None:
+    from bakugan_ds.gates.authoring import load_authoring_document
+    from bakugan_ds.gates.loader import parse_cache
+    from bakugan_ds.gates.record import G2DT_HEADER_SIZE, GATE_RECORD_SIZE, build_trailer
+
+    trailer = build_trailer(
+        load_authoring_document(Path("config/gates/milestone-6c-system2-v1.json"))
+    )
+    carrier = b"\x10" + b"\0" * 2839 + trailer
+    valid_cache = _execute_emitted_loader(carrier, card_id=19)
+    assert parse_cache(valid_cache) is not None
+
+    corrupted = bytearray(carrier)
+    unrelated_record_offset = 2840 + G2DT_HEADER_SIZE + (21 - 1) * GATE_RECORD_SIZE
+    corrupted[unrelated_record_offset + 4] ^= 0x01
+
+    assert _execute_emitted_loader(bytes(corrupted), card_id=19) == b"\0" * 64
+
+
 def test_clear_cache_routine_is_bounded_sixteen_word_loop() -> None:
     module = build_milestone_6c_module()
     symbol = module.symbols["g2_clear_cache"]
-    words = struct.unpack_from(
-        f"<{symbol.size // 4}I", module.image, symbol.address - MODULE_BASE
-    )
+    words = struct.unpack_from(f"<{symbol.size // 4}I", module.image, symbol.address - MODULE_BASE)
 
     assert words[1] == 0xE3A01000
     assert words[2] == 0xE3A02010
@@ -336,7 +425,8 @@ def test_runtime_contract_documents_task_8_loader_policy() -> None:
     )
     assert boundary["close_before_cache_valid"] is True
     assert boundary["payload_crc_runtime_policy"] == (
-        "compare the complete approved 32-byte header, including payload CRC32"
+        "recompute IEEE CRC32 across all 103 ordered records and compare it "
+        "to the approved header payload CRC32"
     )
     assert boundary["failure_policy"] == "clear all 64 cache bytes"
     assert boundary["approved_header_hex"] == (
@@ -349,29 +439,19 @@ def test_runtime_contract_documents_task_9_live_calculation_policy() -> None:
 
     boundary = payload["task_9_boundary"]
     assert boundary["active_gate_id"] == 19
-    assert boundary["live_system2_behavior"] == (
-        "juggernoid_hybrid_gate_calculation"
-    )
+    assert boundary["live_system2_behavior"] == ("juggernoid_hybrid_gate_calculation")
     assert boundary["calculation"] == (
         "60 + floor(compressed_core_g * 20 / 256) + attribute_modifier"
     )
-    assert boundary["attribute_modifier"] == (
-        "Aquos +30 G; all other approved attributes +0 G"
-    )
+    assert boundary["attribute_modifier"] == ("Aquos +30 G; all other approved attributes +0 G")
     assert boundary["effect"] == (
         "+40 G only for the Gate owner combatant when owner-side score is lower"
     )
     assert boundary["tie_activates"] is False
     assert boundary["complete_legacy_fallback"] is True
-    assert boundary["battle_type_selection"] == (
-        "legacy_fixed_metadata_until_task_10"
-    )
-    assert boundary["percentage_source"] == (
-        "compressed core G excluding mutable modifier G"
-    )
-    assert boundary["target_total_clamp"] == (
-        "unsigned_16_on_system2_path_only"
-    )
+    assert boundary["battle_type_selection"] == ("legacy_fixed_metadata_until_task_10")
+    assert boundary["percentage_source"] == ("compressed core G excluding mutable modifier G")
+    assert boundary["target_total_clamp"] == ("unsigned_16_on_system2_path_only")
     assert set(boundary["context_sources"]) == {
         "combatant_participant",
         "descriptor_indices",

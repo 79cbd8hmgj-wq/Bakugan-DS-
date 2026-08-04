@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import struct
 from dataclasses import dataclass
 
@@ -23,12 +24,18 @@ from bakugan_ds.gates.arm32 import (
     encode_push,
 )
 from bakugan_ds.gates.authoring import approved_juggernoid_record
+from bakugan_ds.gates.history import WEIGHTED_SELECTOR_ADDRESS
 from bakugan_ds.gates.hooks import (
     HookPurpose,
     validate_hook_source_bytes,
 )
 from bakugan_ds.gates.loader import (
     CACHE_ADDRESS,
+    FS_CLOSE_FILE_ADDRESS,
+    FS_INIT_FILE_ADDRESS,
+    FS_OPEN_FILE_FAST_ADDRESS,
+    FS_READ_FILE_ADDRESS,
+    FS_SEEK_FILE_ADDRESS,
     GATE_CLEAR_EXPECTED_BYTES,
     GATE_CLEAR_EXPECTED_SHA256,
     GATE_CLEAR_HOOK_ADDRESS,
@@ -37,11 +44,6 @@ from bakugan_ds.gates.loader import (
     GATE_LOADER_EXPECTED_SHA256,
     GATE_LOADER_HOOK_ADDRESS,
     GATE_LOADER_RETURN_ADDRESS,
-    FS_CLOSE_FILE_ADDRESS,
-    FS_INIT_FILE_ADDRESS,
-    FS_OPEN_FILE_FAST_ADDRESS,
-    FS_READ_FILE_ADDRESS,
-    FS_SEEK_FILE_ADDRESS,
     REFERENCE_FILE_ID,
     REFERENCE_RAW_SIZE,
     ROM_ARCHIVE_ADDRESS,
@@ -52,7 +54,6 @@ from bakugan_ds.gates.record import (
     GATE_RECORD_BATTLE_WEIGHTS_OFFSET,
     serialize_record,
 )
-from bakugan_ds.gates.history import WEIGHTED_SELECTOR_ADDRESS
 from bakugan_ds.gates.system2 import (
     CORE_G_COMPRESSION_BASE,
     CORE_G_COMPRESSION_THRESHOLD,
@@ -82,14 +83,10 @@ class RuntimeSymbol:
         if self.address & 3 or self.size <= 0 or self.size & 3:
             raise WorkspaceError(f"runtime symbol {self.name} must be word aligned")
         if self.code_size <= 0 or self.code_size > self.size or self.code_size & 3:
-            raise WorkspaceError(
-                f"runtime symbol {self.name} has invalid executable-code size"
-            )
+            raise WorkspaceError(f"runtime symbol {self.name} has invalid executable-code size")
         for target in self.branch_targets:
             if target & 3:
-                raise WorkspaceError(
-                    f"runtime symbol {self.name} has an unaligned branch target"
-                )
+                raise WorkspaceError(f"runtime symbol {self.name} has an unaligned branch target")
             if CACHE_ADDRESS <= target < 0x02293C60 or target >= 0x023E0000:
                 raise WorkspaceError(
                     f"runtime symbol {self.name} branches into cache or arena space"
@@ -142,11 +139,9 @@ class RuntimeModule:
         ordered = sorted(self.symbols.values(), key=lambda item: item.address)
         for symbol in ordered:
             symbol.validate()
-        for left, right in zip(ordered, ordered[1:]):
+        for left, right in itertools.pairwise(ordered):
             if left.address + left.size > right.address:
-                raise WorkspaceError(
-                    f"runtime symbols overlap: {left.name} and {right.name}"
-                )
+                raise WorkspaceError(f"runtime symbols overlap: {left.name} and {right.name}")
         for hook in self.hook_replacements:
             hook.validate(self.symbols)
 
@@ -169,7 +164,9 @@ class _RoutineDefinition:
 _OFFSETS = {
     "g2_clear_cache": 0x000,
     "g2_validate_cache": 0x040,
+    "g2_crc32_update": 0x0A0,
     "g2_load_selected_record": 0x100,
+    "g2_validate_selected_record": 0x500,
     "g2_legacy_gate_bonus": 0x700,
     "g2_calculate_gate_bonus": 0x740,
     "g2_gate_bonus_hook": 0xB00,
@@ -289,10 +286,18 @@ def _add_register(rd: Register, rn: Register, rm: Register) -> int:
     return encode_data_processing_register(DataOpcode.ADD, rd=rd, rn=rn, rm=rm)
 
 
+def _xor_register(
+    rd: Register,
+    rn: Register,
+    rm: Register,
+    *,
+    condition: Condition = Condition.AL,
+) -> int:
+    return encode_data_processing_register(DataOpcode.EOR, rd=rd, rn=rn, rm=rm, condition=condition)
+
+
 def _compare_register(rn: Register, rm: Register) -> int:
-    return encode_data_processing_register(
-        DataOpcode.CMP, rn=rn, rm=rm, set_flags=True
-    )
+    return encode_data_processing_register(DataOpcode.CMP, rn=rn, rm=rm, set_flags=True)
 
 
 def _compare_immediate(rn: Register, immediate: int) -> int:
@@ -356,19 +361,11 @@ def _build_validate_cache() -> _RoutineImage:
     asm = _RoutineAssembler(_address("g2_validate_cache"))
     asm.load_constant(Register.R1, "cache", CACHE_ADDRESS)
     for offset, expected in ((0x2A, 1), (0x29, 1)):
-        asm.emit(
-            encode_load_store(
-                Register.R2, Register.R1, offset=offset, load=True, byte=True
-            )
-        )
+        asm.emit(encode_load_store(Register.R2, Register.R1, offset=offset, load=True, byte=True))
         asm.emit(_compare_immediate(Register.R2, expected))
         asm.branch("invalid", condition=Condition.NE)
     for offset in (0x28, 0x00):
-        asm.emit(
-            encode_load_store(
-                Register.R2, Register.R1, offset=offset, load=True, byte=True
-            )
-        )
+        asm.emit(encode_load_store(Register.R2, Register.R1, offset=offset, load=True, byte=True))
         asm.emit(_compare_register(Register.R2, Register.R0))
         asm.branch("invalid", condition=Condition.NE)
     asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=1))
@@ -387,28 +384,176 @@ def _emit_compare_stack_word(
     expected: int,
     failure_label: str,
 ) -> None:
-    asm.emit(
-        encode_load_store(
-            Register.R0, Register.SP, offset=stack_offset, load=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R0, Register.SP, offset=stack_offset, load=True))
     asm.load_constant(Register.R1, literal_name, expected)
     asm.emit(_compare_register(Register.R0, Register.R1))
     asm.branch(failure_label, condition=Condition.NE)
+
+
+def _build_crc32_update() -> _RoutineImage:
+    asm = _RoutineAssembler(_address("g2_crc32_update"))
+    asm.emit(
+        encode_push(
+            (
+                Register.R4,
+                Register.R5,
+                Register.R6,
+                Register.R7,
+                Register.LR,
+            )
+        )
+    )
+    asm.emit(_compare_immediate(Register.R2, 0))
+    asm.branch("done", condition=Condition.EQ)
+    asm.load_constant(Register.R3, "crc_polynomial", 0xEDB88320)
+
+    asm.label("byte_loop")
+    asm.emit(
+        encode_load_store(
+            Register.R4,
+            Register.R1,
+            offset=1,
+            load=True,
+            byte=True,
+            pre_index=False,
+        )
+    )
+    asm.emit(_xor_register(Register.R0, Register.R0, Register.R4))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R5, immediate=8))
+
+    asm.label("bit_loop")
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.AND,
+            rd=Register.R6,
+            rn=Register.R0,
+            immediate=1,
+        )
+    )
+    asm.emit(_shift_register(Register.R0, Register.R0, ShiftType.LSR, 1))
+    asm.emit(_compare_immediate(Register.R6, 0))
+    asm.emit(
+        _xor_register(
+            Register.R0,
+            Register.R0,
+            Register.R3,
+            condition=Condition.NE,
+        )
+    )
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.SUB,
+            rd=Register.R5,
+            rn=Register.R5,
+            immediate=1,
+            set_flags=True,
+        )
+    )
+    asm.branch("bit_loop", condition=Condition.NE)
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.SUB,
+            rd=Register.R2,
+            rn=Register.R2,
+            immediate=1,
+            set_flags=True,
+        )
+    )
+    asm.branch("byte_loop", condition=Condition.NE)
+
+    asm.label("done")
+    asm.emit(
+        encode_pop(
+            (
+                Register.R4,
+                Register.R5,
+                Register.R6,
+                Register.R7,
+                Register.PC,
+            )
+        )
+    )
+    return asm.finish()
+
+
+def _build_validate_selected_record() -> _RoutineImage:
+    asm = _RoutineAssembler(_address("g2_validate_selected_record"))
+    asm.emit(
+        encode_push(
+            (
+                Register.R4,
+                Register.R5,
+                Register.R6,
+                Register.R7,
+                Register.LR,
+            )
+        )
+    )
+    asm.emit(_mov_register(Register.R4, Register.R0))
+    asm.emit(_compare_immediate(Register.R4, 1))
+    asm.branch("invalid", condition=Condition.LO)
+    asm.emit(_compare_immediate(Register.R4, 103))
+    asm.branch("invalid", condition=Condition.HI)
+    asm.load_constant(Register.R5, "cache", CACHE_ADDRESS)
+    asm.emit(encode_load_store(Register.R0, Register.R5, offset=0, load=True, byte=True))
+    asm.emit(_compare_register(Register.R0, Register.R4))
+    asm.branch("invalid", condition=Condition.NE)
+    asm.emit(_compare_immediate(Register.R4, 19))
+    asm.branch("prototype", condition=Condition.EQ)
+
+    asm.emit(encode_load_store(Register.R0, Register.R5, offset=0, load=True))
+    asm.emit(_compare_register(Register.R0, Register.R4))
+    asm.branch("invalid", condition=Condition.NE)
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R6, immediate=0))
+    for offset in (4, 8, 12, 16):
+        asm.emit(encode_load_store(Register.R0, Register.R5, offset=offset, load=True))
+        asm.emit(_compare_register(Register.R0, Register.R6))
+        asm.branch("invalid", condition=Condition.NE)
+    asm.emit(encode_load_store(Register.R0, Register.R5, offset=20, load=True))
+    asm.emit(_compare_immediate(Register.R0, 0xFF))
+    asm.branch("invalid", condition=Condition.NE)
+    for offset in (24, 28, 32, 36):
+        asm.emit(encode_load_store(Register.R0, Register.R5, offset=offset, load=True))
+        asm.emit(_compare_register(Register.R0, Register.R6))
+        asm.branch("invalid", condition=Condition.NE)
+    asm.branch("valid")
+
+    asm.label("prototype")
+    prototype_words = struct.unpack("<10I", serialize_record(approved_juggernoid_record()))
+    for index, expected in enumerate(prototype_words):
+        asm.emit(encode_load_store(Register.R0, Register.R5, offset=index * 4, load=True))
+        asm.load_constant(Register.R1, f"prototype_{index}", expected)
+        asm.emit(_compare_register(Register.R0, Register.R1))
+        asm.branch("invalid", condition=Condition.NE)
+
+    asm.label("valid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=1))
+    asm.branch("return")
+    asm.label("invalid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
+    asm.label("return")
+    asm.emit(
+        encode_pop(
+            (
+                Register.R4,
+                Register.R5,
+                Register.R6,
+                Register.R7,
+                Register.PC,
+            )
+        )
+    )
+    return asm.finish()
 
 
 def _build_load_selected_record() -> _RoutineImage:
     start = _address("g2_load_selected_record")
     asm = _RoutineAssembler(start)
     # Public hook entry: replay the displaced store, then enter the callable core.
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R6, offset=4, load=False
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R6, offset=4, load=False))
     asm.branch("core")
     asm.label("core")
-    saved = tuple(Register(value) for value in range(4, 13)) + (Register.LR,)
+    saved = (*tuple(Register(value) for value in range(4, 13)), Register.LR)
     asm.emit(encode_push(saved))
     asm.emit(
         encode_data_processing_immediate(
@@ -466,22 +611,12 @@ def _build_load_selected_record() -> _RoutineImage:
     asm.emit(_compare_immediate(Register.R4, 103))
     asm.branch("fail_close", condition=Condition.HI)
 
-    asm.emit(_mov_register(Register.R1, Register.R4))
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.SUB, rd=Register.R1, rn=Register.R1, immediate=1
-        )
-    )
-    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=40))
-    asm.emit(encode_mul(Register.R1, Register.R1, Register.R2))
-    asm.load_constant(Register.R2, "record_base", REFERENCE_RAW_SIZE + 32)
-    asm.emit(_add_register(Register.R1, Register.R1, Register.R2))
-    asm.emit(_mov_register(Register.R0, Register.SP))
-    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=0))
-    asm.branch(FS_SEEK_FILE_ADDRESS, link=True)
-    asm.emit(_compare_immediate(Register.R0, 0))
-    asm.branch("fail_close", condition=Condition.EQ)
+    asm.load_constant(Register.R7, "cache", CACHE_ADDRESS)
+    asm.load_constant(Register.R8, "crc_initial", 0xFFFFFFFF)
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R5, immediate=1))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R6, immediate=103))
 
+    asm.label("record_loop")
     asm.emit(_mov_register(Register.R0, Register.SP))
     asm.emit(
         encode_data_processing_immediate(
@@ -496,52 +631,25 @@ def _build_load_selected_record() -> _RoutineImage:
     asm.emit(_compare_immediate(Register.R0, 40))
     asm.branch("fail_close", condition=Condition.NE)
 
+    asm.emit(encode_load_store(Register.R0, Register.SP, offset=104, load=True, byte=True))
+    asm.emit(_compare_register(Register.R0, Register.R5))
+    asm.branch("fail_close", condition=Condition.NE)
+
+    asm.emit(_mov_register(Register.R0, Register.R8))
     asm.emit(
-        encode_load_store(
-            Register.R0, Register.SP, offset=104, load=True, byte=True
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R1,
+            rn=Register.SP,
+            immediate=104,
         )
     )
-    asm.emit(_compare_register(Register.R0, Register.R4))
-    asm.branch("fail_close", condition=Condition.NE)
-    asm.emit(_compare_immediate(Register.R4, 19))
-    asm.branch("prototype", condition=Condition.EQ)
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=40))
+    asm.branch(_address("g2_crc32_update"), link=True)
+    asm.emit(_mov_register(Register.R8, Register.R0))
 
-    # Canonical passthrough: card ID in low byte, preferred type 0xFF, all else zero.
-    asm.emit(encode_load_store(Register.R0, Register.SP, offset=104, load=True))
-    asm.emit(_compare_register(Register.R0, Register.R4))
-    asm.branch("fail_close", condition=Condition.NE)
-    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=0))
-    for offset in (108, 112, 116, 120):
-        asm.emit(encode_load_store(Register.R0, Register.SP, offset=offset, load=True))
-        asm.emit(_compare_register(Register.R0, Register.R2))
-        asm.branch("fail_close", condition=Condition.NE)
-    asm.emit(encode_load_store(Register.R0, Register.SP, offset=124, load=True))
-    asm.emit(_compare_immediate(Register.R0, 0xFF))
-    asm.branch("fail_close", condition=Condition.NE)
-    for offset in (128, 132, 136, 140):
-        asm.emit(encode_load_store(Register.R0, Register.SP, offset=offset, load=True))
-        asm.emit(_compare_register(Register.R0, Register.R2))
-        asm.branch("fail_close", condition=Condition.NE)
-    asm.branch("close_success")
-
-    asm.label("prototype")
-    prototype_words = struct.unpack("<10I", serialize_record(approved_juggernoid_record()))
-    for index, expected in enumerate(prototype_words):
-        _emit_compare_stack_word(
-            asm,
-            stack_offset=104 + index * 4,
-            literal_name=f"prototype_{index}",
-            expected=expected,
-            failure_label="fail_close",
-        )
-
-    asm.label("close_success")
-    asm.emit(_mov_register(Register.R0, Register.SP))
-    asm.branch(FS_CLOSE_FILE_ADDRESS, link=True)
-    asm.emit(_compare_immediate(Register.R0, 0))
-    asm.branch("fail_clear", condition=Condition.EQ)
-
-    asm.load_constant(Register.R1, "cache", CACHE_ADDRESS)
+    asm.emit(_compare_register(Register.R5, Register.R4))
+    asm.branch("skip_copy", condition=Condition.NE)
     for index in range(10):
         asm.emit(
             encode_load_store(
@@ -554,30 +662,55 @@ def _build_load_selected_record() -> _RoutineImage:
         asm.emit(
             encode_load_store(
                 Register.R0,
-                Register.R1,
+                Register.R7,
                 offset=index * 4,
                 load=False,
             )
         )
-    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.label("skip_copy")
     asm.emit(
-        encode_load_store(
-            Register.R0, Register.R1, offset=0x28, load=False, byte=True
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R5,
+            rn=Register.R5,
+            immediate=1,
         )
     )
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.SUB,
+            rd=Register.R6,
+            rn=Register.R6,
+            immediate=1,
+            set_flags=True,
+        )
+    )
+    asm.branch("record_loop", condition=Condition.NE)
+
+    asm.load_constant(Register.R0, "crc_xor_out", 0xFFFFFFFF)
+    asm.emit(_xor_register(Register.R8, Register.R8, Register.R0))
+    asm.emit(encode_load_store(Register.R0, Register.SP, offset=92, load=True))
+    asm.emit(_compare_register(Register.R8, Register.R0))
+    asm.branch("fail_close", condition=Condition.NE)
+
+    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.branch(_address("g2_validate_selected_record"), link=True)
+    asm.emit(_compare_immediate(Register.R0, 1))
+    asm.branch("fail_close", condition=Condition.NE)
+
+    asm.emit(_mov_register(Register.R0, Register.SP))
+    asm.branch(FS_CLOSE_FILE_ADDRESS, link=True)
+    asm.emit(_compare_immediate(Register.R0, 0))
+    asm.branch("fail_clear", condition=Condition.EQ)
+
+    asm.load_constant(Register.R1, "cache_metadata", CACHE_ADDRESS)
+    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.emit(encode_load_store(Register.R0, Register.R1, offset=0x28, load=False, byte=True))
     asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=1))
     for offset in (0x29, 0x2A):
-        asm.emit(
-            encode_load_store(
-                Register.R0, Register.R1, offset=offset, load=False, byte=True
-            )
-        )
+        asm.emit(encode_load_store(Register.R0, Register.R1, offset=offset, load=False, byte=True))
     asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
-    asm.emit(
-        encode_load_store(
-            Register.R0, Register.R1, offset=0x2B, load=False, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R0, Register.R1, offset=0x2B, load=False, byte=True))
     asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=1))
     asm.branch("cleanup")
 
@@ -597,7 +730,7 @@ def _build_load_selected_record() -> _RoutineImage:
             immediate=144,
         )
     )
-    asm.emit(encode_pop(tuple(Register(value) for value in range(4, 13)) + (Register.PC,)))
+    asm.emit(encode_pop((*tuple(Register(value) for value in range(4, 13)), Register.PC)))
     return asm.finish()
 
 
@@ -610,70 +743,40 @@ def _emit_participant_pointer(
     scratch: Register,
     failure_label: str,
 ) -> None:
-    asm.emit(
-        _shift_register(
-            scratch, participant_index, ShiftType.LSL, 2
-        )
-    )
+    asm.emit(_shift_register(scratch, participant_index, ShiftType.LSL, 2))
     asm.emit(_add_register(scratch, session, scratch))
-    asm.emit(
-        encode_load_store(
-            destination, scratch, offset=0x0C, load=True
-        )
-    )
+    asm.emit(encode_load_store(destination, scratch, offset=0x0C, load=True))
     asm.emit(_compare_immediate(destination, 0))
     asm.branch(failure_label, condition=Condition.EQ)
 
 
 def _build_calculate_gate_bonus() -> _RoutineImage:
     asm = _RoutineAssembler(_address("g2_calculate_gate_bonus"))
-    saved = tuple(Register(value) for value in range(4, 13)) + (Register.LR,)
+    saved = (*tuple(Register(value) for value in range(4, 13)), Register.LR)
     asm.emit(encode_push(saved))
     asm.emit(_mov_register(Register.R11, Register.R4))
 
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R0, immediate=19
-        )
-    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=19))
     asm.branch(_address("g2_validate_cache"), link=True)
     asm.emit(_compare_immediate(Register.R0, 1))
     asm.branch("fallback", condition=Condition.NE)
 
     asm.load_constant(Register.R7, "cache", CACHE_ADDRESS)
-    prototype_words = struct.unpack(
-        "<10I", serialize_record(approved_juggernoid_record())
-    )
+    prototype_words = struct.unpack("<10I", serialize_record(approved_juggernoid_record()))
     for index, expected in enumerate(prototype_words):
-        asm.emit(
-            encode_load_store(
-                Register.R0, Register.R7, offset=index * 4, load=True
-            )
-        )
+        asm.emit(encode_load_store(Register.R0, Register.R7, offset=index * 4, load=True))
         asm.load_constant(Register.R1, f"prototype_{index}", expected)
         asm.emit(_compare_register(Register.R0, Register.R1))
         asm.branch("fallback", condition=Condition.NE)
 
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R6, offset=4, load=True
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R6, offset=4, load=True))
     asm.emit(_compare_immediate(Register.R0, 19))
     asm.branch("fallback", condition=Condition.NE)
-    asm.emit(
-        encode_load_store(
-            Register.R4, Register.R6, offset=6, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R4, Register.R6, offset=6, load=True, byte=True))
     asm.emit(_compare_immediate(Register.R4, 16))
     asm.branch("fallback", condition=Condition.HS)
 
-    asm.emit(
-        encode_load_store(
-            Register.R0, Register.R5, offset=0x19, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R0, Register.R5, offset=0x19, load=True, byte=True))
     asm.emit(
         encode_data_processing_immediate(
             DataOpcode.AND,
@@ -684,9 +787,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
     )
     asm.emit(_compare_immediate(Register.R7, 6))
     asm.branch("fallback", condition=Condition.HS)
-    asm.emit(
-        _shift_register(Register.R8, Register.R0, ShiftType.LSR, 4)
-    )
+    asm.emit(_shift_register(Register.R8, Register.R0, ShiftType.LSR, 4))
     asm.emit(_compare_immediate(Register.R8, 16))
     asm.branch("fallback", condition=Condition.HS)
 
@@ -718,13 +819,9 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
     )
     asm.emit(_compare_immediate(Register.R0, 26))
     asm.branch("fallback", condition=Condition.HS)
-    asm.emit(
-        _shift_register(Register.R1, Register.R0, ShiftType.LSL, 2)
-    )
+    asm.emit(_shift_register(Register.R1, Register.R0, ShiftType.LSL, 2))
     asm.emit(_add_register(Register.R1, Register.R1, Register.R0))
-    asm.emit(
-        _shift_register(Register.R1, Register.R1, ShiftType.LSL, 2)
-    )
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSL, 2))
     asm.emit(_add_register(Register.R12, Register.R10, Register.R1))
     asm.emit(
         encode_data_processing_immediate(
@@ -734,11 +831,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
             immediate=0x7C,
         )
     )
-    asm.emit(
-        encode_load_store(
-            Register.R1, Register.R12, offset=0x0F, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R1, Register.R12, offset=0x0F, load=True, byte=True))
     asm.emit(
         encode_data_processing_immediate(
             DataOpcode.AND,
@@ -749,11 +842,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
     )
     asm.emit(_compare_register(Register.R1, Register.R8))
     asm.branch("fallback", condition=Condition.NE)
-    asm.emit(
-        encode_load_store(
-            Register.R0, Register.R12, offset=0x0E, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R0, Register.R12, offset=0x0E, load=True, byte=True))
     asm.emit(_compare_immediate(Register.R0, 3))
     asm.branch("fallback", condition=Condition.HS)
 
@@ -765,11 +854,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         scratch=Register.R2,
         failure_label="fallback",
     )
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R2, immediate=12
-        )
-    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=12))
     asm.emit(encode_mul(Register.R0, Register.R0, Register.R2))
     asm.emit(_add_register(Register.R12, Register.R1, Register.R0))
     asm.emit(
@@ -781,11 +866,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         )
     )
     asm.emit(_mov_register(Register.R11, Register.R7))
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R12, offset=4, load=True
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R12, offset=4, load=True))
     asm.emit(_compare_immediate(Register.R0, CORE_G_COMPRESSION_THRESHOLD))
     asm.emit(
         _shift_register(
@@ -805,11 +886,7 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
             condition=Condition.HI,
         )
     )
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R1, immediate=20
-        )
-    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R1, immediate=20))
     asm.emit(encode_mul(Register.R0, Register.R0, Register.R1))
     asm.emit(
         _shift_register(
@@ -838,41 +915,21 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         )
     )
 
-    asm.emit(
-        encode_load_store(
-            Register.R0, Register.R6, offset=0x19, load=True, byte=True
-        )
-    )
-    asm.emit(
-        _shift_register(Register.R0, Register.R0, ShiftType.LSR, 4)
-    )
+    asm.emit(encode_load_store(Register.R0, Register.R6, offset=0x19, load=True, byte=True))
+    asm.emit(_shift_register(Register.R0, Register.R0, ShiftType.LSR, 4))
     asm.emit(_compare_immediate(Register.R0, 16))
     asm.branch("fallback", condition=Condition.HS)
-    asm.emit(
-        encode_load_store(
-            Register.R1, Register.R6, offset=0x2D, load=True, byte=True
-        )
-    )
-    asm.emit(
-        _shift_register(Register.R1, Register.R1, ShiftType.LSR, 4)
-    )
+    asm.emit(encode_load_store(Register.R1, Register.R6, offset=0x2D, load=True, byte=True))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSR, 4))
     asm.emit(_compare_immediate(Register.R1, 16))
     asm.branch("fallback", condition=Condition.HS)
     asm.emit(_compare_register(Register.R0, Register.R1))
     asm.branch("fallback", condition=Condition.EQ)
     asm.emit(_compare_register(Register.R4, Register.R0))
-    asm.emit(
-        _with_condition(
-            _mov_register(Register.R12, Register.R1), Condition.EQ
-        )
-    )
+    asm.emit(_with_condition(_mov_register(Register.R12, Register.R1), Condition.EQ))
     asm.branch("owner_resolved", condition=Condition.EQ)
     asm.emit(_compare_register(Register.R4, Register.R1))
-    asm.emit(
-        _with_condition(
-            _mov_register(Register.R12, Register.R0), Condition.EQ
-        )
-    )
+    asm.emit(_with_condition(_mov_register(Register.R12, Register.R0), Condition.EQ))
     asm.branch("fallback", condition=Condition.NE)
     asm.label("owner_resolved")
 
@@ -892,29 +949,13 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         scratch=Register.R11,
         failure_label="fallback",
     )
-    asm.emit(
-        encode_load_store(
-            Register.R2, Register.R1, offset=0xEE, load=True, byte=True
-        )
-    )
-    asm.emit(
-        encode_load_store(
-            Register.R3, Register.R0, offset=0xEE, load=True, byte=True
-        )
-    )
-    asm.emit(
-        encode_load_store(
-            Register.R6, Register.R9, offset=0x98, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R2, Register.R1, offset=0xEE, load=True, byte=True))
+    asm.emit(encode_load_store(Register.R3, Register.R0, offset=0xEE, load=True, byte=True))
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0x98, load=True, byte=True))
     asm.emit(_compare_immediate(Register.R6, 0))
     asm.branch("scores_ready", condition=Condition.EQ)
 
-    asm.emit(
-        encode_load_store(
-            Register.R11, Register.R1, offset=0xF2, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R11, Register.R1, offset=0xF2, load=True, byte=True))
     asm.emit(_compare_immediate(Register.R11, 16))
     asm.branch("fallback", condition=Condition.HS)
     asm.emit(_compare_register(Register.R11, Register.R4))
@@ -929,25 +970,13 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         scratch=Register.R6,
         failure_label="fallback",
     )
-    asm.emit(
-        encode_load_store(
-            Register.R6, Register.R9, offset=0xF2, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xF2, load=True, byte=True))
     asm.emit(_compare_register(Register.R6, Register.R4))
     asm.branch("fallback", condition=Condition.NE)
-    asm.emit(
-        encode_load_store(
-            Register.R6, Register.R9, offset=0xEE, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xEE, load=True, byte=True))
     asm.emit(_add_register(Register.R2, Register.R2, Register.R6))
 
-    asm.emit(
-        encode_load_store(
-            Register.R11, Register.R0, offset=0xF2, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R11, Register.R0, offset=0xF2, load=True, byte=True))
     asm.emit(_compare_immediate(Register.R11, 16))
     asm.branch("fallback", condition=Condition.HS)
     asm.emit(_compare_register(Register.R11, Register.R12))
@@ -962,18 +991,10 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
         scratch=Register.R6,
         failure_label="fallback",
     )
-    asm.emit(
-        encode_load_store(
-            Register.R6, Register.R9, offset=0xF2, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xF2, load=True, byte=True))
     asm.emit(_compare_register(Register.R6, Register.R12))
     asm.branch("fallback", condition=Condition.NE)
-    asm.emit(
-        encode_load_store(
-            Register.R6, Register.R9, offset=0xEE, load=True, byte=True
-        )
-    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xEE, load=True, byte=True))
     asm.emit(_add_register(Register.R3, Register.R3, Register.R6))
 
     asm.label("scores_ready")
@@ -992,22 +1013,10 @@ def _build_calculate_gate_bonus() -> _RoutineImage:
     asm.label("store")
     asm.load_constant(Register.R0, "i16_max", 0x7FFF)
     asm.emit(_compare_register(Register.R7, Register.R0))
-    asm.emit(
-        _with_condition(
-            _mov_register(Register.R7, Register.R0), Condition.HI
-        )
-    )
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R7, Register.R5, offset=0x12, load=False
-        )
-    )
+    asm.emit(_with_condition(_mov_register(Register.R7, Register.R0), Condition.HI))
+    asm.emit(encode_halfword_transfer(Register.R7, Register.R5, offset=0x12, load=False))
     asm.emit(encode_pop(saved))
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R3, immediate=1
-        )
-    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R3, immediate=1))
     asm.branch(0x0223D278)
 
     asm.label("fallback")
@@ -1023,46 +1032,27 @@ def _build_context_store_hook() -> _RoutineImage:
     asm.emit(_add_register(Register.R0, Register.R2, Register.R1))
     asm.load_constant(Register.R12, "u16_max", 0xFFFF)
     asm.emit(_compare_register(Register.R0, Register.R12))
-    asm.emit(
-        _with_condition(
-            _mov_register(Register.R0, Register.R12), Condition.HI
-        )
-    )
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R5, offset=0x0E, load=False
-        )
-    )
+    asm.emit(_with_condition(_mov_register(Register.R0, Register.R12), Condition.HI))
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R5, offset=0x0E, load=False))
     asm.branch(0x0223D290)
     asm.label("legacy")
     asm.emit(_add_register(Register.R0, Register.R2, Register.R1))
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R5, offset=0x0E, load=False
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R5, offset=0x0E, load=False))
     asm.branch(0x0223D290)
     return asm.finish()
+
 
 def _build_select_battle_type() -> _RoutineImage:
     asm = _RoutineAssembler(_address("g2_select_battle_type"))
     asm.emit(encode_push((Register.R4, Register.LR)))
     asm.emit(_mov_register(Register.R4, Register.R0))
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R0, Register.R4, offset=4, load=True
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R4, offset=4, load=True))
     asm.emit(_compare_immediate(Register.R0, 19))
     asm.branch("legacy", condition=Condition.NE)
     asm.branch(_address("g2_validate_cache"), link=True)
     asm.emit(_compare_immediate(Register.R0, 1))
     asm.branch("legacy", condition=Condition.NE)
-    asm.emit(
-        encode_data_processing_immediate(
-            DataOpcode.MOV, rd=Register.R0, immediate=6
-        )
-    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=6))
     asm.load_constant(
         Register.R1,
         "battle_weights",
@@ -1082,16 +1072,15 @@ def _build_select_battle_type() -> _RoutineImage:
 def _build_loader_trampoline() -> _RoutineImage:
     asm = _RoutineAssembler(_address("g2_loader_trampoline"))
     asm.emit(0xE92D4008)  # exact displaced push {r3, lr}
-    extra = (Register.R0, Register.R1, Register.R2) + tuple(
-        Register(value) for value in range(4, 13)
+    extra = (
+        Register.R0,
+        Register.R1,
+        Register.R2,
+        *tuple(Register(value) for value in range(4, 13)),
     )
     asm.emit(encode_push(extra))
     asm.emit(encode_load_store(Register.R1, Register.R0, offset=0x38, load=True))
-    asm.emit(
-        encode_halfword_transfer(
-            Register.R4, Register.R1, offset=4, load=True
-        )
-    )
+    asm.emit(encode_halfword_transfer(Register.R4, Register.R1, offset=4, load=True))
     asm.emit(_mov_register(Register.R0, Register.R4))
     asm.branch(_address("g2_validate_cache"), link=True)
     asm.emit(_compare_immediate(Register.R0, 1))
@@ -1149,10 +1138,25 @@ def _routine_definitions() -> tuple[_RoutineDefinition, ...]:
             "Validate cache flag, version, metadata ID, and record ID.",
         ),
         _RoutineDefinition(
+            "g2_crc32_update",
+            _OFFSETS["g2_crc32_update"],
+            _build_crc32_update(),
+            "Update a reflected IEEE CRC32 over a bounded byte buffer.",
+        ),
+        _RoutineDefinition(
             "g2_load_selected_record",
             _OFFSETS["g2_load_selected_record"],
             _build_load_selected_record(),
-            "Load and validate one selected record through confirmed NitroFS calls.",
+            (
+                "Read all 103 ordered records, recompute payload CRC32, and stage "
+                "the selected record through confirmed NitroFS calls."
+            ),
+        ),
+        _RoutineDefinition(
+            "g2_validate_selected_record",
+            _OFFSETS["g2_validate_selected_record"],
+            _build_validate_selected_record(),
+            "Validate canonical passthrough bytes or the exact approved Gate 19 record.",
         ),
         _RoutineDefinition(
             "g2_legacy_gate_bonus",
@@ -1232,9 +1236,7 @@ def _routine_definitions() -> tuple[_RoutineDefinition, ...]:
 
 
 _HOOK_HASHES = {
-    HookPurpose.GATE_BONUS: (
-        "ea818916339a9e9050f32020781f80611e88065b6c9adc6a324fcbb43f79a6d5"
-    ),
+    HookPurpose.GATE_BONUS: ("ea818916339a9e9050f32020781f80611e88065b6c9adc6a324fcbb43f79a6d5"),
     HookPurpose.CONTEXT_ACCESS: (
         "8caaf927c5702aa9c1041697d0c2f8000ca0c64f9cc9c9a810ce36a08783ac38"
     ),
@@ -1363,15 +1365,13 @@ def build_milestone_6c_module() -> RuntimeModule:
     symbols: dict[str, RuntimeSymbol] = {}
     for definition in _routine_definitions():
         address = MODULE_BASE + definition.offset
-        data = struct.pack(
-            f"<{len(definition.image.words)}I", *definition.image.words
-        )
+        data = struct.pack(f"<{len(definition.image.words)}I", *definition.image.words)
         end = definition.offset + len(data)
         if end > SYSTEM2_MODULE_SIZE:
             raise WorkspaceError(f"runtime routine {definition.name} exceeds module")
-        if any(image[definition.offset:end]):
+        if any(image[definition.offset : end]):
             raise WorkspaceError(f"runtime routine {definition.name} overlaps another")
-        image[definition.offset:end] = data
+        image[definition.offset : end] = data
         symbol = RuntimeSymbol(
             name=definition.name,
             address=address,
@@ -1382,9 +1382,7 @@ def build_milestone_6c_module() -> RuntimeModule:
         )
         symbol.validate()
         symbols[definition.name] = symbol
-    ordered_symbols = dict(
-        sorted(symbols.items(), key=lambda item: item[1].address)
-    )
+    ordered_symbols = dict(sorted(symbols.items(), key=lambda item: item[1].address))
     module = RuntimeModule(
         image=bytes(image),
         symbols=ordered_symbols,

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import replace
-import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
+from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -46,18 +45,17 @@ from bakugan_ds.inspection import inspect_rom
 from bakugan_ds.patches.apply import apply_patch_set
 from bakugan_ds.profile import RomProfile
 from bakugan_ds.workspace.manifest import WorkspaceManifest, sha256_bytes
-from bakugan_ds.workspace.model import WorkspaceLayout
 from bakugan_ds.workspace.rebuild import RebuildOptions, rebuild_rom
 
 AUTHORING = Path("config/gates/milestone-6c-system2-v1.json")
 CORE_PATCH = Path("patches/core-g-compression-400.json")
 SOURCE_ROM_SHA256 = "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
-REBUILT_ROM_SHA256 = "78f9ac00bbfd1eed86ee2977016af3395198158bb25c12cef82eb55ac14eeceb"
-BUILD_REPORT_SHA256 = "858491ec0792d63ebdee1a1df8df107230dcfc9fe8dd30b10bc7aa198e68de63"
+REBUILT_ROM_SHA256 = "d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41"
+BUILD_REPORT_SHA256 = "b12900aadfc38a4499b455247fe42415ab8a84cbba2e48f6bd0ad67d821cc97f"
 TRAILER_SHA256 = "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b"
-MODULE_SHA256 = "ed4c0f5c1779eed6028d9b5e525fa94581c68664f5e98419747f74ffacb843f2"
+MODULE_SHA256 = "cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178"
 RAW_CARRIER_SHA256 = "6961673e91f0ced7afa299d371ba54d73b3e64ab75c79e14224e59c56003b634"
-OVERLAY_SHA256 = "5a19d4dd58d7d26c46c90d1890636f29a54209ca6c54a136c20cc5800ae39f8e"
+OVERLAY_SHA256 = "78d8e5963673c77a14fb36548b269fb8ab9abca9968b40167494531196b11b96"
 STORED_ARM9_SHA256 = "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8"
 
 
@@ -104,15 +102,12 @@ def test_exact_milestone_6c_build_is_deterministic_and_bounded(
     assert len(first_data) == len(second_data) == len(source) == 134_217_728
     assert first_data == second_data
     assert first_report.output_sha256 == second_report.output_sha256 == REBUILT_ROM_SHA256
-    assert first.with_suffix(".nds.build.json").read_bytes() == second.with_suffix(
-        ".nds.build.json"
-    ).read_bytes()
-    assert sha256_bytes(first.with_suffix(".nds.build.json").read_bytes()) == (
-        BUILD_REPORT_SHA256
+    assert (
+        first.with_suffix(".nds.build.json").read_bytes()
+        == second.with_suffix(".nds.build.json").read_bytes()
     )
-    assert [
-        (item.kind, item.identifier, item.encoding) for item in first_report.changes
-    ] == [
+    assert sha256_bytes(first.with_suffix(".nds.build.json").read_bytes()) == (BUILD_REPORT_SHA256)
+    assert [(item.kind, item.identifier, item.encoding) for item in first_report.changes] == [
         ("arm9", "arm9", "raw"),
         ("nitrofs_raw", "font/mes_CardName.mes", "raw-override"),
         ("overlay", "7", "uncompressed-overlay"),
@@ -133,9 +128,10 @@ def test_exact_milestone_6c_build_is_deterministic_and_bounded(
         assert original_entry.file_id == rebuilt_entry.file_id
         if original_entry.file_id in changed_ids:
             continue
-        assert source[original_entry.start : original_entry.end] == first_data[
-            rebuilt_entry.start : rebuilt_entry.end
-        ]
+        assert (
+            source[original_entry.start : original_entry.end]
+            == first_data[rebuilt_entry.start : rebuilt_entry.end]
+        )
 
     carrier = _payload(first_data, rebuilt, 2762)
     assert len(carrier) == 2840 + TRAILER_SIZE == 6992
@@ -165,9 +161,10 @@ def test_exact_milestone_6c_build_is_deterministic_and_bounded(
     assert sha256_bytes(module.image) == MODULE_SHA256
     assert overlay[0x727E0:0x7A7E0] == module.image
     for hook in module.hook_replacements:
-        assert overlay[
-            hook.component_offset : hook.component_offset + len(hook.replacement)
-        ] == hook.replacement
+        assert (
+            overlay[hook.component_offset : hook.component_offset + len(hook.replacement)]
+            == hook.replacement
+        )
 
     core_patch = json.loads(CORE_PATCH.read_text(encoding="utf-8"))
     for patch in core_patch["patches"]:
@@ -187,13 +184,9 @@ def test_exact_milestone_6c_build_is_deterministic_and_bounded(
     rebuilt_decoded = decompress_blz(rebuilt_arm9)
     assert len(rebuilt_decoded) == len(original_decoded) == 786_712
     assert original_decoded[ARENA_LOW_OFFSET : ARENA_LOW_OFFSET + 4] == ARENA_LOW_EXPECTED
-    assert rebuilt_decoded[ARENA_LOW_OFFSET : ARENA_LOW_OFFSET + 4] == (
-        ARENA_LOW_REPLACEMENT
-    )
+    assert rebuilt_decoded[ARENA_LOW_OFFSET : ARENA_LOW_OFFSET + 4] == (ARENA_LOW_REPLACEMENT)
     assert original_decoded[:ARENA_LOW_OFFSET] == rebuilt_decoded[:ARENA_LOW_OFFSET]
-    assert original_decoded[ARENA_LOW_OFFSET + 4 :] == rebuilt_decoded[
-        ARENA_LOW_OFFSET + 4 :
-    ]
+    assert original_decoded[ARENA_LOW_OFFSET + 4 :] == rebuilt_decoded[ARENA_LOW_OFFSET + 4 :]
 
 
 def test_malformed_system2_inputs_predict_fail_closed_legacy_behavior() -> None:

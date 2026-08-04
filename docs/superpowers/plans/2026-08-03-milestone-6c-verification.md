@@ -200,38 +200,35 @@ The exact build, emitted runtime behavior, live boot/battle compatibility, norma
 
 ## Final repository verification
 
-The complete implementation and documentation tree was committed at:
+The checksum-guarded recovery transport authenticated the preserved source patch and synchronized the implementation as commit:
 
 ```text
-407e21cbe6419d41835a11caaf576bc5395c2189
+e2abd7f9cc8c9edffc9a3267c255baa87509da32
 ```
 
-The final verification commands produced:
+Before that commit was pushed, the synchronization job applied the exact preserved patch, removed all temporary transport files, and ran the complete host verification stack on the staged source tree:
 
 ```text
 Host repository suite:       540 passed, 39 expected environment-gated skips
-Exact Milestone 6C controls: 9 passed
+Ruff:                        passed on all changed Python files
+Strict mypy:                 passed on 12 changed package source files
 Python compilation:          passed
 Whitespace validation:       passed
-Ruff:                        unavailable in the execution runtime
-Strict mypy:                 unavailable in the execution runtime
 ```
 
-The exact-ROM controls include the guarded raw/overlay workspace rebuild, all
-four exact overlay hook/module checks, the deterministic bounded ROM build,
-malformed-data fail-closed behavior, legacy Gate samples, and core-G
-compatibility.
+The local exact-profile verification remains:
+
+```text
+Exact Milestone 6C controls: 9 passed
+```
+
+Those exact-ROM controls cannot run in ordinary GitHub Actions because the user-owned ROM, decoded overlay, and runtime ARM9 are intentionally absent. They remain guarded and skip rather than weakening their identity checks.
 
 Repository-boundary inspection found:
 
-- no tracked ROM, save, emulator-state, capture-image, archive, or generated
-  module/trailer binary;
+- no tracked ROM, save, emulator-state, capture-image, archive, or generated module/trailer binary;
 - no tracked file larger than 5 MiB;
-- no untracked generated module, trailer, ROM, or debugger-state candidate;
-- no modification outside the approved Milestone 6C implementation,
-  verification, documentation, and test scope.
+- no retained `.sync` transport payload, recovery workflow, or normalizer;
+- no modification outside the approved Milestone 6C implementation, verification, documentation, and test scope.
 
-Because a Git commit cannot contain its own SHA-1, the commit above is the exact
-verified implementation/documentation head. The following status-only commit
-records these results; the complete suite is rerun after that commit and its
-exact head is reported in the pull request and final handoff.
+This documentation-only follow-up records the authoritative synchronized commit and remote verification results. Standard repository CI is rerun on the follow-up head before the pull request is marked ready for merge.

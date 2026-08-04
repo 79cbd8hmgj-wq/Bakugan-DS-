@@ -29,9 +29,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum .sync/m6c-final.patch.xz
-          xz -t .sync/m6c-final.patch.xz
-          xz -dc .sync/m6c-final.patch.xz > /tmp/m6c-final.patch
+          cat .sync/parts/part-* | base64 --decode > /tmp/m6c-final.patch.xz
+          test "$(sha256sum /tmp/m6c-final.patch.xz | awk '{print $1}')" = "4158273f37038e0aee58647a8c3dbbdbbf351725e81cc42fa9913098d1995282"
+          xz -t /tmp/m6c-final.patch.xz
+          xz -dc /tmp/m6c-final.patch.xz > /tmp/m6c-final.patch
           test "$(sha256sum /tmp/m6c-final.patch | awk '{print $1}')" = "896cce6866ef537148eadf8d85cc0131f9d815de09e0c7d63e42edfbc3b56b94"
           git apply --check /tmp/m6c-final.patch
           git apply /tmp/m6c-final.patch

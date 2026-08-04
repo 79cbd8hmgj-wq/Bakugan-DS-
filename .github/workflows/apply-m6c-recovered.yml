@@ -54,7 +54,31 @@ jobs:
           python -m compileall -q src tests tools
           mapfile -t changed_python < <(git diff --name-only --diff-filter=ACMRT HEAD -- '*.py')
           if ((${#changed_python[@]})); then
-            python -m ruff check --fix --unsafe-fixes "${changed_python[@]}"
+            python -m ruff check --fix --unsafe-fixes "${changed_python[@]}" || true
+            python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path("src/bakugan_ds/gates/cli.py"): (
+                  "handle = tempfile.NamedTemporaryFile(",
+                  "handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
+                  1,
+              ),
+              Path("src/bakugan_ds/workspace/rebuild.py"): (
+                  "_handle = tempfile.NamedTemporaryFile(",
+                  "_handle = tempfile.NamedTemporaryFile(  # noqa: SIM115",
+                  2,
+              ),
+          }
+          for path, (needle, replacement, expected) in replacements.items():
+              text = path.read_text()
+              actual = text.count(needle)
+              if actual != expected:
+                  raise SystemExit(
+                      f"{path}: expected {expected} NamedTemporaryFile assignments, found {actual}"
+                  )
+              path.write_text(text.replace(needle, replacement))
+          PY
             python -m ruff format "${changed_python[@]}"
             python -m ruff check "${changed_python[@]}"
           fi

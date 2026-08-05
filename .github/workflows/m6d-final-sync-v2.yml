@@ -1,0 +1,54 @@
+name: Apply Final Milestone 6D Source
+
+on:
+  push:
+    branches:
+      - milestone-6d-core-balance-framework
+    paths:
+      - .github/workflows/m6d-final-sync-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: milestone-6d-core-balance-framework
+          fetch-depth: 0
+      - name: Verify and apply exact local delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload_dir=automation/m6d-final-sync
+          if [[ ! -d "$payload_dir" ]]; then
+            echo "No staged payload remains."
+            exit 0
+          fi
+
+          cat "$payload_dir"/chunk-* > "$RUNNER_TEMP/m6d-final-sync.patch.gz.b64"
+          echo "4dd8e7467da49634ac3abfe0382180a792ed85f14f56113e27c51fc3f09f06df  $RUNNER_TEMP/m6d-final-sync.patch.gz.b64" | sha256sum -c -
+
+          base64 --decode "$RUNNER_TEMP/m6d-final-sync.patch.gz.b64" > "$RUNNER_TEMP/m6d-final-sync.patch.gz"
+          echo "74c738510df72a42d7d7b38a83882a190e027fe7bb2dbada35616e6c5445a133  $RUNNER_TEMP/m6d-final-sync.patch.gz" | sha256sum -c -
+
+          gzip --decompress --stdout "$RUNNER_TEMP/m6d-final-sync.patch.gz" > "$RUNNER_TEMP/m6d-final-sync.patch"
+          echo "77bc507aa0d5835497aea1d52127df2dbae95603eca3ca92c6d17b2a68557f3e  $RUNNER_TEMP/m6d-final-sync.patch" | sha256sum -c -
+
+          git apply --check "$RUNNER_TEMP/m6d-final-sync.patch"
+          git apply "$RUNNER_TEMP/m6d-final-sync.patch"
+
+          rm -rf "$payload_dir"
+          rm -f .github/workflows/m6d-final-sync-v2.yml
+          rm -f .github/workflows/m6d-desmume-runtime-build.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: complete Milestone 6D balance framework"
+          git push origin HEAD:milestone-6d-core-balance-framework

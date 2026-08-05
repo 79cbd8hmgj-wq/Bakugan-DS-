@@ -136,7 +136,7 @@ def test_comeback_batch_is_unique_against_the_complete_live_roster() -> None:
     validate_hard_duplicate_classes(report)
 
     assert report["valid_for_draft"] is True
-    assert ALL_COMEBACK_IDS <= set(report["live_card_ids"])
+    assert set(report["live_card_ids"]) >= ALL_COMEBACK_IDS
     assert report["hard_duplicate_groups"] == []
     assert report["identical_evaluation_groups"] == []
     assert report["identity_conflicts"] == []

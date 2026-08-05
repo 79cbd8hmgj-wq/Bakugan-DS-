@@ -78,6 +78,7 @@ jobs:
           git add \
             analysis/gates/milestone-6e-roster-contract.json \
             analysis/gates/milestone-6e-balance-contract.json \
+            config/gates/milestone-6e-system2-v1.json \
             config/gates/milestone-6e-roster-metadata.json \
             src/bakugan_ds/gates/roster_contracts.py \
             tests/unit/test_gate_roster_contracts.py

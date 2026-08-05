@@ -1,17 +1,19 @@
-name: Apply Milestone 6E Task 2 Sync
+name: Apply Milestone 6E Tasks 2-4 Sync
 
 on:
-  push:
+  pull_request:
     branches:
-      - milestone-6e-complete-gate-roster-conversion
+      - main
     paths:
       - .github/workflows/m6e-task2-sync.yml
+      - automation/m6e-task2-sync.patch.gz.b64
 
 permissions:
   contents: write
 
 jobs:
   sync:
+    if: github.event.pull_request.head.ref == 'milestone-6e-complete-gate-roster-conversion'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -21,32 +23,36 @@ jobs:
           ref: milestone-6e-complete-gate-roster-conversion
           fetch-depth: 0
 
-      - name: Verify and apply exact Task 2 patch
+      - name: Verify and apply exact Tasks 2-4 patch
         run: |
           set -euo pipefail
           payload=automation/m6e-task2-sync.patch.gz.b64
           test -f "$payload"
           printf '%s  %s\n' \
-            'e76d81783b3eec02f89c2d212ab50b335414e80bc0c456e48b0e0ff77297e198' \
+            '036fc2e87e786a2a18b85849c1a3bde9a43dee1bad419ac0199da4677e11d3bd' \
             "$payload" | sha256sum -c -
-          base64 --decode "$payload" > /tmp/m6e-task2.patch.gz
+          base64 --decode "$payload" > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
-            '086389a367fbe4d42662e815669b79483414f062b371fe70074c7d12d64ee8e7' \
-            /tmp/m6e-task2.patch.gz | sha256sum -c -
-          gzip --decompress --stdout /tmp/m6e-task2.patch.gz > /tmp/m6e-task2.patch
+            '974f4ac54b774d7332add9da6aa999568f9c753efc44c33194e7e189063de60a' \
+            /tmp/m6e-tasks2-4.patch.gz | sha256sum -c -
+          gzip --decompress --stdout /tmp/m6e-tasks2-4.patch.gz > /tmp/m6e-tasks2-4.patch
           printf '%s  %s\n' \
-            '34729ada28a7a562003431c42b56e0406abba45b250e65e878f14fa4d26a9551' \
-            /tmp/m6e-task2.patch | sha256sum -c -
-          git apply --check /tmp/m6e-task2.patch
-          git apply /tmp/m6e-task2.patch
+            '9052124a4fad432ffc5f99888828922ad822a4d3e97bbfe3929c05e1b7f2f03f' \
+            /tmp/m6e-tasks2-4.patch | sha256sum -c -
+          git apply --check /tmp/m6e-tasks2-4.patch
+          git apply /tmp/m6e-tasks2-4.patch
 
-      - name: Verify focused Task 1 and Task 2 tests
+      - name: Verify focused Tasks 1-4 tests
         run: |
           set -euo pipefail
           export PYTHONPATH=src
           python -m pytest -q \
             tests/test_gate_milestone_6e_entry_contract.py \
-            tests/unit/test_gate_roster_metadata.py
+            tests/test_gate_milestone_6e_id_name_map.py \
+            tests/unit/test_gate_roster_metadata.py \
+            tests/unit/test_gate_roster_identity.py \
+            tests/unit/test_gate_roster_analysis.py \
+            tests/unit/test_gate_cli.py
           python -m compileall -q src tests
           git diff --check
 
@@ -58,7 +64,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'feat: add Milestone 6E roster metadata model'
+          git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
-
-# recovery trigger: 2026-08-05T09:24-04:00

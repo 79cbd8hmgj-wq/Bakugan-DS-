@@ -22,10 +22,8 @@ from bakugan_ds.gates.roster_metadata import load_gate_roster_metadata
 
 AUTHORING = Path("config/gates/milestone-6e-system2-v1.json")
 METADATA = Path("config/gates/milestone-6e-roster-metadata.json")
-POWER_IDS = set(range(1, 16))
-ATTRIBUTE_IDS = set(range(40, 62))
-LIVE_IDS = sorted(POWER_IDS | ATTRIBUTE_IDS | {19})
-LEGACY_IDS = sorted(set(range(1, 104)) - set(LIVE_IDS))
+LIVE_IDS = list(range(1, 69))
+LEGACY_IDS = list(range(69, 104))
 
 
 def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
@@ -37,7 +35,7 @@ def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
     assert report["format"] == "bakugan-ds-gate-milestone-6e-roster-analysis"
     assert report["record_count"] == 103
     assert report["live_card_ids"] == LIVE_IDS
-    assert report["legacy_passthrough_count"] == 65
+    assert report["legacy_passthrough_count"] == 35
     assert report["matrix"]["case_count_per_record"] == REFERENCE_CASE_COUNT == 1080
     assert report["matrix"]["core_g"] == [190, 400, 525, 650, 695]
     assert report["matrix"]["attributes"] == [0, 1, 2, 3, 4, 5]
@@ -59,6 +57,8 @@ def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
     assert report["legacy_duplicate_groups"] == [LEGACY_IDS]
     assert report["archetype_distribution"]["comeback"] == 1
     assert report["archetype_distribution"]["power"] == 15
+    assert report["archetype_distribution"]["skill"] == 15
+    assert report["archetype_distribution"]["control"] == 15
     assert report["archetype_distribution"]["attribute"] == 22
     assert report["archetype_distribution_warnings"]
 

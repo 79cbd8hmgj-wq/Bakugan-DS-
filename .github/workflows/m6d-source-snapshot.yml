@@ -17,11 +17,11 @@ jobs:
           persist-credentials: false
       - name: Pack exact source checkout
         run: |
-          tar --exclude=.git -czf milestone-6d-source.tar.gz .
+          tar --exclude=.git -czf "$RUNNER_TEMP/milestone-6d-source.tar.gz" .
       - name: Upload exact source checkout
         uses: actions/upload-artifact@v4
         with:
           name: milestone-6d-source
-          path: milestone-6d-source.tar.gz
+          path: ${{ runner.temp }}/milestone-6d-source.tar.gz
           retention-days: 1
           if-no-files-found: error

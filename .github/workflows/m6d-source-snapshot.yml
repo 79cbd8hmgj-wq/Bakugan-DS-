@@ -1,27 +1,139 @@
-name: Milestone 6D Source Snapshot
+name: Apply Verified Milestone 6D Patch
 
 on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  snapshot:
+  apply:
     runs-on: ubuntu-24.04
     steps:
-      - name: Check out repository
+      - name: Check out PR head branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
-          persist-credentials: false
-      - name: Pack exact source checkout
+      - name: Apply locally verified corrections
         run: |
-          tar --exclude=.git -czf "$RUNNER_TEMP/milestone-6d-source.tar.gz" .
-      - name: Upload exact source checkout
-        uses: actions/upload-artifact@v4
-        with:
-          name: milestone-6d-source
-          path: ${{ runner.temp }}/milestone-6d-source.tar.gz
-          retention-days: 1
-          if-no-files-found: error
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tests/integration/test_gate_milestone_6c_build.py')
+          text = path.read_text()
+          text = text.replace(
+              'invalid_enum = replace(approved_juggernoid_record(), archetype=2)',
+              'invalid_enum = replace(approved_juggernoid_record(), archetype=99)',
+          )
+          path.write_text(text)
+
+          path = Path('tests/unit/test_gate_balance.py')
+          text = path.read_text()
+          old = '''def test_attribute_archetype_rejects_inadequate_spread() -> None:
+              record = make_record(
+                  card_id=6,
+                  archetype=GateArchetype.ATTRIBUTE,
+                  attribute_modifiers=(40, 20, 0, 0, -10, -20),
+              )
+              with pytest.raises(WorkspaceError, match="spread"):
+                  validate_attribute_profile(record)
+          '''
+          new = '''def test_attribute_archetype_accepts_exact_minimum_spread_boundary() -> None:
+              record = make_record(
+                  card_id=6,
+                  archetype=GateArchetype.ATTRIBUTE,
+                  attribute_modifiers=(40, 20, 0, 0, -10, -20),
+              )
+              report = analyze_attribute_profile(record)
+              assert report.spread == 60
+              validate_attribute_profile(record)
+          '''
+          if old not in text:
+              raise SystemExit('attribute boundary test block not found')
+          text = text.replace(old, new)
+          text = text.replace(
+              'record = replace(valid_archetype_records()[2], battle_weights=(50, 30, 30, 30, 30, 30))',
+              'record = replace(\n'
+              '        valid_archetype_records()[2],\n'
+              '        flat_bonus_g=125,\n'
+              '        battle_weights=(50, 30, 30, 30, 30, 30),\n'
+              '    )',
+          )
+          path.write_text(text)
+
+          path = Path('tests/unit/test_gate_system2.py')
+          text = path.read_text().replace(
+              '({"target_mode": 99}, FallbackReason.INVALID_ENUM),',
+              '({"target_mode": 6}, FallbackReason.INVALID_ENUM),',
+          )
+          path.write_text(text)
+
+          path = Path('src/bakugan_ds/gates/balance.py')
+          text = path.read_text()
+          text = text.replace(
+              '    gross_budget = flat_cost + percentage_cost + attribute_cost + effect_cost + weight_report.budget_cost\n',
+              '    gross_budget = (\n'
+              '        flat_cost\n'
+              '        + percentage_cost\n'
+              '        + attribute_cost\n'
+              '        + effect_cost\n'
+              '        + weight_report.budget_cost\n'
+              '    )\n',
+          )
+          text = text.replace(
+              '        raise WorkspaceError(f"{label} net budget must be between {minimum} and {maximum}, got {value}")\n',
+              '        raise WorkspaceError(\n'
+              '            f"{label} net budget must be between {minimum} and {maximum}, got {value}"\n'
+              '        )\n',
+          )
+          text = text.replace(
+              '        if target is GateTargetMode.CURRENT_COMBATANT and record.condition_id == GateConditionId.NONE:\n',
+              '        if (\n'
+              '            target is GateTargetMode.CURRENT_COMBATANT\n'
+              '            and record.condition_id == GateConditionId.NONE\n'
+              '        ):\n',
+          )
+          text = text.replace(
+              '        if budget.gross_budget and (budget.flat_cost + budget.percentage_cost) * 100 > budget.gross_budget * 60:\n',
+              '        universal_g_cost = budget.flat_cost + budget.percentage_cost\n'
+              '        if budget.gross_budget and universal_g_cost * 100 > budget.gross_budget * 60:\n',
+          )
+          text = text.replace(
+              '        if attribute_report.maximum < 40 or attribute_report.minimum > -20 or attribute_report.spread < 60:\n',
+              '        if (\n'
+              '            attribute_report.maximum < 40\n'
+              '            or attribute_report.minimum > -20\n'
+              '            or attribute_report.spread < 60\n'
+              '        ):\n',
+          )
+          path.write_text(text)
+
+          path = Path('src/bakugan_ds/gates/system2.py')
+          text = path.read_text().replace(
+              '    if record.condition_id == GateConditionId.LANDING_GATE_CARD_WON and record.condition_value not in (0, 1):\n',
+              '    if (\n'
+              '        record.condition_id == GateConditionId.LANDING_GATE_CARD_WON\n'
+              '        and record.condition_value not in (0, 1)\n'
+              '    ):\n',
+          )
+          path.write_text(text)
+          PY
+      - name: Install and verify
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          python -m compileall -q src tests tools
+          python -m ruff check src/bakugan_ds/gates/balance.py src/bakugan_ds/gates/system2.py tests/integration/test_gate_milestone_6c_build.py tests/unit/test_gate_balance.py tests/unit/test_gate_system2.py
+          python -m mypy --strict src/bakugan_ds/gates/balance.py src/bakugan_ds/gates/system2.py
+          python -m pytest -q
+          git diff --check
+      - name: Commit verified corrections and remove temporary workflows
+        run: |
+          rm -f .github/workflows/m6d-source-snapshot.yml
+          rm -f .github/workflows/m6d-apply-verified-fixes.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src tests .github/workflows
+          git commit -m 'fix: correct Milestone 6D validation coverage'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

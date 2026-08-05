@@ -91,8 +91,10 @@ def validate_hook_sites(sites: tuple[HookSite, ...]) -> None:
                         f"0x{protected.start:X}:0x{protected.stop:X}"
                     )
         for component, start, end, purpose in occupied:
-            if site.component == component and site.component_offset < end and start < (
-                site.component_offset + site.instruction_length
+            if (
+                site.component == component
+                and site.component_offset < end
+                and start < (site.component_offset + site.instruction_length)
             ):
                 raise WorkspaceError(f"hook {site.purpose} overlaps hook {purpose}")
         occupied.append(
@@ -185,3 +187,26 @@ def normalize_hook_capture(payload: dict[str, object]) -> tuple[HookSite, ...]:
     result = tuple(sorted(sites, key=lambda site: str(site.purpose)))
     validate_hook_sites(result)
     return result
+
+
+# Exact displaced bytes for the four approved Milestone 6C hook boundaries.
+HOOK_SOURCE_BYTES: dict[HookPurpose, bytes] = {
+    HookPurpose.GATE_BONUS: bytes.fromhex(
+        "1910d5e5b400d6e1011ea0e1211ea0e161a2f8eb0a10a0e3900101e0b211c5e1"
+    ),
+    HookPurpose.CONTEXT_ACCESS: bytes.fromhex("010082e0be00c5e1"),
+    HookPurpose.BATTLE_TYPE_SELECTOR: bytes.fromhex("151400eb"),
+    HookPurpose.EXPANDED_DATA_LOOKUP: bytes.fromhex("08402de9"),
+}
+
+
+def validate_hook_source_bytes(purpose: HookPurpose, expected_sha256: str) -> bytes:
+    if not isinstance(purpose, HookPurpose):
+        raise WorkspaceError("hook source purpose is invalid")
+    data = HOOK_SOURCE_BYTES[purpose]
+    import hashlib
+
+    actual = hashlib.sha256(data).hexdigest()
+    if actual != expected_sha256:
+        raise WorkspaceError(f"hook source bytes for {purpose} do not match committed SHA-256")
+    return data

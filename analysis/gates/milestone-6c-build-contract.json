@@ -1,0 +1,39 @@
+{
+  "arm9": {
+    "decoded_patch_address": "0x02006264",
+    "decoded_patch_offset": "0x00006264",
+    "expected": "20bc2802",
+    "replacement": "603c2902",
+    "stored_size_preserved": true
+  },
+  "blz_reencode": {
+    "decoded_size": 786712,
+    "header_length": 193,
+    "in_place_decode_matches": true,
+    "passthrough_length": 32768,
+    "stored_sha256": "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8",
+    "stored_size": 448192
+  },
+  "cache_range": ["0x02293C20", "0x02293C60"],
+  "format_version": 1,
+  "generated_products_committed": false,
+  "guarded_change_count": 7,
+  "overlay": {
+    "original_bss_size": 1600,
+    "original_ram_size": 467360,
+    "overlay_id": 7,
+    "replacement_bss_size": 64,
+    "replacement_ram_size": 501728
+  },
+  "prerequisite": "approved bounded core-G compression patch applied to modified overlay 7",
+  "prerequisite_overlay_sha256": "7e310ef95fcc3304870b98d11046ed453b1dc2d270f42a438af161b603437f2e",
+  "profile_id": "b6re_rev0",
+  "raw_carrier": {
+    "file_id": 2762,
+    "original_size": 2840,
+    "replacement_size": 6992
+  },
+  "runtime_module_sha256": "cb0d3734ba0dfba383313890c787f7307eacfa2da0f14d45396f06e090adc178",
+  "trailer_sha256": "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b",
+  "transaction_policy": "validate and stage every product before replacing workspace targets; identical reinstall is a no-op and partial divergence fails closed"
+}

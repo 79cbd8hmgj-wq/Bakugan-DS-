@@ -169,11 +169,22 @@ bakugan-ds gate report-context work/bakugan \
 See [the legacy Gate system documentation](docs/gate-card-legacy-system.md),
 [the System 2.0 roadmap](docs/gate-card-system-2-roadmap.md), and the
 [complete runtime-context contract](docs/gate-card-system-2-runtime-context.md).
-Milestone 6B confirms every required context and timing boundary except the
+Milestone 6B implements no live System 2.0 gameplay effect. At the Milestone 6B handoff, the first experimental Gate remains a separately reviewed Milestone 6C. Milestone 6C has since passed that review. It confirms every required context and timing boundary except the
 explicitly deferred `arena_id`. The generated
 [Milestone 6C readiness report](analysis/gates/milestone-6c-readiness.json) has
-no failures. Milestone 6B implements no live System 2.0 gameplay effect; the
-first experimental Gate remains a separately reviewed Milestone 6C change.
+no failures. Milestone 6C now implements the separately reviewed first prototype: Gate ID
+`19`, Juggernoid. It combines compressed-core fixed-point scaling, an Aquos
+modifier, an owner-behind `+40 G` rider, and weighted battle-type selection.
+Every unrelated Gate and every invalid-data path retains original behavior.
+
+```bash
+bakugan-ds gate install-milestone-6c work/bakugan \
+  --authoring config/gates/milestone-6c-system2-v1.json
+bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-M6C.nds
+```
+
+See [the Milestone 6C prototype contract](docs/gate-card-system-2-prototype.md)
+and [the verification record](docs/superpowers/plans/2026-08-03-milestone-6c-verification.md).
 
 ## Build the runtime debugger
 

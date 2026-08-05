@@ -154,9 +154,7 @@ def test_validate_workspace_detects_modified_components(
 
     result = validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
 
-    assert [(item.kind, item.identifier) for item in result.changes] == [
-        ("nitrofs", "Game/a.bin")
-    ]
+    assert [(item.kind, item.identifier) for item in result.changes] == [("nitrofs", "Game/a.bin")]
 
 
 def test_validate_workspace_rejects_wrong_source_rom(
@@ -223,4 +221,177 @@ def test_validate_workspace_rejects_extra_modified_mapping(
     (root / "modified/nitrofs/extra.bin").write_bytes(b"extra")
 
     with pytest.raises(WorkspaceError, match="unmanifested"):
+        validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
+
+
+def test_validate_workspace_accepts_declared_raw_and_overlay_overrides(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from bakugan_ds.workspace.overrides import (
+        BuildOverrides,
+        OverlayLayoutOverride,
+        RawNitroFsOverride,
+        write_build_overrides,
+    )
+
+    source, root, inspection = make_workspace(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    layout = WorkspaceLayout.from_root(root)
+    raw_original = (layout.original_raw_nitrofs / "Game/a.bin").read_bytes()
+    raw_replacement = raw_original + b"TAIL"
+    raw_path = layout.modified_raw_nitrofs / "Game/a.bin"
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.write_bytes(raw_replacement)
+    overlay_path = layout.modified_overlays / "overlay_000.bin"
+    overlay_path.write_bytes(overlay_path.read_bytes() + b"GROW")
+    write_build_overrides(
+        layout.build_overrides,
+        BuildOverrides(
+            1,
+            "b6re_rev0",
+            (
+                RawNitroFsOverride(
+                    1,
+                    "Game/a.bin",
+                    len(raw_original),
+                    sha256_bytes(raw_original),
+                    len(raw_replacement),
+                    sha256_bytes(raw_replacement),
+                ),
+            ),
+            (OverlayLayoutOverride(0, 4, 0, 8, 1, 0),),
+        ),
+    )
+
+    result = validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
+
+    assert result.overrides is not None
+    assert {(item.kind, item.identifier) for item in result.changes} == {
+        ("nitrofs_raw", "Game/a.bin"),
+        ("overlay", "0"),
+    }
+
+
+def test_validate_workspace_rejects_raw_override_with_stale_original_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from bakugan_ds.workspace.overrides import (
+        BuildOverrides,
+        RawNitroFsOverride,
+        write_build_overrides,
+    )
+
+    source, root, inspection = make_workspace(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    layout = WorkspaceLayout.from_root(root)
+    replacement = b"RAW-TAIL"
+    path = layout.modified_raw_nitrofs / "Game/a.bin"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(replacement)
+    write_build_overrides(
+        layout.build_overrides,
+        BuildOverrides(
+            1,
+            "b6re_rev0",
+            (
+                RawNitroFsOverride(
+                    1,
+                    "Game/a.bin",
+                    3,
+                    "f" * 64,
+                    len(replacement),
+                    sha256_bytes(replacement),
+                ),
+            ),
+            (),
+        ),
+    )
+    before = path.read_bytes()
+
+    with pytest.raises(WorkspaceError, match="original raw override"):
+        validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
+
+    assert path.read_bytes() == before
+
+
+def test_validate_workspace_rejects_simultaneous_decoded_and_raw_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from bakugan_ds.workspace.overrides import (
+        BuildOverrides,
+        RawNitroFsOverride,
+        write_build_overrides,
+    )
+
+    source, root, inspection = make_workspace(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    layout = WorkspaceLayout.from_root(root)
+    original = (layout.original_raw_nitrofs / "Game/a.bin").read_bytes()
+    replacement = original + b"TAIL"
+    path = layout.modified_raw_nitrofs / "Game/a.bin"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(replacement)
+    (layout.modified_nitrofs / "Game/a.bin").write_bytes(b"EDIT")
+    write_build_overrides(
+        layout.build_overrides,
+        BuildOverrides(
+            1,
+            "b6re_rev0",
+            (
+                RawNitroFsOverride(
+                    1,
+                    "Game/a.bin",
+                    len(original),
+                    sha256_bytes(original),
+                    len(replacement),
+                    sha256_bytes(replacement),
+                ),
+            ),
+            (),
+        ),
+    )
+
+    with pytest.raises(WorkspaceError, match="simultaneous decoded and raw"):
+        validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
+
+
+def test_validate_workspace_rejects_undeclared_overlay_growth(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, root, inspection = make_workspace(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    layout = WorkspaceLayout.from_root(root)
+    path = layout.modified_overlays / "overlay_000.bin"
+    path.write_bytes(path.read_bytes() + b"GROW")
+
+    with pytest.raises(WorkspaceError, match="size mismatch"):
+        validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
+
+
+def test_validate_workspace_rejects_unmanifested_raw_override_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, root, inspection = make_workspace(tmp_path)
+    monkeypatch.setattr(
+        "bakugan_ds.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+    layout = WorkspaceLayout.from_root(root)
+    extra = layout.modified_raw_nitrofs / "extra.bin"
+    extra.parent.mkdir(parents=True, exist_ok=True)
+    extra.write_bytes(b"extra")
+
+    with pytest.raises(WorkspaceError, match="unmanifested modified raw"):
         validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)

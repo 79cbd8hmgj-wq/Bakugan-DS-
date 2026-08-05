@@ -1,0 +1,69 @@
+{
+  "format_version": 1,
+  "patches": [
+    {
+      "expected": "1910d5e5b400d6e1011ea0e1211ea0e161a2f8eb0a10a0e3900101e0b211c5e1",
+      "id": "gate-system2-gate-bonus-hook",
+      "offset": 146968,
+      "rationale": "Restore the exact 32-byte legacy Gate bonus block.",
+      "replacement": "303d01ea0000a0e10000a0e10000a0e10000a0e10000a0e10000a0e10000a0e1",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "010082e0be00c5e1",
+      "id": "gate-system2-context-access-hook",
+      "offset": 147016,
+      "rationale": "Restore the exact add and target-total halfword store.",
+      "replacement": "343d01ea0000a0e1",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "151400eb",
+      "id": "gate-system2-battle-type-selector-hook",
+      "offset": 151312,
+      "rationale": "Restore the original BL to the fixed metadata selector.",
+      "replacement": "723901eb",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "08402de9",
+      "id": "gate-system2-expanded-data-lookup-hook",
+      "offset": 171884,
+      "rationale": "Restore the original selector prologue push instruction.",
+      "replacement": "6b2501ea",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "b400c6e1",
+      "id": "gate-system2-cache-load-hook",
+      "offset": 146828,
+      "rationale": "Restore the original selected Gate halfword store.",
+      "replacement": "d33a01eb",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "b0091fe5",
+      "id": "gate-system2-cache-clear-hook",
+      "offset": 168052,
+      "rationale": "Restore the original PC-relative result-path load.",
+      "replacement": "492901eb",
+      "target": "overlay:7",
+      "type": "binary_replace"
+    },
+    {
+      "expected": "20bc2802",
+      "id": "gate-system2-arena-low",
+      "offset": 25188,
+      "rationale": "Reserve the expanded overlay module and 64-byte cache below the battle arena.",
+      "replacement": "603c2902",
+      "target": "arm9-decoded",
+      "type": "decoded_arm9_replace"
+    }
+  ],
+  "profile_id": "b6re_rev0"
+}

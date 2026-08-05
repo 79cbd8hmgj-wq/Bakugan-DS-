@@ -1,0 +1,113 @@
+{
+  "abi": {
+    "allowed_writes": [
+      "current battle-local combatant record",
+      "64-byte Gate System 2.0 cache",
+      "current routine stack frame"
+    ],
+    "preserved_when_used": [
+      "r4",
+      "r5",
+      "r6",
+      "r7",
+      "r8",
+      "r9",
+      "r10",
+      "r11",
+      "lr"
+    ],
+    "scratch_registers": [
+      "r0",
+      "r1",
+      "r2",
+      "r3"
+    ],
+    "stack_alignment": 8
+  },
+  "format_version": 1,
+  "module": {
+    "base": "0x0228BC20",
+    "cache_end": "0x02293C60",
+    "cache_start": "0x02293C20",
+    "end": "0x02293C20",
+    "size": 32768
+  },
+  "profile_id": "b6re_rev0",
+  "symbols": {
+    "g2_calculate_gate_bonus": "Calculates the approved Gate 19 hybrid bonus from compressed core G, attribute, authoritative score, and Gate-owner context; every invalid context tail-calls the exact legacy Gate calculation.",
+    "g2_clear_cache": "Clears exactly sixteen cache words and returns.",
+    "g2_clear_hook": "Clears all cache bytes, replays the displaced result-path load, and returns.",
+    "g2_context_store_hook": "Clamps the successful System 2.0 target total to unsigned 16-bit; legacy fallback replays the original wrapping add/store.",
+    "g2_crc32_update": "Updates a reflected IEEE CRC32 across a bounded byte buffer for runtime payload verification.",
+    "g2_gate_bonus_hook": "Routes the normal Gate lookup boundary through the approved Gate 19 calculation with complete legacy fallback.",
+    "g2_legacy_gate_bonus": "Exact relocated legacy lookup, scale, and store; returns r3=0 to identify the complete fallback path.",
+    "g2_load_selected_record": "Reads all 103 ordered records through confirmed NitroFS calls, recomputes the complete payload CRC32, stages the selected record, and marks the cache valid only after close succeeds.",
+    "g2_loader_trampoline": "Replays the selector prologue, validates cache identity, reloads on mismatch, and continues.",
+    "g2_select_battle_type": "Uses the approved Gate 19 six-byte weight vector with confirmed ARM9 helper 0x02021A30; invalid cache or result uses fixed metadata without history updates.",
+    "g2_selector_hook": "Stable normal-fallback selector entry routed through weighted Gate 19 selection.",
+    "g2_validate_cache": "Validates cache valid/version bytes and selected record identity.",
+    "g2_validate_selected_record": "Validates a canonical passthrough record or the exact approved Gate 19 prototype after complete payload verification."
+  },
+  "task_10_boundary": {
+    "battle_history_updated": false,
+    "explicit_constructor_precedence": "unchanged",
+    "invalid_cache_rng_calls": 0,
+    "live_system2_behavior": "weighted_juggernoid_normal_fallback",
+    "phase_local_fallback": "legacy_fixed_metadata",
+    "scripted_override_precedence": "unchanged",
+    "weight_count": 6,
+    "weight_pointer": "cache +0x0E",
+    "weighted_helper": "0x02021A30"
+  },
+  "task_7_boundary": {
+    "all_hooks_route_to_legacy": true,
+    "live_system2_behavior": false,
+    "rollback": "Restore the six exact displaced instruction regions and ignore the generated module."
+  },
+  "task_8_boundary": {
+    "approved_header_hex": "4732445401002000280001006700000018100000ad957f9b8b7e8cc500000000",
+    "battle_type_selection": "legacy_fixed_metadata",
+    "close_before_cache_valid": true,
+    "failure_policy": "clear all 64 cache bytes",
+    "gate_calculation": "legacy",
+    "live_system2_behavior": "loader_and_cache_only",
+    "payload_crc_runtime_policy": "recompute IEEE CRC32 across all 103 ordered records and compare it to the approved header payload CRC32",
+    "selected_record_validation": "canonical passthrough or exact approved Gate 19 record"
+  },
+  "task_9_boundary": {
+    "active_gate_id": 19,
+    "attribute_modifier": "Aquos +30 G; all other approved attributes +0 G",
+    "battle_type_selection": "legacy_fixed_metadata_until_task_10",
+    "calculation": "60 + floor(compressed_core_g * 20 / 256) + attribute_modifier",
+    "complete_legacy_fallback": true,
+    "compressed_core_source": "participant source record +0x04 recompressed with the merged 400-threshold core-G curve",
+    "context_sources": {
+      "combatant_participant": "combatant +0x19 high nibble",
+      "descriptor_indices": "session +0x28D/+0x28E",
+      "descriptor_participant": "descriptor +0x0F low nibble",
+      "gate_owner": "battle object +0x06",
+      "match_score": "participant +0xEE",
+      "team_flag": "0x020D433C +0x98",
+      "teammate": "participant +0xF2 with reciprocal-pair validation"
+    },
+    "descriptor_limit": 26,
+    "descriptor_limit_rationale": "session descriptor array spans session +0x7C through the bytes before session +0x28D; 26 complete 20-byte descriptors fit",
+    "effect": "+40 G only for the Gate owner combatant when owner-side score is lower",
+    "gate_bonus_clamp": "signed_16_upper_bound_for_approved_positive_record",
+    "legacy_fallback_flag": 0,
+    "live_system2_behavior": "juggernoid_hybrid_gate_calculation",
+    "mutable_modifier_scaled": false,
+    "participant_source": "high nibble of combatant +0x19 validated against the selected session descriptor",
+    "percentage_source": "compressed core G excluding mutable modifier G",
+    "prototype_gate_id": 19,
+    "record_policy": "exact approved Gate 19 bytes only",
+    "score_source": "participant +0xEE",
+    "success_flag_register": "r3",
+    "system2_success_flag": 1,
+    "target_total_clamp": "unsigned_16_on_system2_path_only",
+    "target_total_policy": "clamp to unsigned 16-bit only after a successful System 2.0 calculation",
+    "team_flag": "0x020D433C +0x98",
+    "team_source": "participant +0xF2 with reciprocal teammate-pair validation",
+    "tie_activates": false
+  }
+}

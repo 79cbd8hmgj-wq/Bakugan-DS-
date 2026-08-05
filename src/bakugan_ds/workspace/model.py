@@ -15,17 +15,22 @@ class WorkspaceLayout:
     original_decoded_overlays: Path
     original_decoded_nitrofs: Path
     modified: Path
+    modified_raw: Path
+    modified_raw_nitrofs: Path
     modified_overlays: Path
     modified_nitrofs: Path
     manifests: Path
+    build_overrides: Path
 
     @classmethod
-    def from_root(cls, root: Path) -> "WorkspaceLayout":
+    def from_root(cls, root: Path) -> WorkspaceLayout:
         normalized = root.expanduser().resolve()
         original = normalized / "original"
         original_raw = original / "raw"
         original_decoded = original / "decoded"
         modified = normalized / "modified"
+        modified_raw = modified / "raw"
+        manifests = normalized / "manifests"
         return cls(
             root=normalized,
             original=original,
@@ -36,9 +41,12 @@ class WorkspaceLayout:
             original_decoded_overlays=original_decoded / "overlays",
             original_decoded_nitrofs=original_decoded / "nitrofs",
             modified=modified,
+            modified_raw=modified_raw,
+            modified_raw_nitrofs=modified_raw / "nitrofs",
             modified_overlays=modified / "overlays",
             modified_nitrofs=modified / "nitrofs",
-            manifests=normalized / "manifests",
+            manifests=manifests,
+            build_overrides=manifests / "build-overrides.json",
         )
 
     def all_directories(self) -> tuple[Path, ...]:
@@ -52,6 +60,8 @@ class WorkspaceLayout:
             self.original_decoded_overlays,
             self.original_decoded_nitrofs,
             self.modified,
+            self.modified_raw,
+            self.modified_raw_nitrofs,
             self.modified_overlays,
             self.modified_nitrofs,
             self.manifests,

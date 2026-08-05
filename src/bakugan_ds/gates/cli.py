@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from bakugan_ds.errors import WorkspaceError
+from bakugan_ds.gates.authoring import load_authoring_document
 from bakugan_ds.gates.context import context_report, load_context_fields
 from bakugan_ds.gates.discovery import load_discovery_artifact
+from bakugan_ds.gates.install import install_milestone_6c
 from bakugan_ds.gates.io import load_json_object, write_evidence
 from bakugan_ds.gates.legacy import (
     LegacyGateRecord,
@@ -18,7 +22,7 @@ from bakugan_ds.gates.legacy import (
 )
 from bakugan_ds.gates.model import LegacyGateTableSpec
 from bakugan_ds.gates.readiness_report import generate_readiness_report
-from bakugan_ds.gates.record import parse_trailer
+from bakugan_ds.gates.record import build_trailer, parse_trailer
 from bakugan_ds.gates.runtime_image import (
     load_runtime_arm9,
     load_workspace_arm9,
@@ -67,6 +71,25 @@ def _add_gate_commands(subparsers: Any) -> None:
         help="validate one complete Gate System 2.0 G2DT trailer",
     )
     trailer_parser.add_argument("trailer", type=Path)
+
+    build_trailer_parser = subparsers.add_parser(
+        "build-trailer",
+        help="build the approved Milestone 6C G2DT trailer",
+    )
+    build_trailer_parser.add_argument("authoring", type=Path)
+    build_trailer_parser.add_argument("output", type=Path)
+
+    install_parser = subparsers.add_parser(
+        "install-milestone-6c",
+        help="install the approved Milestone 6C Gate System 2.0 prototype",
+    )
+    install_parser.add_argument("workspace", type=Path)
+    install_parser.add_argument(
+        "--authoring",
+        type=Path,
+        default=Path("config/gates/milestone-6c-system2-v1.json"),
+    )
+    install_parser.add_argument("--dry-run", action="store_true")
 
     readiness_parser = subparsers.add_parser(
         "readiness",
@@ -172,15 +195,31 @@ def _trailer_summary(path: Path) -> dict[str, object]:
     }
 
 
+def _write_binary_atomic(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = tempfile.NamedTemporaryFile(  # noqa: SIM115
+        prefix=f".{path.name}.tmp-", dir=path.parent, delete=False
+    )
+    temporary = Path(handle.name)
+    try:
+        with handle:
+            handle.write(data)
+            handle.flush()
+        temporary.replace(path)
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
 def run_gate_command(arguments: argparse.Namespace) -> int:
     if arguments.gate_command == "inspect":
         payload, _, _ = _load_verified_legacy(arguments)
         sys.stdout.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
         return 0
     if arguments.gate_command == "export-legacy":
-        _, spec, records = _load_verified_legacy(arguments)
+        _, spec, legacy_records = _load_verified_legacy(arguments)
         output = ensure_local_output(arguments.output)
-        export_legacy_table(output, records, spec)
+        export_legacy_table(output, legacy_records, spec)
         print(f"Wrote local legacy Gate export: {output}")
         return 0
     if arguments.gate_command == "report-context":
@@ -200,6 +239,43 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
             + "\n"
         )
         return 0
+    if arguments.gate_command == "build-trailer":
+        gate_records = load_authoring_document(arguments.authoring)
+        trailer = build_trailer(gate_records)
+        output = ensure_local_output(arguments.output)
+        _write_binary_atomic(output, trailer)
+        header, _ = parse_trailer(trailer)
+        digest = hashlib.sha256(trailer).hexdigest()
+        print(
+            f"Wrote Gate trailer: {output}; size={len(trailer)}; "
+            f"sha256={digest}; record_count={header.record_count}; "
+            f"payload_crc32=0x{header.payload_crc32:08X}"
+        )
+        return 0
+    if arguments.gate_command == "install-milestone-6c":
+        install_report = install_milestone_6c(
+            arguments.workspace,
+            arguments.authoring,
+            dry_run=arguments.dry_run,
+        )
+        if install_report.no_op:
+            install_state = "no-op"
+        elif install_report.dry_run:
+            install_state = "prepared"
+        else:
+            install_state = "complete"
+        cache_start, cache_end = install_report.cache_range
+        print(
+            "Milestone 6C install "
+            f"{install_state}; "
+            f"trailer_sha256={install_report.trailer_sha256}; "
+            f"module_sha256={install_report.module_sha256}; "
+            f"raw_size={install_report.raw_carrier_size}; "
+            f"overlay_size={install_report.overlay_size}; "
+            f"cache=0x{cache_start:08X}-0x{cache_end:08X}; "
+            f"patches={len(install_report.binary_patches)}"
+        )
+        return 0
     if arguments.gate_command == "validate-trailer":
         sys.stdout.write(
             json.dumps(
@@ -211,11 +287,11 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
         )
         return 0
     if arguments.gate_command == "readiness":
-        report = generate_readiness_report(
+        readiness_report = generate_readiness_report(
             arguments.requirements,
             arguments.evidence_dir,
         )
-        write_evidence(arguments.output, report.to_dict())
+        write_evidence(arguments.output, readiness_report.to_dict())
         print(f"Wrote Gate readiness report: {arguments.output.resolve()}")
-        return 0 if report.ready_for_milestone_6c else 4
+        return 0 if readiness_report.ready_for_milestone_6c else 4
     raise WorkspaceError(f"unknown Gate command: {arguments.gate_command}")

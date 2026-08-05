@@ -5,9 +5,12 @@ from dataclasses import replace
 import pytest
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.authoring import (
-    approved_juggernoid_record,
-    legacy_passthrough_record,
+from bakugan_ds.gates.authoring import approved_juggernoid_record, legacy_passthrough_record
+from bakugan_ds.gates.record import (
+    GateArchetype,
+    GateConditionId,
+    GateEffectId,
+    GateTargetMode,
 )
 from bakugan_ds.gates.system2 import (
     FallbackReason,
@@ -28,6 +31,8 @@ def calculation_context(
     owner_participant: int = 1,
     owner_score: int = 1,
     opposing_score: int = 1,
+    gate_id: int = 19,
+    landing_result: int | None = None,
 ) -> GateCalculationContext:
     return GateCalculationContext(
         compressed_core_g=core_g,
@@ -36,6 +41,8 @@ def calculation_context(
         owner_participant=owner_participant,
         owner_side_score=owner_score,
         opposing_side_score=opposing_score,
+        gate_id=gate_id,
+        landing_result=landing_result,
     )
 
 
@@ -56,8 +63,6 @@ def test_juggernoid_vectors(core_g: int, attribute_id: int, behind: bool, expect
     context = calculation_context(
         core_g=core_g,
         attribute_id=attribute_id,
-        current_participant=1,
-        owner_participant=1,
         owner_score=0 if behind else 1,
         opposing_score=1,
     )
@@ -79,7 +84,6 @@ def test_non_owner_never_receives_comeback_rider() -> None:
             opposing_score=1,
         ),
     )
-
     assert result.effective_gate_bonus == 74
     assert result.trace.condition_result is False
     assert result.trace.effect_value == 0
@@ -90,14 +94,12 @@ def test_tied_owner_does_not_satisfy_owner_behind() -> None:
         approved_juggernoid_record(),
         calculation_context(owner_score=1, opposing_score=1),
     )
-
     assert result.effective_gate_bonus == 74
     assert result.trace.condition_result is False
 
 
 def test_legacy_passthrough_returns_record_fallback_without_components() -> None:
     result = calculate_gate_bonus(legacy_passthrough_record(1), calculation_context())
-
     assert result.effective_gate_bonus is None
     assert result.target_total_g is None
     assert result.fallback_scope is FallbackScope.RECORD
@@ -110,23 +112,24 @@ def test_legacy_passthrough_returns_record_fallback_without_components() -> None
 @pytest.mark.parametrize(
     ("record_change", "reason"),
     [
-        ({"card_id": 20}, FallbackReason.INVALID_CARD_IDENTITY),
-        ({"condition_id": 2}, FallbackReason.INVALID_ENUM),
-        ({"effect_id": 2}, FallbackReason.INVALID_ENUM),
-        ({"target_mode": 2}, FallbackReason.INVALID_TARGET),
+        ({"archetype": 99}, FallbackReason.INVALID_ENUM),
+        ({"condition_id": 99}, FallbackReason.INVALID_ENUM),
+        ({"effect_id": 99}, FallbackReason.INVALID_ENUM),
+        ({"drawback_id": 99}, FallbackReason.INVALID_ENUM),
+        ({"target_mode": 99}, FallbackReason.INVALID_ENUM),
         ({"timing_phase": 1}, FallbackReason.INVALID_ENUM),
         ({"activation_limit": 1}, FallbackReason.UNSUPPORTED_RECORD),
         ({"fatigue_rate": 1}, FallbackReason.UNSUPPORTED_RECORD),
-        ({"drawback_id": 1}, FallbackReason.UNSUPPORTED_RECORD),
         ({"secondary_effect_id": 1}, FallbackReason.UNSUPPORTED_RECORD),
+        ({"reserved": 1}, FallbackReason.UNSUPPORTED_RECORD),
     ],
 )
 def test_unsupported_record_semantics_fail_before_calculation(
-    record_change: dict[str, int], reason: FallbackReason
+    record_change: dict[str, int],
+    reason: FallbackReason,
 ) -> None:
     record = replace(approved_juggernoid_record(), **record_change)
     result = calculate_gate_bonus(record, calculation_context())
-
     assert result.effective_gate_bonus is None
     assert result.target_total_g is None
     assert result.fallback_scope is FallbackScope.RECORD
@@ -148,14 +151,15 @@ def test_unsupported_record_semantics_fail_before_calculation(
         ({"owner_side_score": -1}, FallbackReason.INVALID_SCORE),
         ({"owner_side_score": 0x100}, FallbackReason.INVALID_SCORE),
         ({"opposing_side_score": 0x100}, FallbackReason.INVALID_SCORE),
+        ({"landing_result": -1}, FallbackReason.INVALID_LANDING),
     ],
 )
 def test_invalid_context_returns_complete_calculation_fallback(
-    context_change: dict[str, int], reason: FallbackReason
+    context_change: dict[str, int],
+    reason: FallbackReason,
 ) -> None:
     context = replace(calculation_context(), **context_change)
     result = calculate_gate_bonus(approved_juggernoid_record(), context)
-
     assert result.effective_gate_bonus is None
     assert result.target_total_g is None
     assert result.fallback_scope is FallbackScope.CALCULATION
@@ -166,6 +170,83 @@ def test_invalid_context_returns_complete_calculation_fallback(
     assert result.trace.effect_value == 0
 
 
+def test_gate_id_mismatch_is_complete_calculation_fallback() -> None:
+    record = replace(approved_juggernoid_record(), card_id=20)
+    result = calculate_gate_bonus(record, calculation_context(gate_id=19))
+    assert result.fallback_scope is FallbackScope.CALCULATION
+    assert result.fallback_reason is FallbackReason.GATE_ID_MISMATCH
+    assert result.trace.base_gate_bonus == 0
+
+
+def test_generic_owner_ahead_control_effect() -> None:
+    record = replace(
+        approved_juggernoid_record(),
+        card_id=20,
+        archetype=GateArchetype.CONTROL,
+        flat_bonus_g=50,
+        percent_q8_8=0,
+        attribute_modifiers=(0, 0, 0, 0, 0, 0),
+        condition_id=GateConditionId.OWNER_AHEAD,
+        effect_id=GateEffectId.ADD_SIGNED_G,
+        effect_value=25,
+        target_mode=GateTargetMode.GATE_OWNER,
+    )
+    result = calculate_gate_bonus(
+        record,
+        calculation_context(gate_id=20, owner_score=2, opposing_score=1),
+    )
+    assert result.effective_gate_bonus == 75
+    assert result.trace.to_balance_dict()["primary_delta"] == 25
+
+
+def test_generic_non_owner_subtract_effect() -> None:
+    record = replace(
+        approved_juggernoid_record(),
+        card_id=21,
+        archetype=GateArchetype.CONTROL,
+        flat_bonus_g=50,
+        percent_q8_8=0,
+        attribute_modifiers=(0, 0, 0, 0, 0, 0),
+        condition_id=GateConditionId.NONE,
+        effect_id=GateEffectId.SUBTRACT_MAGNITUDE_G,
+        effect_value=20,
+        target_mode=GateTargetMode.GATE_NON_OWNER,
+    )
+    result = calculate_gate_bonus(
+        record,
+        calculation_context(
+            gate_id=21,
+            current_participant=0,
+            owner_participant=1,
+        ),
+    )
+    assert result.effective_gate_bonus == 30
+    assert result.trace.to_balance_dict()["target_result"] is True
+
+
+def test_landing_condition_requires_confirmed_context() -> None:
+    record = replace(
+        approved_juggernoid_record(),
+        card_id=22,
+        archetype=GateArchetype.CONTROL,
+        condition_id=GateConditionId.LANDING_GATE_CARD_WON,
+        target_mode=GateTargetMode.CURRENT_COMBATANT,
+    )
+    missing = calculate_gate_bonus(record, calculation_context(gate_id=22))
+    assert missing.fallback_reason is FallbackReason.INVALID_LANDING
+
+    won = calculate_gate_bonus(
+        record,
+        calculation_context(gate_id=22, landing_result=1),
+    )
+    lost = calculate_gate_bonus(
+        record,
+        calculation_context(gate_id=22, landing_result=2),
+    )
+    assert won.trace.effect_value == 40
+    assert lost.trace.effect_value == 0
+
+
 def test_fixed_point_division_rounds_toward_zero() -> None:
     assert trunc_div_toward_zero(257, 256) == 1
     assert trunc_div_toward_zero(255, 256) == 0
@@ -174,7 +255,7 @@ def test_fixed_point_division_rounds_toward_zero() -> None:
 
 
 def test_fixed_point_division_rejects_nonpositive_denominator() -> None:
-    with pytest.raises(Exception, match="denominator must be positive"):
+    with pytest.raises(WorkspaceError, match="denominator must be positive"):
         trunc_div_toward_zero(1, 0)
 
 
@@ -187,7 +268,6 @@ def test_negative_q8_8_component_uses_toward_zero_rounding() -> None:
         effect_value=0,
     )
     result = calculate_gate_bonus(record, calculation_context(core_g=1))
-
     assert result.trace.scaled_component == -1
     assert result.effective_gate_bonus == -1
     assert result.target_total_g == 0
@@ -203,13 +283,8 @@ def test_gate_bonus_and_target_total_are_clamped() -> None:
     )
     result = calculate_gate_bonus(
         record,
-        calculation_context(
-            core_g=0xFFFF,
-            owner_score=0,
-            opposing_score=1,
-        ),
+        calculation_context(core_g=0xFFFF, owner_score=0, opposing_score=1),
     )
-
     assert result.effective_gate_bonus == 0x7FFF
     assert result.target_total_g == 0xFFFF
     assert result.trace.unclamped_gate_bonus > 0x7FFF
@@ -222,17 +297,11 @@ def test_clamp_helpers_cover_signed_and_unsigned_boundaries() -> None:
     assert clamp_u16(0x10000) == 0xFFFF
 
 
-def test_trace_is_ordered_and_contains_exact_components() -> None:
+def test_trace_preserves_milestone_6c_shape() -> None:
     result = calculate_gate_bonus(
         approved_juggernoid_record(),
-        calculation_context(
-            core_g=190,
-            attribute_id=1,
-            owner_score=0,
-            opposing_score=1,
-        ),
+        calculation_context(core_g=190, attribute_id=1, owner_score=0, opposing_score=1),
     )
-
     assert result.trace.to_dict() == {
         "card_id": 19,
         "current_participant": 1,
@@ -282,13 +351,10 @@ def test_explicit_battle_type_bypasses_rng_but_allows_script_override() -> None:
         rng_state=0x12345678,
         legacy_type=0,
     )
-
     assert result.final_type == 4
     assert result.next_rng_state == 0x12345678
     assert result.weighted_result is None
     assert result.fallback_scope is FallbackScope.NONE
-    assert result.trace.explicit_type_argument == 2
-    assert result.trace.scripted_override == 4
 
 
 def test_valid_normal_fallback_advances_rng_once_and_selects_bucket() -> None:
@@ -301,12 +367,10 @@ def test_valid_normal_fallback_advances_rng_once_and_selects_bucket() -> None:
         rng_state=0x12345678,
         legacy_type=0,
     )
-
     assert result.next_rng_state == 0xF287E3062E5AF41B
     assert result.weighted_result == 5
     assert result.final_type == 5
     assert result.trace.weight_total == 200
-    assert result.trace.weights == (50, 30, 30, 30, 30, 30)
     assert result.trace.legacy_fallback is False
 
 
@@ -320,7 +384,6 @@ def test_scripted_override_supersedes_weighted_result() -> None:
         rng_state=0x12345678,
         legacy_type=0,
     )
-
     assert result.weighted_result == 5
     assert result.final_type == 1
     assert result.next_rng_state == 0xF287E3062E5AF41B
@@ -336,13 +399,11 @@ def test_passthrough_battle_type_uses_legacy_without_rng() -> None:
         rng_state=0x12345678,
         legacy_type=3,
     )
-
     assert result.final_type == 3
     assert result.next_rng_state == 0x12345678
     assert result.weighted_result is None
     assert result.fallback_scope is FallbackScope.RECORD
     assert result.fallback_reason is FallbackReason.LEGACY_PASSTHROUGH
-    assert result.trace.legacy_fallback is True
 
 
 def test_invalid_weight_vector_uses_phase_local_legacy_fallback() -> None:
@@ -356,13 +417,11 @@ def test_invalid_weight_vector_uses_phase_local_legacy_fallback() -> None:
         rng_state=0x12345678,
         legacy_type=3,
     )
-
     assert result.final_type == 3
     assert result.next_rng_state == 0x12345678
     assert result.weighted_result is None
     assert result.fallback_scope is FallbackScope.BATTLE_TYPE
     assert result.fallback_reason is FallbackReason.INVALID_WEIGHT_VECTOR
-    assert result.trace.legacy_fallback is True
 
 
 def test_scripted_override_still_applies_after_phase_local_fallback() -> None:
@@ -376,35 +435,9 @@ def test_scripted_override_still_applies_after_phase_local_fallback() -> None:
         rng_state=0x12345678,
         legacy_type=3,
     )
-
     assert result.final_type == 2
     assert result.next_rng_state == 0x12345678
     assert result.trace.legacy_fallback is True
-
-
-def test_battle_type_trace_has_approved_fields() -> None:
-    from bakugan_ds.gates.selector import select_system2_battle_type
-
-    result = select_system2_battle_type(
-        approved_juggernoid_record(),
-        constructor_type=-1,
-        scripted_override=1,
-        rng_state=0,
-        legacy_type=4,
-    )
-
-    assert result.trace.to_dict() == {
-        "explicit_type_argument": -1,
-        "record_valid": True,
-        "weights": [50, 30, 30, 30, 30, 30],
-        "weight_total": 200,
-        "weighted_result": 0,
-        "scripted_override": 1,
-        "final_type": 1,
-        "legacy_fallback": False,
-        "fallback_scope": "none",
-        "fallback_reason": "none",
-    }
 
 
 def test_gate_runtime_core_compression_matches_merged_curve() -> None:

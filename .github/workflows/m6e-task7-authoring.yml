@@ -1,0 +1,88 @@
+name: Milestone 6E Task 7 authoring
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+concurrency:
+  group: milestone-6e-task7-authoring-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  author:
+    if: >-
+      github.head_ref == 'milestone-6e-complete-gate-roster-conversion' &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install project
+        run: python -m pip install -e '.[dev]'
+      - name: Generate and verify reviewed batches
+        shell: bash
+        run: |
+          set +e
+          : > /tmp/task7.log
+          status=0
+
+          run_checked() {
+            if [[ $status -eq 0 ]]; then
+              "$@" >> /tmp/task7.log 2>&1
+              status=$?
+            fi
+          }
+
+          run_checked python .github/scripts/m6e_task7_author.py
+          run_checked python -m pytest -q \
+            tests/unit/test_gate_milestone_6e_skill_control.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_roster_templates.py \
+            tests/unit/test_gate_roster_metadata.py \
+            tests/unit/test_gate_roster_analysis.py
+          run_checked python -m compileall -q src tests tools
+          run_checked python -m ruff check \
+            .github/scripts/m6e_task7_author.py \
+            tests/unit/test_gate_milestone_6e_skill_control.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_roster_analysis.py \
+            tests/unit/test_gate_roster_metadata.py
+          run_checked python -m pytest -q
+          run_checked git diff --check
+
+          cat /tmp/task7.log
+          if [[ $status -ne 0 ]]; then
+            exit $status
+          fi
+      - name: Commit verified Task 7 batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm \
+            .github/workflows/m6e-task7-authoring.yml \
+            .github/scripts/m6e_task7_author.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            config/gates/milestone-6e-system2-v1.json \
+            config/gates/milestone-6e-roster-metadata.json \
+            tests/unit/test_gate_milestone_6e_skill_control.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_roster_analysis.py \
+            tests/unit/test_gate_roster_metadata.py
+          git commit -m 'feat: author Skill and Control Gate batches'
+          git push origin HEAD:${{ github.head_ref }}

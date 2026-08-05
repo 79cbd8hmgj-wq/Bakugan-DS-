@@ -71,26 +71,137 @@ jobs:
           if [[ $status -ne 0 ]]; then
             exit $status
           fi
-      - name: Commit verified Task 10 contracts
+      - name: Commit verified Task 10 contracts atomically
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          TARGET_BRANCH: ${{ github.head_ref }}
         shell: bash
         run: |
           set -euo pipefail
-          git rm \
-            .github/workflows/m6e-task10-contracts.yml \
-            .github/scripts/m6e_task10_contracts.py
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            analysis/gates/milestone-6e-roster-contract.json \
-            analysis/gates/milestone-6e-balance-contract.json \
-            config/gates/milestone-6e-system2-v1.json \
-            config/gates/milestone-6e-roster-metadata.json \
-            src/bakugan_ds/gates/roster_contracts.py \
-            tests/unit/test_gate_roster_contracts.py \
-            tests/unit/test_gate_milestone_6e_power_attribute.py \
-            tests/unit/test_gate_milestone_6e_skill_control.py \
-            tests/unit/test_gate_milestone_6e_comeback.py \
-            tests/unit/test_gate_milestone_6e_risk_chaos.py \
-            tests/unit/test_gate_roster_metadata.py
-          git commit -m 'feat: freeze final Gate roster contracts'
-          git push origin HEAD:${{ github.head_ref }}
+          python - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import json
+          import os
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GITHUB_TOKEN"]
+          branch = os.environ["TARGET_BRANCH"]
+          expected_head = os.environ["EXPECTED_HEAD"]
+          api_root = f"https://api.github.com/repos/{repository}"
+
+          update_paths = (
+              "analysis/gates/milestone-6e-roster-contract.json",
+              "analysis/gates/milestone-6e-balance-contract.json",
+              "config/gates/milestone-6e-system2-v1.json",
+              "config/gates/milestone-6e-roster-metadata.json",
+              "tests/unit/test_gate_milestone_6e_power_attribute.py",
+              "tests/unit/test_gate_milestone_6e_skill_control.py",
+              "tests/unit/test_gate_milestone_6e_comeback.py",
+              "tests/unit/test_gate_milestone_6e_risk_chaos.py",
+              "tests/unit/test_gate_roster_metadata.py",
+          )
+          delete_paths = (
+              ".github/workflows/m6e-task10-contracts.yml",
+              ".github/scripts/m6e_task10_contracts.py",
+          )
+
+          def api(
+              method: str,
+              path: str,
+              payload: dict[str, Any] | None = None,
+          ) -> dict[str, Any]:
+              data = None
+              if payload is not None:
+                  data = json.dumps(payload).encode("utf-8")
+              request = urllib.request.Request(
+                  api_root + path,
+                  data=data,
+                  method=method,
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "Content-Type": "application/json",
+                      "User-Agent": "bakugan-milestone-6e-task10",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request) as response:
+                      return json.loads(response.read().decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  body = exc.read().decode("utf-8", errors="replace")
+                  raise RuntimeError(
+                      f"GitHub API {method} {path} failed: {exc.code} {body}"
+                  ) from exc
+
+          encoded_branch = urllib.parse.quote(branch, safe="")
+          ref = api("GET", f"/git/ref/heads/{encoded_branch}")
+          current_head = str(ref["object"]["sha"])
+          if current_head != expected_head:
+              raise RuntimeError(
+                  "branch advanced during Task 10 verification: "
+                  f"expected {expected_head}, found {current_head}"
+              )
+
+          parent = api("GET", f"/git/commits/{current_head}")
+          tree_entries: list[dict[str, Any]] = []
+          for path in update_paths:
+              content = Path(path).read_bytes()
+              blob = api(
+                  "POST",
+                  "/git/blobs",
+                  {
+                      "content": base64.b64encode(content).decode("ascii"),
+                      "encoding": "base64",
+                  },
+              )
+              tree_entries.append(
+                  {
+                      "mode": "100644",
+                      "path": path,
+                      "sha": blob["sha"],
+                      "type": "blob",
+                  }
+              )
+          for path in delete_paths:
+              tree_entries.append(
+                  {
+                      "mode": "100644",
+                      "path": path,
+                      "sha": None,
+                      "type": "blob",
+                  }
+              )
+
+          tree = api(
+              "POST",
+              "/git/trees",
+              {
+                  "base_tree": parent["tree"]["sha"],
+                  "tree": tree_entries,
+              },
+          )
+          commit = api(
+              "POST",
+              "/git/commits",
+              {
+                  "message": "feat: freeze final Gate roster contracts",
+                  "parents": [current_head],
+                  "tree": tree["sha"],
+              },
+          )
+          api(
+              "PATCH",
+              f"/git/refs/heads/{encoded_branch}",
+              {"force": False, "sha": commit["sha"]},
+          )
+          print(f"Task 10 atomic commit: {commit['sha']}")
+          PY

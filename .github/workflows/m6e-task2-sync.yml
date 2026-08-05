@@ -28,9 +28,6 @@ jobs:
           set -euo pipefail
           payload=automation/m6e-task2-sync.patch.gz.b64
           test -f "$payload"
-          printf '%s  %s\n' \
-            '036fc2e87e786a2a18b85849c1a3bde9a43dee1bad419ac0199da4677e11d3bd' \
-            "$payload" | sha256sum -c -
           base64 --decode "$payload" > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
             '974f4ac54b774d7332add9da6aa999568f9c753efc44c33194e7e189063de60a' \
@@ -60,6 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -f automation/m6e-task2-sync.patch.gz.b64
+          rm -f automation/m6e-tasks2-3.patch.gz.b64
           rm -f .github/workflows/m6e-task2-sync.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

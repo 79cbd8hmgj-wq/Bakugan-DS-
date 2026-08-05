@@ -1,6 +1,10 @@
 """Gate Card reverse-engineering evidence models and tooling."""
 
-from bakugan_ds.gates.install import InstallReport, install_milestone_6c
+from bakugan_ds.gates.install import (
+    InstallReport,
+    install_milestone_6c,
+    install_milestone_6d,
+)
 from bakugan_ds.gates.model import (
     AddressRef,
     Confidence,
@@ -27,4 +31,5 @@ __all__ = [
     "InstallReport",
     "LegacyGateTableSpec",
     "install_milestone_6c",
+    "install_milestone_6d",
 ]

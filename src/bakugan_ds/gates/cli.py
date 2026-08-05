@@ -18,7 +18,7 @@ from bakugan_ds.gates.authoring import (
 )
 from bakugan_ds.gates.context import context_report, load_context_fields
 from bakugan_ds.gates.discovery import load_discovery_artifact
-from bakugan_ds.gates.install import install_milestone_6c
+from bakugan_ds.gates.install import install_milestone_6c, install_milestone_6d
 from bakugan_ds.gates.io import load_json_object, write_evidence
 from bakugan_ds.gates.legacy import (
     LegacyGateRecord,
@@ -97,6 +97,18 @@ def _add_gate_commands(subparsers: Any) -> None:
     )
     install_parser.add_argument("--dry-run", action="store_true")
 
+    install_6d_parser = subparsers.add_parser(
+        "install-milestone-6d",
+        help="install the deterministic Milestone 6D Gate balance framework",
+    )
+    install_6d_parser.add_argument("workspace", type=Path)
+    install_6d_parser.add_argument(
+        "--authoring",
+        type=Path,
+        default=Path("config/gates/milestone-6d-system2-v1.json"),
+    )
+    install_6d_parser.add_argument("--dry-run", action="store_true")
+
     validate_6d_parser = subparsers.add_parser(
         "validate-milestone-6d",
         help="validate the deterministic Milestone 6D Gate balance authoring roster",
@@ -108,7 +120,7 @@ def _add_gate_commands(subparsers: Any) -> None:
         help="write the deterministic Milestone 6D Gate balance report",
     )
     report_6d_parser.add_argument("authoring", type=Path)
-    report_6d_parser.add_argument("output", type=Path)
+    report_6d_Parser.add_argument("output", type=Path)
 
     readiness_parser = subparsers.add_parser(
         "readiness",
@@ -286,6 +298,30 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
         cache_start, cache_end = install_report.cache_range
         print(
             "Milestone 6C install "
+            f"{install_state}; "
+            f"trailer_sha256={install_report.trailer_sha256}; "
+            f"module_sha256={install_report.module_sha256}; "
+            f"raw_size={install_report.raw_carrier_size}; "
+            f"overlay_size={install_report.overlay_size}; "
+            f"cache=0x{cache_start:08X}-0x{cache_end:08X}; "
+            f"patches={len(install_report.binary_patches)}"
+        )
+        return 0
+    if arguments.gate_command == "install-milestone-6d":
+        install_report = install_milestone_6d(
+            arguments.workspace,
+            arguments.authoring,
+            dry_run=arguments.dry_run,
+        )
+        if install_report.no_op:
+            install_state = "no-op"
+        elif install_report.dry_run:
+            install_state = "prepared"
+        else:
+            install_state = "complete"
+        cache_start, cache_end = install_report.cache_range
+        print(
+            "Milestone 6D install "
             f"{install_state}; "
             f"trailer_sha256={install_report.trailer_sha256}; "
             f"module_sha256={install_report.module_sha256}; "

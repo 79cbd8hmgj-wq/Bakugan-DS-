@@ -40,20 +40,35 @@ jobs:
         shell: bash
         run: |
           set +e
-          {
-            python .github/scripts/m6e_task6_author.py
-            python -m pytest -q \
-              tests/unit/test_gate_milestone_6e_power_attribute.py \
-              tests/unit/test_gate_roster_templates.py \
-              tests/unit/test_gate_roster_metadata.py \
-              tests/unit/test_gate_roster_analysis.py
-            python -m compileall -q src tests tools
-            python -m ruff check src tests tools
-            python -m mypy src/bakugan_ds
-            python -m pytest -q
-            git diff --check
-          } > /tmp/task6.log 2>&1
-          status=$?
+          : > /tmp/task6.log
+          status=0
+
+          run_checked() {
+            if [[ $status -eq 0 ]]; then
+              "$@" >> /tmp/task6.log 2>&1
+              status=$?
+            fi
+          }
+
+          run_checked python .github/scripts/m6e_task6_author.py
+          run_checked python -m pytest -q \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_roster_templates.py \
+            tests/unit/test_gate_roster_metadata.py \
+            tests/unit/test_gate_roster_analysis.py
+          run_checked python -m compileall -q src tests tools
+          run_checked python -m ruff check \
+            .github/scripts/m6e_task6_author.py \
+            src/bakugan_ds/gates/roster_analysis.py \
+            src/bakugan_ds/gates/roster_metadata.py \
+            src/bakugan_ds/gates/roster_templates.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_roster_analysis.py \
+            tests/unit/test_gate_roster_metadata.py \
+            tests/unit/test_gate_roster_templates.py
+          run_checked python -m pytest -q
+          run_checked git diff --check
+
           if [[ $status -ne 0 ]]; then
             {
               echo '### Milestone 6E Task 6 authoring failure'

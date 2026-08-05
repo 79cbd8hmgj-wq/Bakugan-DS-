@@ -2,9 +2,9 @@
 
 ## Current summary
 
-- Tasks 1–5: complete.
-- Task 6: in progress — reviewed Power and Attribute Gate conversion.
-- Tasks 7–14: pending.
+- Tasks 1–6: complete.
+- Task 7: in progress — reviewed Skill and Control Gate conversion.
+- Tasks 8–14: pending.
 - Draft PR: #43.
 
 Execution continues across internal task boundaries unless required evidence, runtime access, verification, or a genuine design decision blocks progress.
@@ -43,16 +43,27 @@ Exact-head verification at commit `56d40ddae63fd1fa207e759e93bfe7be1c16b183` pas
 
 ## Task 6 — Power and Attribute Gate batches
 
-**Status:** in progress.
+**Status:** complete.
 
-The red batch contract is committed. It requires:
+The committed authoring roster now contains:
 
 - Power Gates at IDs 1–15;
 - Attribute Gates at IDs 40–61;
-- exact preservation of Juggernoid at ID 19;
-- legacy passthrough outside completed batches;
-- no exact runtime or evaluation duplicates;
-- all six battle types represented in each batch;
-- metadata/budget parity;
-- bounded evaluated tier swings;
-- pronounced Attribute relationships without a universal elemental wheel.
+- frozen Juggernoid at ID 19;
+- 65 remaining legacy passthrough records.
+
+The batch covers all six battle types in both archetypes, preserves bounded tier swings, contains no exact runtime or identical evaluation duplicate classes, and keeps Attribute identities pronounced without introducing a universal elemental wheel.
+
+Verification on the exact generated tree passed 17 focused tests and the complete suite with 704 runnable tests, 41 expected environment-gated skips, Python compilation, targeted Ruff, and whitespace validation. The verified batch was committed as `b3da785798a233e4862ff5af5ee4aa1d9caf0952`.
+
+## Task 7 — Skill and Control Gate batches
+
+**Status:** in progress.
+
+The next conversion must:
+
+- create bounded Skill identities that materially change battle-type selection rather than acting as Power copies;
+- create Control identities using only supported owner/non-owner targeting, score state, and landing conditions;
+- preserve reachability of all six battle types;
+- preserve complete legacy fallback when required landing context is missing;
+- remain unique against every live record from Tasks 5–6.

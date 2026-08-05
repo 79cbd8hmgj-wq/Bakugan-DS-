@@ -24,7 +24,8 @@ AUTHORING = Path("config/gates/milestone-6e-system2-v1.json")
 METADATA = Path("config/gates/milestone-6e-roster-metadata.json")
 POWER_IDS = frozenset(range(1, 16))
 ATTRIBUTE_IDS = frozenset(range(40, 62))
-LIVE_IDS = POWER_IDS | ATTRIBUTE_IDS | {19}
+CONVERTED_IDS = POWER_IDS | ATTRIBUTE_IDS
+LIVE_IDS = CONVERTED_IDS | {19}
 
 
 def test_power_and_attribute_batches_are_reviewed_and_juggernoid_is_frozen() -> None:
@@ -87,4 +88,4 @@ def test_power_and_attribute_batches_are_distinct_bounded_and_cover_battle_types
         for card in report["cards"]
         if isinstance(card, dict) and isinstance(card.get("card_id"), int)
     }
-    assert all(card_reports[card_id]["out_of_tier"] is False for card_id in LIVE_IDS)
+    assert all(card_reports[card_id]["out_of_tier"] is False for card_id in CONVERTED_IDS)

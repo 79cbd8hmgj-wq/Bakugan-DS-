@@ -2,11 +2,11 @@
 
 ## Scope
 
-This document records the deterministic build proof for the approved Gate Card System 2.0 Juggernoid prototype on profile `b6re_rev0`. Runtime gameplay acceptance is recorded separately by Task 13.
+This document records deterministic build and runtime acceptance for the approved Gate Card System 2.0 Juggernoid prototype on profile `b6re_rev0`.
 
-The build enables only Gate ID `19`. Gate IDs `20`, `22`, and every other unrelated Gate remain canonical legacy passthrough records.
+Only Gate ID `19` enables System 2.0 behavior. Every unrelated Gate remains a canonical legacy passthrough.
 
-## Local inputs
+## Exact local inputs
 
 ```text
 Reference ROM SHA-256:
@@ -18,29 +18,13 @@ Reference ROM size:
 Reference decoded overlay 7 SHA-256:
 82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1
 
-Reference decoded ARM9 SHA-256:
+Reference runtime-decoded ARM9 SHA-256:
 7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e
 ```
 
 These user-owned inputs remain local and are not committed.
 
-## Commands
-
-```bash
-export BAKUGAN_DS_ROM='/path/to/Bakugan - Battle Brawlers (USA) (En,Fr).nds'
-export BAKUGAN_DS_OVERLAY7='/path/to/overlay_007.bin'
-export BAKUGAN_DS_RUNTIME_ARM9='/path/to/runtime-decoded-arm9.bin'
-
-PYTHONPATH=src python -m pytest \
-  tests/integration/test_gate_milestone_6c_build.py \
-  tests/integration/test_gate_milestone_6c_reference.py -v
-```
-
-Without the user-owned inputs, the exact-ROM cases skip rather than weakening their identity guards. Host arithmetic, malformed-data, authoring, module, installer, and artifact tests still run normally.
-
 ## Install contract
-
-The installer requires the already-approved core-G compression patch and then generates all Milestone 6C binary products locally.
 
 ```text
 Generated G2DT trailer size:        4152 bytes
@@ -54,14 +38,15 @@ Expanded overlay 7 SHA-256:         78d8e5963673c77a14fb36548b269fb8ab9abca9968b
 Patched stored ARM9 size:            448192 bytes
 Patched stored ARM9 SHA-256:         95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8
 Patched ARM9 BLZ passthrough:        32768 bytes
-Patched ARM9 BLZ header length:      193 bytes
 Patched ARM9 in-place decode:        byte-identical to host decode
 ```
+
+The runtime loader sequentially reads all 103 ordered records, recomputes reflected IEEE CRC32 over the complete 4,120-byte payload, compares it with the approved header CRC, validates the exact selected record, and clears the complete 64-byte cache on any failure. A regression control mutates an unrelated record while Gate 19 is selected; the exact emitted loader rejects the trailer and leaves all cache bytes zero.
 
 Seven guarded changes are installed:
 
 - Six overlay-7 branch hooks: cache load, Gate bonus, context store, battle-type selector, expanded-data lookup, and cache clear.
-- One decoded ARM9 arena-low literal replacement at offset `0x6264` from `0x0228BC20` to `0x02293C60`.
+- One decoded ARM9 arena-low literal replacement at offset `0x6264`, changing the boundary from `0x0228BC20` to `0x02293C60`.
 
 Overlay 7 declares:
 
@@ -75,23 +60,15 @@ Arena low:    0x02293C60
 Arena high:   0x023E0000
 ```
 
-The original `0x640` overlay BSS is materialized as zero-backed payload bytes before the generated module. The three protected core-G replacement regions remain exact.
-
 ## Deterministic rebuild proof
 
-Two rebuilds from the unchanged installed workspace produced byte-identical ROMs and byte-identical reports.
+Two rebuilds from an unchanged installed workspace are byte-identical.
 
 ```text
-Rebuilt ROM A SHA-256:
+Rebuilt ROM SHA-256:
 d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41
 
-Rebuilt ROM B SHA-256:
-d353b38f83d7c6790fefbcb50fb2583fa92f9a53d9601038f8743b3b730f1a41
-
-Build report A SHA-256:
-b12900aadfc38a4499b455247fe42415ab8a84cbba2e48f6bd0ad67d821cc97f
-
-Build report B SHA-256:
+Build report SHA-256:
 b12900aadfc38a4499b455247fe42415ab8a84cbba2e48f6bd0ad67d821cc97f
 
 ROM size:
@@ -106,8 +83,6 @@ The build report contains exactly three modified components:
 | `nitrofs_raw` | `font/mes_CardName.mes` | `raw-override` |
 | `overlay` | `7` | `uncompressed-overlay` |
 
-## Regression matrix
-
 The exact rebuilt-ROM integration test confirms:
 
 - 11,005 FAT entries remain present.
@@ -115,120 +90,55 @@ The exact rebuilt-ROM integration test confirms:
 - All nine ARM9 overlay entries remain present.
 - Only FAT file IDs `7` and `2762` change.
 - Every other FAT payload is byte-identical to the reference ROM.
-- Carrier file ID `2762` contains the exact original 2,840-byte LZ10 stream followed by the exact 4,152-byte trailer.
-- The trailer parses as one 32-byte header and 103 ordered 40-byte records.
+- Carrier file ID `2762` contains the original 2,840-byte stream followed by the exact 4,152-byte trailer.
 - Gate ID `19` exactly matches the approved Juggernoid prototype.
-- Gate IDs `20` and `22` are canonical passthrough records.
-- The expanded overlay contains the exact zero-backed original BSS and exact generated module.
+- Unrelated Gates are canonical passthrough records.
+- The expanded overlay contains the zero-backed original BSS and exact generated module.
 - All six hook replacements match their generated branch bytes.
-- The decoded ARM9 differs from the reference only at bytes `0x6264–0x6267`; three byte values change because one byte is shared by both little-endian constants.
-- The stored ARM9 remains exactly 448,192 bytes after deterministic BLZ re-encoding.
-
-## Legacy samples
-
-The confirmed unrelated Gate samples retain these legacy rows:
-
-| Gate | Attribute raw values | Displayed bonuses | Fixed battle type |
-|---|---|---|---|
-| Robotallion, ID 20 | `16, 11, 9, 12, 9, 4` | `160, 110, 90, 120, 90, 40` | Scratch, ID `0` |
-| Serpenoid, ID 22 | `18, 6, 9, 14, 13, 5` | `180, 60, 90, 140, 130, 50` | Scratch, ID `0` |
-
-Their System 2.0 records never calculate a hybrid bonus or consume weighted RNG.
-
-## Fail-closed controls
-
-Host and runtime-model tests reject or fall back on:
-
-- Invalid trailer magic.
-- Invalid header CRC.
-- Selected cache card-ID mismatch.
-- Nonzero reserved cache metadata.
-- Unsupported prototype archetype or enum values.
-- Nonzero deferred activation or fatigue values.
-- Invalid live participant, attribute, score, and team context.
-- Invalid or zero-total battle weights.
-
-Record-level failures return complete legacy Gate behavior. Weighted-selector-only failures use phase-local fixed-metadata fallback.
-
-## Core-G compatibility
-
-The original bounded curve remains:
-
-```text
-core <= 400: unchanged
-core > 400:  200 + floor(core / 2)
-```
-
-Verified controls include `190 → 190`, `400 → 400`, `401 → 400`, `440 → 420`, `650 → 525`, `900 → 650`, and `990 → 695`. System 2.0 percentage scaling reads that compressed core snapshot and does not scale mutable modifiers or persistent roster G.
+- The stored ARM9 remains exactly 448,192 bytes after deterministic runtime-safe BLZ re-encoding.
 
 ## Controlled runtime acceptance
 
-Task 13 records normalized evidence in:
+The acceptance matrix separates three evidence methods:
 
-```text
-analysis/runtime-observations/gate-system2-milestone-6c-validation.json
-SHA-256: ea9e16df7ce264a338712aef40efe5baf74741013567547005ebd2708a0c0fb9
-```
+1. Exact-profile extraction, installation, rebuilding, and binary inspection.
+2. Execution of the exact generated ARM32 module in the repository interpreter.
+3. A clean DeSmuME run of the same CRC-enabled rebuilt ROM.
 
-The acceptance matrix deliberately separates three evidence methods:
+The exact emitted-module controls prove the complete approved arithmetic and selector matrix. They are not represented as naturally occurring emulator matches.
 
-1. Exact-profile extract, install, rebuild, and binary inspection.
-2. Execution of the exact generated ARM32 module in the repository instruction interpreter.
-3. A clean DeSmuME run of the same rebuilt ROM.
-
-The emitted-module controls prove the complete approved arithmetic and selector matrix: non-Aquos, Aquos, tied/leading owner, behind owner, non-owner, human-owned, AI-owned, two distinct seeded weighted outcomes, constructor bypass, scripted supersession, unrelated-Gate passthrough, and malformed-trailer fallback. This does not claim that every arithmetic vector occurred naturally; the seven controls are exact emitted-module executions.
-
-The live rebuilt-ROM run proves:
+The live rebuilt-ROM run confirms:
 
 - title and menu entry;
 - Battle Arena setup and live-play entry;
-- an Aquos Bakugan selection and successful throw;
-- a bounded match-local repoint of the player's existing arena entry to owned Gate slot 0 / Gate ID 19;
-- the standard Battle Arena quit path;
-- declining the save prompt;
-- return to a responsive Battle Arena menu;
-- completion of the built-in Battle tutorial through its supported skip prompt;
+- Aquos selection and throw;
+- normal Battle Arena exit without saving;
+- completion of the built-in Battle tutorial through its supported skip path;
 - return to the responsive Tutorial menu;
-- the generated module present at `0x0228BC20`;
-- all 64 cache bytes zero after tutorial completion.
+- generated module bytes present at `0x0228BC20`;
+- all 64 cache bytes zero after completion.
 
-The prototype Battle Arena control changes only match-local arena and Gate-slot state and is not written to the save. The separate tutorial-completion smoke may update tutorial progress and is excluded from that save-data control. Raw screenshots, ROMs, states, battery saves, selected memory files, and debugger output remain local and uncommitted; only normalized values and SHA-256 hashes are stored in the repository.
+Raw ROMs, screenshots, saves, states, selected memory, and debugger output remain local and uncommitted.
 
-## Milestone 6C acceptance boundary
+## Final verification
 
-The exact build, emitted runtime behavior, live boot/battle compatibility, normal exit, tutorial completion, cache-clear proof, and persistent-state scope controls now pass. Arena ID, full-roster conversion, reusable archetypes, power budgets, additional conditions/effects, fatigue, Ability interaction, AI evaluation, presentation, and save-format changes remain outside Milestone 6C.
-
-## Final repository verification
-
-The checksum-guarded recovery transport authenticated the preserved source patch and synchronized the implementation as commit:
+Fresh verification on the CRC-remediated source produced:
 
 ```text
-e2abd7f9cc8c9edffc9a3267c255baa87509da32
-```
-
-Before that commit was pushed, the synchronization job applied the exact preserved patch, removed all temporary transport files, and ran the complete host verification stack on the staged source tree:
-
-```text
-Host repository suite:       540 passed, 39 expected environment-gated skips
-Ruff:                        passed on all changed Python files
-Strict mypy:                 passed on 12 changed package source files
+Host repository suite:       541 passed, 39 expected environment-gated skips
+Exact Milestone 6C controls: 8 passed
 Python compilation:          passed
 Whitespace validation:       passed
+Prohibited committed files:  none
+Tracked files over 5 MiB:    none
 ```
 
-The local exact-profile verification remains:
+The previous synchronized source was checked remotely with Ruff and strict mypy before the final CRC correction. The final head's standard GitHub Actions run was awaiting platform approval rather than reporting a test failure; no Ruff or mypy result is claimed for that blocked run.
 
-```text
-Exact Milestone 6C controls: 9 passed
-```
+A repository-wide run with every historical reference-file integration variable enabled exceeded the ten-minute execution cap without reporting a failure. It is not counted as completed verification.
 
-Those exact-ROM controls cannot run in ordinary GitHub Actions because the user-owned ROM, decoded overlay, and runtime ARM9 are intentionally absent. They remain guarded and skip rather than weakening their identity checks.
+## Acceptance boundary
 
-Repository-boundary inspection found:
+Milestone 6C includes the exact build, complete-payload CRC validation, emitted runtime behavior, live boot/battle compatibility, tutorial completion, normal return, cache-clear proof, and persistent-state scope controls.
 
-- no tracked ROM, save, emulator-state, capture-image, archive, or generated module/trailer binary;
-- no tracked file larger than 5 MiB;
-- no retained `.sync` transport payload, recovery workflow, or normalizer;
-- no modification outside the approved Milestone 6C implementation, verification, documentation, and test scope.
-
-This documentation-only follow-up records the authoritative synchronized commit and remote verification results. Standard repository CI is rerun on the follow-up head before the pull request is marked ready for merge.
+Arena ID, full-roster conversion, reusable archetypes, power budgets, additional effects, fatigue, Ability interaction, AI evaluation, presentation, and save-format changes remain outside this milestone.

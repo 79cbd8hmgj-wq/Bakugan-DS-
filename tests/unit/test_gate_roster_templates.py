@@ -98,7 +98,7 @@ def test_template_parser_rejects_legacy_duplicates_unsupported_state_and_bad_ord
 
     unsupported = json.loads(json.dumps(payload))
     unsupported["templates"][0]["record"]["activation_limit"] = 1
-    with pytest.raises(WorkspaceError, match="deferred state fields"):
+    with pytest.raises(WorkspaceError, match="unsupported runtime semantics"):
         parse_gate_roster_templates(unsupported)
 
     bad_order = json.loads(json.dumps(payload))

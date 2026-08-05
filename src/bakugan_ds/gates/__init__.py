@@ -7,11 +7,23 @@ from bakugan_ds.gates.model import (
     GateControlCase,
     LegacyGateTableSpec,
 )
+from bakugan_ds.gates.record import (
+    GateArchetype,
+    GateConditionId,
+    GateEffectId,
+    GateTargetMode,
+    GateTimingPhase,
+)
 
 __all__ = [
     "AddressRef",
     "Confidence",
+    "GateArchetype",
+    "GateConditionId",
     "GateControlCase",
+    "GateEffectId",
+    "GateTargetMode",
+    "GateTimingPhase",
     "InstallReport",
     "LegacyGateTableSpec",
     "install_milestone_6c",

@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
 
 concurrency:
   group: milestone-6e-task6-authoring-${{ github.event.pull_request.number }}
@@ -35,8 +34,6 @@ jobs:
       - name: Install project
         run: python -m pip install -e '.[dev]'
       - name: Generate and verify reviewed batches
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set +e
@@ -69,19 +66,10 @@ jobs:
           run_checked python -m pytest -q
           run_checked git diff --check
 
+          cat /tmp/task6.log
           if [[ $status -ne 0 ]]; then
-            {
-              echo '### Milestone 6E Task 6 authoring failure'
-              echo
-              echo '```text'
-              tail -c 55000 /tmp/task6.log
-              echo '```'
-            } > /tmp/task6-comment.md
-            gh pr comment "${{ github.event.pull_request.number }}" \
-              --body-file /tmp/task6-comment.md
             exit $status
           fi
-          cat /tmp/task6.log
       - name: Commit verified Task 6 batch
         shell: bash
         run: |

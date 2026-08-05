@@ -15,7 +15,6 @@ from bakugan_ds.gates.record import (
 )
 from bakugan_ds.gates.roster_analysis import build_roster_analysis
 from bakugan_ds.gates.roster_metadata import (
-    DesignTier,
     GateRosterMetadataEntry,
     ReviewStatus,
 )
@@ -46,6 +45,47 @@ def _canonical_json_bytes(value: object) -> bytes:
 
 def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def _require_object(value: object, label: str) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise WorkspaceError(f"{label} must be an object")
+    result: dict[str, object] = {}
+    for key, item in value.items():
+        if not isinstance(key, str):
+            raise WorkspaceError(f"{label} contains a non-string key")
+        result[key] = item
+    return result
+
+
+def _require_list(value: object, label: str) -> list[object]:
+    if not isinstance(value, list):
+        raise WorkspaceError(f"{label} must be a list")
+    return list(value)
+
+
+def _require_int(value: object, label: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise WorkspaceError(f"{label} must be an integer")
+    return value
+
+
+def _normalize_json(value: object, label: str) -> JsonValue:
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, list):
+        return [
+            _normalize_json(item, f"{label}[{index}]")
+            for index, item in enumerate(value)
+        ]
+    if isinstance(value, dict):
+        result: dict[str, JsonValue] = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise WorkspaceError(f"{label} contains a non-string key")
+            result[key] = _normalize_json(item, f"{label}.{key}")
+        return result
+    raise WorkspaceError(f"{label} contains a non-JSON value")
 
 
 def _validate_inputs(
@@ -167,58 +207,92 @@ def _dominance_disposition(
     }
 
 
+def _parse_dominance_pairs(value: object) -> list[dict[str, int]]:
+    pairs: list[dict[str, int]] = []
+    for index, raw_pair in enumerate(
+        _require_list(value, "roster analysis potential_dominance_pairs")
+    ):
+        pair = _require_object(raw_pair, f"potential_dominance_pairs[{index}]")
+        pairs.append(
+            {
+                "dominant_card_id": _require_int(
+                    pair.get("dominant_card_id"),
+                    f"potential_dominance_pairs[{index}].dominant_card_id",
+                ),
+                "dominated_card_id": _require_int(
+                    pair.get("dominated_card_id"),
+                    f"potential_dominance_pairs[{index}].dominated_card_id",
+                ),
+            }
+        )
+    return pairs
+
+
+def _parse_out_of_tier_card_ids(value: object) -> list[int]:
+    card_ids: list[int] = []
+    for index, raw_card in enumerate(_require_list(value, "roster analysis cards")):
+        card = _require_object(raw_card, f"cards[{index}]")
+        if card.get("out_of_tier") is True:
+            card_ids.append(
+                _require_int(card.get("card_id"), f"cards[{index}].card_id")
+            )
+    return sorted(card_ids)
+
+
 def build_balance_contract(
     records: tuple[GateRecordV1, ...],
     metadata: tuple[GateRosterMetadataEntry, ...],
 ) -> dict[str, JsonValue]:
     _validate_inputs(records, metadata)
     analysis = build_roster_analysis(records, metadata)
-    raw_pairs = analysis["potential_dominance_pairs"]
-    if not isinstance(raw_pairs, list):
-        raise WorkspaceError("roster analysis dominance pairs must be a list")
-    pairs = [
-        {
-            "dominant_card_id": int(pair["dominant_card_id"]),
-            "dominated_card_id": int(pair["dominated_card_id"]),
-        }
-        for pair in raw_pairs
-        if isinstance(pair, dict)
-    ]
+    pairs = _parse_dominance_pairs(analysis.get("potential_dominance_pairs"))
     metadata_by_id = {entry.card_id: entry for entry in metadata}
     dispositions = [
         _dominance_disposition(pair, metadata_by_id) for pair in pairs
     ]
     unresolved = [
         {
-            "dominant_card_id": int(item["dominant_card_id"]),
-            "dominated_card_id": int(item["dominated_card_id"]),
+            "dominant_card_id": _require_int(
+                item.get("dominant_card_id"),
+                "dominance disposition dominant_card_id",
+            ),
+            "dominated_card_id": _require_int(
+                item.get("dominated_card_id"),
+                "dominance disposition dominated_card_id",
+            ),
         }
         for item in dispositions
-        if item["disposition"] == "unresolved_same_archetype_same_tier"
+        if item.get("disposition") == "unresolved_same_archetype_same_tier"
     ]
-    cards = analysis["cards"]
-    if not isinstance(cards, list):
-        raise WorkspaceError("roster analysis cards must be a list")
-    out_of_tier = sorted(
-        int(card["card_id"])
-        for card in cards
-        if isinstance(card, dict) and card.get("out_of_tier") is True
-    )
+    matrix = _require_object(analysis.get("matrix"), "roster analysis matrix")
     contract: dict[str, JsonValue] = {
         "analysis_sha256": _sha256(_canonical_json_bytes(analysis)),
-        "distribution_warnings": list(analysis["archetype_distribution_warnings"]),
+        "distribution_warnings": _normalize_json(
+            analysis.get("archetype_distribution_warnings"),
+            "roster analysis archetype_distribution_warnings",
+        ),
         "dominance_dispositions": dispositions,
         "format": "bakugan-ds-gate-milestone-6e-balance-contract",
         "format_version": 1,
-        "hard_duplicate_groups": list(analysis["hard_duplicate_groups"]),
-        "identical_evaluation_groups": list(
-            analysis["identical_evaluation_groups"]
+        "hard_duplicate_groups": _normalize_json(
+            analysis.get("hard_duplicate_groups"),
+            "roster analysis hard_duplicate_groups",
         ),
-        "identity_conflicts": list(analysis["identity_conflicts"]),
-        "out_of_tier_card_ids": out_of_tier,
+        "identical_evaluation_groups": _normalize_json(
+            analysis.get("identical_evaluation_groups"),
+            "roster analysis identical_evaluation_groups",
+        ),
+        "identity_conflicts": _normalize_json(
+            analysis.get("identity_conflicts"),
+            "roster analysis identity_conflicts",
+        ),
+        "out_of_tier_card_ids": _parse_out_of_tier_card_ids(
+            analysis.get("cards")
+        ),
         "potential_dominance_pairs": pairs,
-        "reference_case_count_per_record": int(
-            analysis["matrix"]["case_count_per_record"]  # type: ignore[index]
+        "reference_case_count_per_record": _require_int(
+            matrix.get("case_count_per_record"),
+            "roster analysis matrix.case_count_per_record",
         ),
         "unresolved_dominance_pairs": unresolved,
     }

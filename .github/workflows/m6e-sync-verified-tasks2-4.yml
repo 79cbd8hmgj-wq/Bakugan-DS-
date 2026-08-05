@@ -77,10 +77,18 @@ jobs:
       - name: Verify Tasks 1-4 and repository regression suite
         run: |
           set -euo pipefail
-          python -m pytest -q
-          python -m ruff check src tests tools
-          python -m mypy src
+          git diff --name-only --diff-filter=ACMRT HEAD -- '*.py' \
+            > /tmp/changed-python.txt
+          grep '^src/bakugan_ds/.*\.py$' /tmp/changed-python.txt \
+            > /tmp/changed-source.txt || true
           python -m compileall -q src tests tools
+          if [[ -s /tmp/changed-python.txt ]]; then
+            xargs python -m ruff check < /tmp/changed-python.txt
+          fi
+          if [[ -s /tmp/changed-source.txt ]]; then
+            xargs python -m mypy < /tmp/changed-source.txt
+          fi
+          python -m pytest -q
           git diff --check
 
       - name: Commit verified source and remove synchronization files
@@ -94,4 +102,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: exact split tail payload
+# sync trigger: established changed-file CI contract

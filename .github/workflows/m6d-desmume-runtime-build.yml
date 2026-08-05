@@ -1,0 +1,69 @@
+name: Build Milestone 6D DeSmuME Runtime
+
+on:
+  push:
+    branches:
+      - milestone-6d-core-balance-framework
+    paths:
+      - .github/workflows/m6d-desmume-runtime-build.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends autoconf automake binutils build-essential ca-certificates file git libasound2-dev libglib2.0-dev libglu1-mesa-dev libgtk2.0-dev libpcap-dev libsdl2-dev libtool libx11-dev libzzip-dev make pkg-config xz-utils zlib1g-dev
+      - name: Build DeSmuME with ARM9 GDB
+        run: |
+          set -euo pipefail
+          git clone https://github.com/TASEmulators/desmume.git source
+          git -C source checkout --detach 84e445159ccf2fd7900748094518eb1e88bdc7d0
+          cd source/desmume/src/frontend/posix
+          autoreconf -i
+          ./configure --prefix=/usr --enable-gdb-stub
+          make -j"$(nproc)"
+          test -x cli/desmume-cli
+      - name: Package runtime
+        run: |
+          set -euo pipefail
+          binary=source/desmume/src/frontend/posix/cli/desmume-cli
+          bundle=bundle/desmume-debug
+          mkdir -p "$bundle/lib"
+          install -m 0755 "$binary" "$bundle/desmume-cli"
+          mapfile -t libraries < <(ldd "$bundle/desmume-cli" | awk '/=> \// {print $3} /^[[:space:]]*\/.*\(/ {print $1}' | sort -u)
+          for library in "${libraries[@]}"; do
+            base="$(basename "$library")"
+            case "$base" in ld-linux-x86-64.so.2|libc.so.6|libm.so.6|libdl.so.2|libpthread.so.0|librt.so.1|libresolv.so.2) continue ;; esac
+            cp -L "$library" "$bundle/lib/$base"
+          done
+          cat > "$bundle/run-desmume-debug.sh" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export LD_LIBRARY_PATH="$ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-dummy}"
+          export SDL_AUDIODRIVER="${SDL_AUDIODRIVER:-dummy}"
+          exec "$ROOT/desmume-cli" "$@"
+          SH
+          chmod 0755 "$bundle/run-desmume-debug.sh"
+          "$bundle/run-desmume-debug.sh" --help > "$bundle/desmume-help.txt" 2>&1 || true
+          grep -qi arm9gdb "$bundle/desmume-help.txt" || strings "$bundle/desmume-cli" | grep -qi arm9gdb
+          (cd "$bundle" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS && sha256sum -c SHA256SUMS)
+          tar -C bundle -cJf bundle/desmume-linux-gdb-x86_64.tar.xz desmume-debug
+      - name: Upload runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: m6d-desmume-linux-gdb-x86_64
+          path: bundle/desmume-linux-gdb-x86_64.tar.xz
+          retention-days: 1
+          if-no-files-found: error

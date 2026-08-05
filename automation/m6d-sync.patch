@@ -1,0 +1,393 @@
+--- a/src/bakugan_ds/gates/authoring.py
++++ b/src/bakugan_ds/gates/authoring.py
+@@ -1,10 +1,18 @@
+ from __future__ import annotations
+ 
+ import json
++from dataclasses import asdict
+ from pathlib import Path
+ 
+ from bakugan_ds.errors import WorkspaceError
+-from bakugan_ds.gates.record import GATE_RECORD_FIELD_NAMES, RECORD_COUNT, GateRecordV1
++from bakugan_ds.gates.balance import GateBalanceReport, analyze_gate_balance
++from bakugan_ds.gates.record import (
++    GATE_RECORD_FIELD_NAMES,
++    RECORD_COUNT,
++    GateArchetype,
++    GateRecordV1,
++)
++from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus
+ 
+ _RECORD_FIELDS = frozenset(GATE_RECORD_FIELD_NAMES)
+ _ROOT_FIELDS = frozenset({"format_version", "records"})
+@@ -158,9 +166,12 @@
+     return record
+ 
+ 
+-def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
++def _load_authoring_records(path: Path) -> tuple[GateRecordV1, ...]:
+     try:
+-        root = _require_object(json.loads(path.read_text(encoding="utf-8")), "authoring document")
++        root = _require_object(
++            json.loads(path.read_text(encoding="utf-8")),
++            "authoring document",
++        )
+     except (OSError, json.JSONDecodeError) as exc:
+         raise WorkspaceError(f"cannot load Gate authoring document {path}: {exc}") from exc
+     actual_root_fields = frozenset(root)
+@@ -172,9 +183,136 @@
+         )
+     if _integer(root["format_version"], "format_version") != 1:
+         raise WorkspaceError("unsupported Gate authoring format version")
+-    records = tuple(
++    return tuple(
+         _parse_record(value, index)
+         for index, value in enumerate(_require_array(root["records"], "records"))
+     )
++
++
++def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
++    records = _load_authoring_records(path)
+     validate_milestone_6c_roster(records)
+     return records
++
++
++MILESTONE_6D_REFERENCE_CORE_G = (190, 400, 525, 650, 695)
++
++
++def validate_milestone_6d_roster(
++    records: tuple[GateRecordV1, ...],
++) -> tuple[GateBalanceReport, ...]:
++    if len(records) != RECORD_COUNT:
++        raise WorkspaceError("Milestone 6D roster must contain exactly 103 records")
++    expected_ids = tuple(range(1, RECORD_COUNT + 1))
++    actual_ids = tuple(record.card_id for record in records)
++    if actual_ids != expected_ids:
++        raise WorkspaceError("Milestone 6D records must contain sorted IDs 1 through 103")
++
++    reports: list[GateBalanceReport] = []
++    for record in records:
++        record.validate()
++        if record.card_id == 19:
++            if record != approved_juggernoid_record():
++                raise WorkspaceError("Gate 19 does not match the approved Milestone 6D prototype")
++            reports.append(analyze_gate_balance(record))
++        elif record != legacy_passthrough_record(record.card_id):
++            raise WorkspaceError(
++                f"Gate {record.card_id} must remain canonical legacy passthrough in Milestone 6D"
++            )
++    return tuple(reports)
++
++
++def load_milestone_6d_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
++    records = _load_authoring_records(path)
++    validate_milestone_6d_roster(records)
++    return records
++
++
++def _balance_report_dict(report: GateBalanceReport) -> dict[str, object]:
++    payload = asdict(report)
++    payload["archetype"] = report.archetype.value
++    payload["attribute"]["tiers"] = [tier.value for tier in report.attribute.tiers]
++    payload["battle_weights"]["pressure"] = report.battle_weights.pressure.value
++    payload["attribute"]["modifiers"] = list(report.attribute.modifiers)
++    payload["battle_weights"]["weights"] = list(report.battle_weights.weights)
++    return payload
++
++
++def _reference_case_results(record: GateRecordV1) -> tuple[int, ...]:
++    values: list[int] = []
++    score_cases = ((0, 1), (1, 1))
++    participant_cases = ((1, 1), (0, 1))
++    for core_g in MILESTONE_6D_REFERENCE_CORE_G:
++        for attribute_id in range(6):
++            for owner_score, opposing_score in score_cases:
++                for current_participant, owner_participant in participant_cases:
++                    result = calculate_gate_bonus(
++                        record,
++                        GateCalculationContext(
++                            compressed_core_g=core_g,
++                            attribute_id=attribute_id,
++                            current_participant=current_participant,
++                            owner_participant=owner_participant,
++                            owner_side_score=owner_score,
++                            opposing_side_score=opposing_score,
++                            gate_id=record.card_id,
++                        ),
++                    )
++                    if result.effective_gate_bonus is None:
++                        raise WorkspaceError(
++                            f"Gate {record.card_id} failed deterministic reference analysis: "
++                            f"{result.fallback_reason.value}"
++                        )
++                    values.append(result.effective_gate_bonus)
++    return tuple(values)
++
++
++def build_milestone_6d_balance_report(
++    records: tuple[GateRecordV1, ...],
++) -> dict[str, object]:
++    reports = validate_milestone_6d_roster(records)
++    live_records = tuple(
++        record for record in records if record.archetype != GateArchetype.LEGACY
++    )
++    cards: list[dict[str, object]] = []
++    by_id = {report.card_id: report for report in reports}
++    for record in live_records:
++        report = by_id[record.card_id]
++        values = _reference_case_results(record)
++        cards.append(
++            {
++                "balance": _balance_report_dict(report),
++                "card_id": record.card_id,
++                "reference_cases": len(values),
++                "effective_gate_bonus": {
++                    "maximum": max(values),
++                    "mean_denominator": len(values),
++                    "mean_numerator": sum(values),
++                    "minimum": min(values),
++                },
++            }
++        )
++    return {
++        "format": "bakugan-ds-gate-milestone-6d-balance",
++        "format_version": 1,
++        "record_count": len(records),
++        "live_card_ids": [record.card_id for record in live_records],
++        "legacy_passthrough_count": len(records) - len(live_records),
++        "reference_core_g": list(MILESTONE_6D_REFERENCE_CORE_G),
++        "cards": cards,
++        "valid": True,
++    }
++
++
++def write_milestone_6d_balance_report(
++    path: Path,
++    records: tuple[GateRecordV1, ...],
++) -> None:
++    payload = build_milestone_6d_balance_report(records)
++    path.parent.mkdir(parents=True, exist_ok=True)
++    temporary = path.with_suffix(path.suffix + ".tmp")
++    temporary.write_text(
++        json.dumps(payload, indent=2, sort_keys=True) + "\n",
++        encoding="utf-8",
++    )
++    temporary.replace(path)
+--- a/src/bakugan_ds/gates/cli.py
++++ b/src/bakugan_ds/gates/cli.py
+@@ -9,7 +9,12 @@
+ from typing import Any
+ 
+ from bakugan_ds.errors import WorkspaceError
+-from bakugan_ds.gates.authoring import load_authoring_document
++from bakugan_ds.gates.authoring import (
++    build_milestone_6d_balance_report,
++    load_authoring_document,
++    load_milestone_6d_authoring_document,
++    write_milestone_6d_balance_report,
++)
+ from bakugan_ds.gates.context import context_report, load_context_fields
+ from bakugan_ds.gates.discovery import load_discovery_artifact
+ from bakugan_ds.gates.install import install_milestone_6c
+@@ -91,6 +96,19 @@
+     )
+     install_parser.add_argument("--dry-run", action="store_true")
+ 
++    validate_6d_parser = subparsers.add_parser(
++        "validate-milestone-6d",
++        help="validate the deterministic Milestone 6D Gate balance authoring roster",
++    )
++    validate_6d_parser.add_argument("authoring", type=Path)
++
++    report_6d_parser = subparsers.add_parser(
++        "report-milestone-6d",
++        help="write the deterministic Milestone 6D Gate balance report",
++    )
++    report_6d_parser.add_argument("authoring", type=Path)
++    report_6d_parser.add_argument("output", type=Path)
++
+     readiness_parser = subparsers.add_parser(
+         "readiness",
+         help="generate the fail-closed Milestone 6C readiness report",
+@@ -276,6 +294,28 @@
+             f"patches={len(install_report.binary_patches)}"
+         )
+         return 0
++    if arguments.gate_command == "validate-milestone-6d":
++        gate_records = load_milestone_6d_authoring_document(arguments.authoring)
++        report = build_milestone_6d_balance_report(gate_records)
++        encoded = json.dumps(report, indent=2, sort_keys=True) + "\n"
++        digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
++        card = report["cards"][0]
++        net_budget = card["balance"]["budget"]["net_budget"]
++        print(
++            "Milestone 6D authoring valid; "
++            f"record_count={report['record_count']}; "
++            f"live_card_ids={report['live_card_ids']}; "
++            f"juggernoid_net_budget={net_budget}; "
++            f"report_sha256={digest}"
++        )
++        return 0
++    if arguments.gate_command == "report-milestone-6d":
++        gate_records = load_milestone_6d_authoring_document(arguments.authoring)
++        output = ensure_local_output(arguments.output)
++        write_milestone_6d_balance_report(output, gate_records)
++        digest = hashlib.sha256(output.read_bytes()).hexdigest()
++        print(f"Wrote Milestone 6D Gate balance report: {output}; sha256={digest}")
++        return 0
+     if arguments.gate_command == "validate-trailer":
+         sys.stdout.write(
+             json.dumps(
+--- a/tests/unit/test_gate_milestone_6d_authoring.py
++++ b/tests/unit/test_gate_milestone_6d_authoring.py
+@@ -1,8 +1,20 @@
+ from __future__ import annotations
+ 
++import json
+ from dataclasses import replace
++from pathlib import Path
+ 
+-from bakugan_ds.gates.authoring import legacy_passthrough_record
++import pytest
++
++from bakugan_ds.errors import WorkspaceError
++from bakugan_ds.gates.authoring import (
++    approved_juggernoid_record,
++    build_milestone_6d_balance_report,
++    legacy_passthrough_record,
++    load_milestone_6d_authoring_document,
++    validate_milestone_6d_roster,
++    write_milestone_6d_balance_report,
++)
+ from bakugan_ds.gates.record import (
+     GateArchetype,
+     GateConditionId,
+@@ -13,27 +25,13 @@
+     serialize_record,
+ )
+ 
++AUTHORING = Path("config/gates/milestone-6d-system2-v1.json")
++
+ 
+ def test_milestone_6d_semantic_ids_are_frozen() -> None:
+-    assert int(GateArchetype.LEGACY) == 0
+-    assert int(GateArchetype.COMEBACK) == 1
+-    assert int(GateArchetype.POWER) == 2
+-    assert int(GateArchetype.SKILL) == 3
+-    assert int(GateArchetype.CONTROL) == 4
+-    assert int(GateArchetype.RISK) == 5
+-    assert int(GateArchetype.ATTRIBUTE) == 6
+-    assert int(GateArchetype.CHAOS) == 7
+-
+-    assert int(GateConditionId.NONE) == 0
+-    assert int(GateConditionId.OWNER_BEHIND) == 1
++    assert [int(item) for item in GateArchetype] == list(range(8))
+     assert int(GateConditionId.LANDING_GATE_CARD_WON) == 7
+-
+-    assert int(GateEffectId.NONE) == 0
+-    assert int(GateEffectId.ADD_SIGNED_G) == 1
+     assert int(GateEffectId.SUBTRACT_MAGNITUDE_G) == 2
+-
+-    assert int(GateTargetMode.CURRENT_COMBATANT) == 0
+-    assert int(GateTargetMode.GATE_OWNER) == 1
+     assert int(GateTargetMode.GATE_NON_OWNER) == 2
+     assert int(GateTimingPhase.PRE_GATE_CALCULATION) == 0
+ 
+@@ -49,3 +47,42 @@
+     assert decoded.effect_value == -40
+     assert decoded.drawback_value == -25
+     assert decoded.secondary_value == -10
++
++
++def test_milestone_6d_authoring_keeps_only_juggernoid_live() -> None:
++    records = load_milestone_6d_authoring_document(AUTHORING)
++    assert len(records) == 103
++    assert records[18] == approved_juggernoid_record()
++    assert [record.card_id for record in records if record.archetype != 0] == [19]
++    assert all(
++        record == legacy_passthrough_record(record.card_id)
++        for record in records
++        if record.card_id != 19
++    )
++
++
++def test_milestone_6d_rejects_an_extra_live_record() -> None:
++    records = list(load_milestone_6d_authoring_document(AUTHORING))
++    records[0] = replace(approved_juggernoid_record(), card_id=1)
++    with pytest.raises(WorkspaceError, match="canonical legacy passthrough"):
++        validate_milestone_6d_roster(tuple(records))
++
++
++def test_balance_report_is_deterministic_and_integer_only(tmp_path: Path) -> None:
++    records = load_milestone_6d_authoring_document(AUTHORING)
++    first = build_milestone_6d_balance_report(records)
++    second = build_milestone_6d_balance_report(records)
++    assert first == second
++    assert first["live_card_ids"] == [19]
++    assert first["legacy_passthrough_count"] == 102
++    card = first["cards"][0]
++    assert card["reference_cases"] == 120
++    assert isinstance(card["effective_gate_bonus"]["mean_numerator"], int)
++    assert isinstance(card["effective_gate_bonus"]["mean_denominator"], int)
++
++    output = tmp_path / "balance.json"
++    write_milestone_6d_balance_report(output, records)
++    first_bytes = output.read_bytes()
++    write_milestone_6d_balance_report(output, records)
++    assert output.read_bytes() == first_bytes
++    assert json.loads(first_bytes)["valid"] is True
+--- a/tests/unit/test_gate_cli.py
++++ b/tests/unit/test_gate_cli.py
+@@ -202,3 +202,52 @@
+     assert "overlay_size=501728" in output
+     assert "cache=0x02293C20-0x02293C60" in output
+     assert "patches=7" in output
++
++
++def test_gate_parser_accepts_milestone_6d_balance_commands() -> None:
++    parser = gate_cli.build_gate_parser()
++    validate = parser.parse_args(
++        ["validate-milestone-6d", "config/gates/milestone-6d-system2-v1.json"]
++    )
++    report = parser.parse_args(
++        [
++            "report-milestone-6d",
++            "config/gates/milestone-6d-system2-v1.json",
++            "work/milestone-6d-balance.json",
++        ]
++    )
++    assert validate.gate_command == "validate-milestone-6d"
++    assert report.gate_command == "report-milestone-6d"
++
++
++def test_validate_milestone_6d_prints_deterministic_summary(
++    capsys: pytest.CaptureFixture[str],
++) -> None:
++    arguments = Namespace(
++        gate_command="validate-milestone-6d",
++        authoring=Path("config/gates/milestone-6d-system2-v1.json"),
++    )
++    assert gate_cli.run_gate_command(arguments) == 0
++    output = capsys.readouterr().out
++    assert "record_count=103" in output
++    assert "live_card_ids=[19]" in output
++    assert "juggernoid_net_budget=91" in output
++    assert "report_sha256=" in output
++
++
++def test_report_milestone_6d_writes_atomically(
++    tmp_path: Path,
++    capsys: pytest.CaptureFixture[str],
++) -> None:
++    output = tmp_path / "balance.json"
++    arguments = Namespace(
++        gate_command="report-milestone-6d",
++        authoring=Path("config/gates/milestone-6d-system2-v1.json"),
++        output=output,
++    )
++    assert gate_cli.run_gate_command(arguments) == 0
++    first = output.read_bytes()
++    assert gate_cli.run_gate_command(arguments) == 0
++    assert output.read_bytes() == first
++    assert json.loads(first)["live_card_ids"] == [19]
++    assert "sha256=" in capsys.readouterr().out

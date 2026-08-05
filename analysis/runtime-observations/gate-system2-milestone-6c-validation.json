@@ -185,6 +185,18 @@
     "The live Gate 19 arena identity was established with a bounded match-local slot repoint and was not written to the save.",
     "The exact emitted ARM32 interpreter is the authoritative arithmetic and selector matrix for this milestone."
   ],
+  "local_evidence_hashes": {
+    "aquos_selection_screenshot_sha256": "f5ee5e07b86420414d7a64be22daa498ef62396f4444e5ec737ae65be1a77dc8",
+    "aquos_throw_screenshot_sha256": "779b8dc6b0776c3231ea9bb7603a6e240c80b40ca892e810d9544f315beeb4f9",
+    "battle_arena_live_screenshot_sha256": "cdd07ca04e683140f72fe3a867ca2c7c41f7f8ec702c3ad3cc2dd2a46fccb0b1",
+    "battle_arena_return_screenshot_sha256": "bcf718abd3df1e0e6be359fa0b7079553ca574a6cbaa4397cfdbd9d882bdee4f",
+    "clean_title_screenshot_sha256": "871451eb01c40909cf383ee828dce1816bea3bce003210c26f98a4089c3b237e",
+    "emitted_arm_matrix_sha256": "e56858e7584afd30a6309f9f0c09acaed892ce60248d6b51dc56e47c800bdb44",
+    "gate19_repoint_control_screenshot_sha256": "c950f6c80c3084cb9ee9e0974b83442d130429c7676d68f5c2c95e31c21430d7",
+    "selected_live_memory_sha256": "ba2f67d36b872a52cea91e1f76b8f89df258add36924bbf93f811de502d7f47b",
+    "tutorial_completion_screenshot_sha256": "83aa78ebf1ecaf25aaafc6c8ea9ef6a51b14fc525745db3232ead013a810a6b6",
+    "tutorial_return_screenshot_sha256": "7316bb07e976d95d76a2ba75c7fcd6e74330e47b60e2bb73cb45a13bb6ed68cc"
+  },
   "malformed_trailer_control": {
     "cache_valid_flag": 0,
     "capture_method": "isolated_corrupt_trailer_and_emitted_fallback_tests",

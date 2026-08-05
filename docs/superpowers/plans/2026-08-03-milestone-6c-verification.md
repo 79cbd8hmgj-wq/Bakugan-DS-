@@ -105,7 +105,7 @@ The acceptance matrix separates three evidence methods:
 2. Execution of the exact generated ARM32 module in the repository interpreter.
 3. A clean DeSmuME run of the same CRC-enabled rebuilt ROM.
 
-The exact emitted-module controls prove the complete approved arithmetic and selector matrix. They are not represented as naturally occurring emulator matches.
+The exact emitted-module controls prove the complete approved arithmetic and selector matrix. This does not claim that every arithmetic vector occurred naturally. They are controlled executions of the exact emitted module, not a set of naturally occurring emulator matches.
 
 The live rebuilt-ROM run confirms:
 

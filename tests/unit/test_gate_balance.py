@@ -107,14 +107,15 @@ def test_attribute_archetype_requires_positive_negative_and_spread() -> None:
     validate_attribute_profile(record)
 
 
-def test_attribute_archetype_rejects_inadequate_spread() -> None:
+def test_attribute_archetype_accepts_exact_minimum_spread() -> None:
     record = make_record(
         card_id=6,
         archetype=GateArchetype.ATTRIBUTE,
         attribute_modifiers=(40, 20, 0, 0, -10, -20),
     )
-    with pytest.raises(WorkspaceError, match="spread"):
-        validate_attribute_profile(record)
+    report = analyze_attribute_profile(record)
+    assert report.spread == 60
+    validate_attribute_profile(record)
 
 
 def test_non_attribute_archetype_rejects_three_positive_affinities() -> None:
@@ -261,7 +262,11 @@ def test_power_rejects_low_direct_g_share() -> None:
 
 
 def test_skill_requires_strong_weights() -> None:
-    record = replace(valid_archetype_records()[2], battle_weights=(50, 30, 30, 30, 30, 30))
+    record = replace(
+        valid_archetype_records()[2],
+        flat_bonus_g=125,
+        battle_weights=(50, 30, 30, 30, 30, 30),
+    )
     with pytest.raises(WorkspaceError, match="strong"):
         analyze_gate_balance(record)
 

@@ -283,7 +283,10 @@ def record_fallback_reason(record: GateRecordV1) -> FallbackReason:
         )
     ):
         return FallbackReason.UNSUPPORTED_RECORD
-    if record.condition_id == GateConditionId.LANDING_GATE_CARD_WON and record.condition_value not in (0, 1):
+    if (
+        record.condition_id == GateConditionId.LANDING_GATE_CARD_WON
+        and record.condition_value not in (0, 1)
+    ):
         return FallbackReason.UNSUPPORTED_RECORD
     return FallbackReason.NONE
 

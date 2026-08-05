@@ -216,7 +216,7 @@ def test_malformed_system2_inputs_predict_fail_closed_legacy_behavior() -> None:
     assert parse_cache(bytes(cache)) is None
 
     context = GateCalculationContext(190, 1, 0, 0, 0, 1, 19)
-    invalid_enum = replace(approved_juggernoid_record(), archetype=2)
+    invalid_enum = replace(approved_juggernoid_record(), archetype=99)
     result = calculate_gate_bonus(invalid_enum, context)
     assert result.effective_gate_bonus is None
     assert result.target_total_g is None

@@ -116,7 +116,7 @@ def test_legacy_passthrough_returns_record_fallback_without_components() -> None
         ({"condition_id": 99}, FallbackReason.INVALID_ENUM),
         ({"effect_id": 99}, FallbackReason.INVALID_ENUM),
         ({"drawback_id": 99}, FallbackReason.INVALID_ENUM),
-        ({"target_mode": 99}, FallbackReason.INVALID_ENUM),
+        ({"target_mode": 99}, FallbackReason.UNSUPPORTED_RECORD),
         ({"timing_phase": 1}, FallbackReason.INVALID_ENUM),
         ({"activation_limit": 1}, FallbackReason.UNSUPPORTED_RECORD),
         ({"fatigue_rate": 1}, FallbackReason.UNSUPPORTED_RECORD),

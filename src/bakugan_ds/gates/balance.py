@@ -314,7 +314,13 @@ def calculate_gate_budget(record: GateRecordV1) -> GateBudgetBreakdown:
         30,
         _ceil_div_nonnegative(drawback_magnitude, 25) * 5 if drawback_magnitude else 0,
     )
-    gross_budget = flat_cost + percentage_cost + attribute_cost + effect_cost + weight_report.budget_cost
+    gross_budget = (
+        flat_cost
+        + percentage_cost
+        + attribute_cost
+        + effect_cost
+        + weight_report.budget_cost
+    )
     net_budget = gross_budget - negative_attribute_credit - drawback_credit
     return GateBudgetBreakdown(
         flat_cost=flat_cost,
@@ -331,7 +337,9 @@ def calculate_gate_budget(record: GateRecordV1) -> GateBudgetBreakdown:
 
 def _require_budget_band(value: int, minimum: int, maximum: int, label: str) -> None:
     if not minimum <= value <= maximum:
-        raise WorkspaceError(f"{label} net budget must be between {minimum} and {maximum}, got {value}")
+        raise WorkspaceError(
+            f"{label} net budget must be between {minimum} and {maximum}, got {value}"
+        )
 
 
 def validate_archetype_invariants(
@@ -380,7 +388,10 @@ def validate_archetype_invariants(
             raise WorkspaceError("Skill Gate requires strong battle-type weighting")
     elif archetype is GateArchetype.CONTROL:
         _require_budget_band(budget.net_budget, 85, 110, "Control")
-        if target is GateTargetMode.CURRENT_COMBATANT and record.condition_id == GateConditionId.NONE:
+        if (
+            target is GateTargetMode.CURRENT_COMBATANT
+            and record.condition_id == GateConditionId.NONE
+        ):
             raise WorkspaceError("Control Gate requires constrained targeting or a condition")
     elif archetype is GateArchetype.RISK:
         _require_budget_band(budget.net_budget, 85, 120, "Risk")
@@ -390,9 +401,17 @@ def validate_archetype_invariants(
             raise WorkspaceError("Risk Gate requires an explicit drawback")
     elif archetype is GateArchetype.ATTRIBUTE:
         _require_budget_band(budget.net_budget, 90, 110, "Attribute")
-        if budget.gross_budget and (budget.flat_cost + budget.percentage_cost) * 100 > budget.gross_budget * 60:
+        if (
+            budget.gross_budget
+            and (budget.flat_cost + budget.percentage_cost) * 100
+            > budget.gross_budget * 60
+        ):
             raise WorkspaceError("Attribute Gate cannot spend more than 60 percent on universal G")
-        if attribute_report.maximum < 40 or attribute_report.minimum > -20 or attribute_report.spread < 60:
+        if (
+            attribute_report.maximum < 40
+            or attribute_report.minimum > -20
+            or attribute_report.spread < 60
+        ):
             raise WorkspaceError("Attribute Gate profile does not satisfy relationship rules")
     elif archetype is GateArchetype.CHAOS:
         _require_budget_band(budget.net_budget, 90, 120, "Chaos")

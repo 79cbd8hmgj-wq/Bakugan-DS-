@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify and apply final patch
+      - name: Verify patch and restore exact baseline
         shell: bash
         run: |
           set -euo pipefail
@@ -38,6 +38,8 @@ jobs:
           base64 --decode /tmp/m6d-final.patch.gz.b64 > /tmp/m6d-final.patch.gz
           echo "d40959d7fdd2a0a4d68221dbb22d13e0baaed32cfddbbc9e146146f57dafb334  /tmp/m6d-final.patch.gz" | sha256sum --check --strict
           gzip --decompress --stdout /tmp/m6d-final.patch.gz > /tmp/m6d-final.patch
+          git cat-file -e f34bae33834913350a3cc12cf40eeca45d722b75^{commit}
+          git read-tree --reset -u f34bae33834913350a3cc12cf40eeca45d722b75
           git apply --check /tmp/m6d-final.patch
           git apply /tmp/m6d-final.patch
 

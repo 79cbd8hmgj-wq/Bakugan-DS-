@@ -13,6 +13,7 @@ from bakugan_ds.gates.authoring import (
     build_milestone_6d_balance_report,
     load_authoring_document,
     load_milestone_6d_authoring_document,
+    validate_milestone_6d_roster,
     write_milestone_6d_balance_report,
 )
 from bakugan_ds.gates.context import context_report, load_context_fields
@@ -299,8 +300,8 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
         report = build_milestone_6d_balance_report(gate_records)
         encoded = json.dumps(report, indent=2, sort_keys=True) + "\n"
         digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-        card = report["cards"][0]
-        net_budget = card["balance"]["budget"]["net_budget"]
+        balance_reports = validate_milestone_6d_roster(gate_records)
+        net_budget = balance_reports[0].budget.net_budget
         print(
             "Milestone 6D authoring valid; "
             f"record_count={report['record_count']}; "

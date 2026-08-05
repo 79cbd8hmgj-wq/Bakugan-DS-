@@ -1,0 +1,79 @@
+name: Sync verified Milestone 6D source
+
+on:
+  push:
+    branches:
+      - milestone-6d-core-balance-framework
+    paths:
+      - .github/workflows/m6d-final-source-sync.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify and apply final patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            automation/m6d-final.patch.gz.b64.part-00 \
+            automation/m6d-final.patch.gz.b64.part-01 \
+            automation/m6d-final.patch.gz.b64.part-02 \
+            automation/m6d-final.patch.gz.b64.part-03-04 \
+            automation/m6d-final.patch.gz.b64.part-05-06 \
+            automation/m6d-final.patch.gz.b64.part-07-08 \
+            automation/m6d-final.patch.gz.b64.part-09-10 \
+            automation/m6d-final.patch.gz.b64.part-11-12 \
+            automation/m6d-final.patch.gz.b64.part-13-14 \
+            > /tmp/m6d-final.patch.gz.b64
+          base64 --decode /tmp/m6d-final.patch.gz.b64 > /tmp/m6d-final.patch.gz
+          echo "d40959d7fdd2a0a4d68221dbb22d13e0baaed32cfddbbc9e146146f57dafb334  /tmp/m6d-final.patch.gz" | sha256sum --check --strict
+          gzip --decompress --stdout /tmp/m6d-final.patch.gz > /tmp/m6d-final.patch
+          git apply --check /tmp/m6d-final.patch
+          git apply /tmp/m6d-final.patch
+
+      - name: Remove temporary recovery infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f \
+            .github/workflows/m6d-source-snapshot.yml \
+            .github/workflows/m6d-desmume-runtime-build.yml \
+            .github/workflows/m6d-final-runtime-sync.yml \
+            .github/workflows/m6d-final-source-sync.yml
+          rm -f automation/m6d-final.patch.gz.b64.part-*
+          rmdir automation 2>/dev/null || true
+
+      - name: Validate synchronized tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -f src/bakugan_ds/gates/runtime_module_6d.py
+          test -f tests/integration/test_gate_milestone_6d_build.py
+          test -f analysis/runtime-observations/gate-system2-milestone-6d-validation.json
+          test -f docs/superpowers/plans/2026-08-05-milestone-6d-verification.md
+          test ! -e .github/workflows/m6d-source-snapshot.yml
+          test ! -e .github/workflows/m6d-desmume-runtime-build.yml
+          test ! -e automation/m6d-final.patch.gz.b64.part-00
+          python -m compileall -q src tests
+
+      - name: Commit synchronized source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: complete Milestone 6D balance framework"
+          git push origin HEAD:milestone-6d-core-balance-framework

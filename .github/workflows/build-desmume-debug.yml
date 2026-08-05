@@ -1,19 +1,18 @@
 name: Build DeSmuME Debug Bundle
 
 on:
-  workflow_dispatch:
-    inputs:
-      desmume_ref:
-        description: DeSmuME commit, tag, or branch
-        required: false
-        default: 84e445159ccf2fd7900748094518eb1e88bdc7d0
-        type: string
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-desmume-debug.yml
 
 permissions:
   contents: read
 
 jobs:
   build:
+    if: github.event.pull_request.head.ref == 'm6e-runtime-bundle-temp'
     name: Build Linux x86_64 ARM9 debugger
     runs-on: ubuntu-24.04
     timeout-minutes: 45

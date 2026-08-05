@@ -1,1 +1,143 @@
-{}
+{
+  "archetype_budget_bands": {
+    "attribute": [
+      90,
+      110
+    ],
+    "chaos": [
+      90,
+      120
+    ],
+    "comeback": [
+      85,
+      115
+    ],
+    "control": [
+      85,
+      110
+    ],
+    "power": [
+      90,
+      110
+    ],
+    "risk": [
+      85,
+      120
+    ],
+    "skill": [
+      90,
+      110
+    ]
+  },
+  "deferred_semantics": [
+    "ability_manipulation",
+    "activation_limits",
+    "ai_evaluation",
+    "arena_id",
+    "battle_history_penalties",
+    "fatigue",
+    "presentation",
+    "save_changes",
+    "secondary_live_effects"
+  ],
+  "format_version": 1,
+  "hook_count": 6,
+  "juggernoid_fixture": {
+    "archetype": 1,
+    "attribute_modifiers": [
+      0,
+      30,
+      0,
+      0,
+      0,
+      0
+    ],
+    "battle_weights": [
+      50,
+      30,
+      30,
+      30,
+      30,
+      30
+    ],
+    "card_id": 19,
+    "condition_id": 1,
+    "drawback_id": 0,
+    "drawback_value": 0,
+    "effect_id": 1,
+    "effect_value": 40,
+    "flat_bonus_g": 60,
+    "percent_q8_8": 20,
+    "preferred_type": 0,
+    "target_mode": 1,
+    "timing_phase": 0
+  },
+  "merged_milestone_6d_commit": "8541867e7443f47bd24ea006e6a7be3f0fa1d54d",
+  "module_sha256": "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c",
+  "module_symbol_count": 16,
+  "profile_id": "b6re_rev0",
+  "protected_core_g_ranges": [
+    {
+      "end_offset": "0x00023C1C",
+      "start_offset": "0x00023C18"
+    },
+    {
+      "end_offset": "0x00023CF8",
+      "start_offset": "0x00023CB0"
+    },
+    {
+      "end_offset": "0x00023D7C",
+      "start_offset": "0x00023D78"
+    }
+  ],
+  "record_count": 103,
+  "runtime_geometry": {
+    "arena_start": "0x02293C60",
+    "cache_end": "0x02293C60",
+    "cache_size": 64,
+    "cache_start": "0x02293C20",
+    "module_end": "0x02293C20",
+    "module_size": 32768,
+    "module_start": "0x0228BC20"
+  },
+  "semantic_ids": {
+    "archetypes": {
+      "attribute": 6,
+      "chaos": 7,
+      "comeback": 1,
+      "control": 4,
+      "legacy": 0,
+      "power": 2,
+      "risk": 5,
+      "skill": 3
+    },
+    "conditions": {
+      "landing_gate_card_won": 7,
+      "none": 0,
+      "opponent_at_match_point": 6,
+      "owner_ahead": 2,
+      "owner_at_match_point": 5,
+      "owner_behind": 1,
+      "owner_score_zero": 4,
+      "score_tied": 3
+    },
+    "effects": {
+      "add_signed_g": 1,
+      "none": 0,
+      "subtract_magnitude_g": 2
+    },
+    "targets": {
+      "current_combatant": 0,
+      "gate_non_owner": 2,
+      "gate_owner": 1
+    },
+    "timing_phases": {
+      "pre_gate_calculation": 0
+    }
+  },
+  "source_authoring_path": "config/gates/milestone-6d-system2-v1.json",
+  "source_legacy_passthrough_count": 102,
+  "source_live_card_ids": [
+    19
+  ]
+}

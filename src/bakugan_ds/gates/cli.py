@@ -9,7 +9,12 @@ from pathlib import Path
 from typing import Any
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.authoring import load_authoring_document
+from bakugan_ds.gates.authoring import (
+    build_milestone_6d_balance_report,
+    load_authoring_document,
+    load_milestone_6d_authoring_document,
+    write_milestone_6d_balance_report,
+)
 from bakugan_ds.gates.context import context_report, load_context_fields
 from bakugan_ds.gates.discovery import load_discovery_artifact
 from bakugan_ds.gates.install import install_milestone_6c
@@ -90,6 +95,19 @@ def _add_gate_commands(subparsers: Any) -> None:
         default=Path("config/gates/milestone-6c-system2-v1.json"),
     )
     install_parser.add_argument("--dry-run", action="store_true")
+
+    validate_6d_parser = subparsers.add_parser(
+        "validate-milestone-6d",
+        help="validate the deterministic Milestone 6D Gate balance authoring roster",
+    )
+    validate_6d_parser.add_argument("authoring", type=Path)
+
+    report_6d_parser = subparsers.add_parser(
+        "report-milestone-6d",
+        help="write the deterministic Milestone 6D Gate balance report",
+    )
+    report_6d_parser.add_argument("authoring", type=Path)
+    report_6d_parser.add_argument("output", type=Path)
 
     readiness_parser = subparsers.add_parser(
         "readiness",
@@ -275,6 +293,28 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
             f"cache=0x{cache_start:08X}-0x{cache_end:08X}; "
             f"patches={len(install_report.binary_patches)}"
         )
+        return 0
+    if arguments.gate_command == "validate-milestone-6d":
+        gate_records = load_milestone_6d_authoring_document(arguments.authoring)
+        report = build_milestone_6d_balance_report(gate_records)
+        encoded = json.dumps(report, indent=2, sort_keys=True) + "\n"
+        digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+        card = report["cards"][0]
+        net_budget = card["balance"]["budget"]["net_budget"]
+        print(
+            "Milestone 6D authoring valid; "
+            f"record_count={report['record_count']}; "
+            f"live_card_ids={report['live_card_ids']}; "
+            f"juggernoid_net_budget={net_budget}; "
+            f"report_sha256={digest}"
+        )
+        return 0
+    if arguments.gate_command == "report-milestone-6d":
+        gate_records = load_milestone_6d_authoring_document(arguments.authoring)
+        output = ensure_local_output(arguments.output)
+        write_milestone_6d_balance_report(output, gate_records)
+        digest = hashlib.sha256(output.read_bytes()).hexdigest()
+        print(f"Wrote Milestone 6D Gate balance report: {output}; sha256={digest}")
         return 0
     if arguments.gate_command == "validate-trailer":
         sys.stdout.write(

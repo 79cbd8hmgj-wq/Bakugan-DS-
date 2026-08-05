@@ -202,3 +202,52 @@ def test_gate_parser_and_runner_support_milestone_6c_install(
     assert "overlay_size=501728" in output
     assert "cache=0x02293C20-0x02293C60" in output
     assert "patches=7" in output
+
+
+def test_gate_parser_accepts_milestone_6d_balance_commands() -> None:
+    parser = gate_cli.build_gate_parser()
+    validate = parser.parse_args(
+        ["validate-milestone-6d", "config/gates/milestone-6d-system2-v1.json"]
+    )
+    report = parser.parse_args(
+        [
+            "report-milestone-6d",
+            "config/gates/milestone-6d-system2-v1.json",
+            "work/milestone-6d-balance.json",
+        ]
+    )
+    assert validate.gate_command == "validate-milestone-6d"
+    assert report.gate_command == "report-milestone-6d"
+
+
+def test_validate_milestone_6d_prints_deterministic_summary(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    arguments = Namespace(
+        gate_command="validate-milestone-6d",
+        authoring=Path("config/gates/milestone-6d-system2-v1.json"),
+    )
+    assert gate_cli.run_gate_command(arguments) == 0
+    output = capsys.readouterr().out
+    assert "record_count=103" in output
+    assert "live_card_ids=[19]" in output
+    assert "juggernoid_net_budget=91" in output
+    assert "report_sha256=" in output
+
+
+def test_report_milestone_6d_writes_atomically(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output = tmp_path / "balance.json"
+    arguments = Namespace(
+        gate_command="report-milestone-6d",
+        authoring=Path("config/gates/milestone-6d-system2-v1.json"),
+        output=output,
+    )
+    assert gate_cli.run_gate_command(arguments) == 0
+    first = output.read_bytes()
+    assert gate_cli.run_gate_command(arguments) == 0
+    assert output.read_bytes() == first
+    assert json.loads(first)["live_card_ids"] == [19]
+    assert "sha256=" in capsys.readouterr().out

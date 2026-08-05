@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 import json
+from dataclasses import asdict
 from pathlib import Path
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.record import GATE_RECORD_FIELD_NAMES, RECORD_COUNT, GateRecordV1
+from bakugan_ds.gates.balance import GateBalanceReport, analyze_gate_balance
+from bakugan_ds.gates.record import (
+    GATE_RECORD_FIELD_NAMES,
+    RECORD_COUNT,
+    GateArchetype,
+    GateRecordV1,
+)
+from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus
 
 _RECORD_FIELDS = frozenset(GATE_RECORD_FIELD_NAMES)
 _ROOT_FIELDS = frozenset({"format_version", "records"})
@@ -158,9 +166,12 @@ def _parse_record(value: object, index: int) -> GateRecordV1:
     return record
 
 
-def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+def _load_authoring_records(path: Path) -> tuple[GateRecordV1, ...]:
     try:
-        root = _require_object(json.loads(path.read_text(encoding="utf-8")), "authoring document")
+        root = _require_object(
+            json.loads(path.read_text(encoding="utf-8")),
+            "authoring document",
+        )
     except (OSError, json.JSONDecodeError) as exc:
         raise WorkspaceError(f"cannot load Gate authoring document {path}: {exc}") from exc
     actual_root_fields = frozenset(root)
@@ -172,9 +183,136 @@ def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
         )
     if _integer(root["format_version"], "format_version") != 1:
         raise WorkspaceError("unsupported Gate authoring format version")
-    records = tuple(
+    return tuple(
         _parse_record(value, index)
         for index, value in enumerate(_require_array(root["records"], "records"))
     )
+
+
+def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+    records = _load_authoring_records(path)
     validate_milestone_6c_roster(records)
     return records
+
+
+MILESTONE_6D_REFERENCE_CORE_G = (190, 400, 525, 650, 695)
+
+
+def validate_milestone_6d_roster(
+    records: tuple[GateRecordV1, ...],
+) -> tuple[GateBalanceReport, ...]:
+    if len(records) != RECORD_COUNT:
+        raise WorkspaceError("Milestone 6D roster must contain exactly 103 records")
+    expected_ids = tuple(range(1, RECORD_COUNT + 1))
+    actual_ids = tuple(record.card_id for record in records)
+    if actual_ids != expected_ids:
+        raise WorkspaceError("Milestone 6D records must contain sorted IDs 1 through 103")
+
+    reports: list[GateBalanceReport] = []
+    for record in records:
+        record.validate()
+        if record.card_id == 19:
+            if record != approved_juggernoid_record():
+                raise WorkspaceError("Gate 19 does not match the approved Milestone 6D prototype")
+            reports.append(analyze_gate_balance(record))
+        elif record != legacy_passthrough_record(record.card_id):
+            raise WorkspaceError(
+                f"Gate {record.card_id} must remain canonical legacy passthrough in Milestone 6D"
+            )
+    return tuple(reports)
+
+
+def load_milestone_6d_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+    records = _load_authoring_records(path)
+    validate_milestone_6d_roster(records)
+    return records
+
+
+def _balance_report_dict(report: GateBalanceReport) -> dict[str, object]:
+    payload = asdict(report)
+    payload["archetype"] = report.archetype.value
+    payload["attribute"]["tiers"] = [tier.value for tier in report.attribute.tiers]
+    payload["battle_weights"]["pressure"] = report.battle_weights.pressure.value
+    payload["attribute"]["modifiers"] = list(report.attribute.modifiers)
+    payload["battle_weights"]["weights"] = list(report.battle_weights.weights)
+    return payload
+
+
+def _reference_case_results(record: GateRecordV1) -> tuple[int, ...]:
+    values: list[int] = []
+    score_cases = ((0, 1), (1, 1))
+    participant_cases = ((1, 1), (0, 1))
+    for core_g in MILESTONE_6D_REFERENCE_CORE_G:
+        for attribute_id in range(6):
+            for owner_score, opposing_score in score_cases:
+                for current_participant, owner_participant in participant_cases:
+                    result = calculate_gate_bonus(
+                        record,
+                        GateCalculationContext(
+                            compressed_core_g=core_g,
+                            attribute_id=attribute_id,
+                            current_participant=current_participant,
+                            owner_participant=owner_participant,
+                            owner_side_score=owner_score,
+                            opposing_side_score=opposing_score,
+                            gate_id=record.card_id,
+                        ),
+                    )
+                    if result.effective_gate_bonus is None:
+                        raise WorkspaceError(
+                            f"Gate {record.card_id} failed deterministic reference analysis: "
+                            f"{result.fallback_reason.value}"
+                        )
+                    values.append(result.effective_gate_bonus)
+    return tuple(values)
+
+
+def build_milestone_6d_balance_report(
+    records: tuple[GateRecordV1, ...],
+) -> dict[str, object]:
+    reports = validate_milestone_6d_roster(records)
+    live_records = tuple(
+        record for record in records if record.archetype != GateArchetype.LEGACY
+    )
+    cards: list[dict[str, object]] = []
+    by_id = {report.card_id: report for report in reports}
+    for record in live_records:
+        report = by_id[record.card_id]
+        values = _reference_case_results(record)
+        cards.append(
+            {
+                "balance": _balance_report_dict(report),
+                "card_id": record.card_id,
+                "reference_cases": len(values),
+                "effective_gate_bonus": {
+                    "maximum": max(values),
+                    "mean_denominator": len(values),
+                    "mean_numerator": sum(values),
+                    "minimum": min(values),
+                },
+            }
+        )
+    return {
+        "format": "bakugan-ds-gate-milestone-6d-balance",
+        "format_version": 1,
+        "record_count": len(records),
+        "live_card_ids": [record.card_id for record in live_records],
+        "legacy_passthrough_count": len(records) - len(live_records),
+        "reference_core_g": list(MILESTONE_6D_REFERENCE_CORE_G),
+        "cards": cards,
+        "valid": True,
+    }
+
+
+def write_milestone_6d_balance_report(
+    path: Path,
+    records: tuple[GateRecordV1, ...],
+) -> None:
+    payload = build_milestone_6d_balance_report(records)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)

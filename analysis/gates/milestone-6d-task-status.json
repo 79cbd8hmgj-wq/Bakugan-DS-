@@ -20,7 +20,7 @@
   "external_handoff": {
     "final_pr_review": "pending",
     "github_ci": "pending",
-    "github_sync": "pending",
+    "github_sync": "passed",
     "merge": "pending"
   },
   "format_version": 1,

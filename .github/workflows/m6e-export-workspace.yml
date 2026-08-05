@@ -1,0 +1,31 @@
+name: Export Milestone 6E Workspace
+
+on:
+  push:
+    branches:
+      - m6e-export-workspace-temp
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out clean Milestone 6E branch
+        uses: actions/checkout@v4
+        with:
+          ref: milestone-6e-complete-gate-roster-conversion
+          fetch-depth: 0
+
+      - name: Package complete Git workspace
+        run: tar --exclude='./.git/hooks' -czf /tmp/Bakugan-DS-m6e-workspace.tar.gz .
+
+      - name: Upload workspace artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bakugan-DS-m6e-workspace
+          path: /tmp/Bakugan-DS-m6e-workspace.tar.gz
+          retention-days: 1
+          if-no-files-found: error

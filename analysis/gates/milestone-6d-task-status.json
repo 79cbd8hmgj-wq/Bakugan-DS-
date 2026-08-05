@@ -18,10 +18,10 @@
   ],
   "current_batch": [],
   "external_handoff": {
-    "final_pr_review": "in_progress",
-    "github_ci": "rerun_after_ruff_remediation",
+    "final_pr_review": "passed",
+    "github_ci": "passed",
     "github_sync": "passed",
-    "merge": "pending"
+    "merge": "ready"
   },
   "format_version": 1,
   "latest_local_verification": {
@@ -32,6 +32,16 @@
     "python_compilation": "passed",
     "ruff": "unavailable locally; required in GitHub CI",
     "strict_mypy": "unavailable locally; required in GitHub CI",
+    "whitespace_validation": "passed"
+  },
+  "latest_remote_verification": {
+    "expected_environment_skips": 41,
+    "failures": 0,
+    "mypy_source_files": 11,
+    "passed": 679,
+    "python_compilation": "passed",
+    "ruff": "passed",
+    "strict_mypy": "passed",
     "whitespace_validation": "passed"
   },
   "milestone": "6D",

@@ -7,11 +7,17 @@ on:
 
 permissions:
   contents: write
+  issues: write
+
+concurrency:
+  group: milestone-6e-task6-authoring
+  cancel-in-progress: true
 
 jobs:
   author:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,10 +28,12 @@ jobs:
           python-version: '3.11'
       - name: Install project
         run: python -m pip install -e '.[dev]'
-      - name: Generate reviewed Power and Attribute batches
+      - name: Generate and verify reviewed batches
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           cat > /tmp/generate_task6.py <<'PY'
           from __future__ import annotations
 
@@ -46,11 +54,7 @@ jobs:
               GateBalanceReport,
               analyze_gate_balance,
           )
-          from bakugan_ds.gates.record import (
-              GateArchetype,
-              GateRecordV1,
-              serialize_record,
-          )
+          from bakugan_ds.gates.record import GateArchetype, GateRecordV1, serialize_record
           from bakugan_ds.gates.roster_analysis import _evaluate_record
           from bakugan_ds.gates.roster_metadata import (
               DesignTier,
@@ -64,11 +68,10 @@ jobs:
           )
           from bakugan_ds.gates.system2 import FallbackReason, record_fallback_reason
 
-          ROOT = Path('.')
-          BASELINE = ROOT / 'config/gates/milestone-6d-system2-v1.json'
-          OUTPUT = ROOT / 'config/gates/milestone-6e-system2-v1.json'
-          METADATA = ROOT / 'config/gates/milestone-6e-roster-metadata.json'
-          TEMPLATES = ROOT / 'config/gates/milestone-6e-archetype-templates.json'
+          BASELINE = Path('config/gates/milestone-6d-system2-v1.json')
+          OUTPUT = Path('config/gates/milestone-6e-system2-v1.json')
+          METADATA = Path('config/gates/milestone-6e-roster-metadata.json')
+          TEMPLATES = Path('config/gates/milestone-6e-archetype-templates.json')
           POWER_IDS = tuple(range(1, 16))
           ATTRIBUTE_IDS = tuple(range(40, 62))
 
@@ -89,21 +92,18 @@ jobs:
           }
 
           @dataclass(frozen=True)
-          class Candidate:
+          class Behavior:
               record: GateRecordV1
               template_id: str
               tier: DesignTier
               balance: GateBalanceReport
               evaluation_signature: tuple[tuple[object, ...], ...]
-              runtime_signature: bytes
               minimum: int
               maximum: int
 
           def rotate_right(values: tuple[int, ...], shift: int) -> tuple[int, ...]:
               shift %= len(values)
-              if shift == 0:
-                  return values
-              return values[-shift:] + values[:-shift]
+              return values if shift == 0 else values[-shift:] + values[:-shift]
 
           def tier_for(values: tuple[int, ...]) -> DesignTier | None:
               if not values:
@@ -120,168 +120,160 @@ jobs:
                   return DesignTier.HIGH_RISK_CONDITIONAL
               return None
 
-          def build_candidates(
+          def build_behaviors(
               templates: tuple[GateRosterTemplate, ...],
               archetype: GateArchetype,
-          ) -> tuple[Candidate, ...]:
-              output: list[Candidate] = []
-              seen_runtime: set[bytes] = set()
+          ) -> tuple[Behavior, ...]:
+              by_evaluation: dict[tuple[tuple[object, ...], ...], Behavior] = {}
               for template in templates:
                   if template.archetype is not archetype:
                       continue
                   prototype = template.prototype
                   for flat_drop, percent_drop, effect_drop in product(
-                      (0, 25, 50), (0, 16, 32), (0, 25, 50)
+                      (0, 25), (0, 16), (0, 25)
                   ):
-                      flat = max(0, prototype.flat_bonus_g - flat_drop)
-                      percentage = max(0, prototype.percent_q8_8 - percent_drop)
-                      effect_value = max(0, prototype.effect_value - effect_drop)
                       for attribute_shift in range(6):
-                          attributes = rotate_right(
-                              prototype.attribute_modifiers, attribute_shift
+                          record = replace(
+                              prototype,
+                              card_id=1,
+                              flat_bonus_g=max(0, prototype.flat_bonus_g - flat_drop),
+                              percent_q8_8=max(0, prototype.percent_q8_8 - percent_drop),
+                              effect_value=max(0, prototype.effect_value - effect_drop),
+                              attribute_modifiers=rotate_right(
+                                  prototype.attribute_modifiers, attribute_shift
+                              ),
                           )
-                          for preferred_type in range(6):
-                              battle_shift = (
-                                  preferred_type - prototype.preferred_type
-                              ) % 6
-                              weights = rotate_right(
-                                  prototype.battle_weights, battle_shift
-                              )
-                              record = replace(
-                                  prototype,
-                                  card_id=1,
-                                  flat_bonus_g=flat,
-                                  percent_q8_8=percentage,
-                                  effect_value=effect_value,
-                                  attribute_modifiers=attributes,
-                                  battle_weights=weights,
-                                  preferred_type=preferred_type,
-                              )
-                              try:
-                                  balance = analyze_gate_balance(record)
-                              except WorkspaceError:
-                                  continue
-                              if record_fallback_reason(record) is not FallbackReason.NONE:
-                                  continue
-                              evaluation = _evaluate_record(record)
-                              values = evaluation.values
-                              tier = tier_for(values)
-                              if tier is None:
-                                  continue
-                              runtime = serialize_record(record)
-                              if runtime in seen_runtime:
-                                  continue
-                              seen_runtime.add(runtime)
-                              output.append(
-                                  Candidate(
-                                      record=record,
-                                      template_id=template.template_id,
-                                      tier=tier,
-                                      balance=balance,
-                                      evaluation_signature=evaluation.signature(),
-                                      runtime_signature=runtime,
-                                      minimum=min(values),
-                                      maximum=max(values),
-                                  )
-                              )
+                          try:
+                              balance = analyze_gate_balance(record)
+                          except WorkspaceError:
+                              continue
+                          if record_fallback_reason(record) is not FallbackReason.NONE:
+                              continue
+                          evaluation = _evaluate_record(record)
+                          tier = tier_for(evaluation.values)
+                          if tier is None:
+                              continue
+                          behavior = Behavior(
+                              record=record,
+                              template_id=template.template_id,
+                              tier=tier,
+                              balance=balance,
+                              evaluation_signature=evaluation.signature(),
+                              minimum=min(evaluation.values),
+                              maximum=max(evaluation.values),
+                          )
+                          existing = by_evaluation.get(behavior.evaluation_signature)
+                          if existing is None or (
+                              abs(behavior.balance.budget.net_budget - 100),
+                              behavior.maximum,
+                              behavior.template_id,
+                          ) < (
+                              abs(existing.balance.budget.net_budget - 100),
+                              existing.maximum,
+                              existing.template_id,
+                          ):
+                              by_evaluation[behavior.evaluation_signature] = behavior
               return tuple(
                   sorted(
-                      output,
-                      key=lambda candidate: (
-                          candidate.record.preferred_type,
-                          candidate.template_id,
-                          candidate.record.condition_id,
-                          candidate.record.target_mode,
-                          abs(candidate.balance.budget.net_budget - 100),
-                          candidate.maximum,
-                          candidate.minimum,
-                          candidate.runtime_signature,
+                      by_evaluation.values(),
+                      key=lambda item: (
+                          item.template_id,
+                          item.record.condition_id,
+                          item.record.target_mode,
+                          abs(item.balance.budget.net_budget - 100),
+                          item.maximum,
+                          item.minimum,
+                          serialize_record(item.record),
                       ),
                   )
               )
 
+          def with_preferred_type(record: GateRecordV1, preferred_type: int) -> GateRecordV1:
+              shift = (preferred_type - record.preferred_type) % 6
+              updated = replace(
+                  record,
+                  battle_weights=rotate_right(record.battle_weights, shift),
+                  preferred_type=preferred_type,
+              )
+              analyze_gate_balance(updated)
+              return updated
+
           def choose_batch(
-              candidates: tuple[Candidate, ...],
+              behaviors: tuple[Behavior, ...],
               card_ids: tuple[int, ...],
               used_runtime: set[bytes],
               used_evaluations: set[tuple[tuple[object, ...], ...]],
-          ) -> tuple[tuple[int, Candidate], ...]:
-              chosen: list[tuple[int, Candidate]] = []
+          ) -> tuple[tuple[int, Behavior, GateRecordV1], ...]:
+              chosen: list[tuple[int, Behavior, GateRecordV1]] = []
               template_use: Counter[str] = Counter()
               condition_use: Counter[int] = Counter()
               for index, card_id in enumerate(card_ids):
-                  preferred = index % 6
-                  eligible = [
-                      candidate
-                      for candidate in candidates
-                      if candidate.record.preferred_type == preferred
-                      and candidate.runtime_signature not in used_runtime
-                      and candidate.evaluation_signature not in used_evaluations
-                  ]
-                  if not eligible:
+                  preferred_type = index % 6
+                  options: list[tuple[Behavior, GateRecordV1, bytes]] = []
+                  for behavior in behaviors:
+                      if behavior.evaluation_signature in used_evaluations:
+                          continue
+                      record = with_preferred_type(behavior.record, preferred_type)
+                      runtime = serialize_record(replace(record, card_id=1))
+                      if runtime in used_runtime:
+                          continue
+                      options.append((behavior, record, runtime))
+                  if not options:
                       raise WorkspaceError(
-                          f'no unique candidate remains for Gate {card_id} '
-                          f'and battle type {preferred}'
+                          f'no distinct behavior remains for Gate {card_id}'
                       )
-                  selected = min(
-                      eligible,
-                      key=lambda candidate: (
-                          template_use[candidate.template_id],
-                          condition_use[candidate.record.condition_id],
-                          abs(candidate.balance.budget.net_budget - 100),
-                          candidate.maximum,
-                          candidate.minimum,
-                          candidate.template_id,
-                          candidate.runtime_signature,
+                  behavior, record, runtime = min(
+                      options,
+                      key=lambda item: (
+                          template_use[item[0].template_id],
+                          condition_use[item[0].record.condition_id],
+                          abs(item[0].balance.budget.net_budget - 100),
+                          item[0].maximum,
+                          item[0].minimum,
+                          item[0].template_id,
+                          item[2],
                       ),
                   )
-                  used_runtime.add(selected.runtime_signature)
-                  used_evaluations.add(selected.evaluation_signature)
-                  template_use[selected.template_id] += 1
-                  condition_use[selected.record.condition_id] += 1
-                  chosen.append((card_id, selected))
+                  used_runtime.add(runtime)
+                  used_evaluations.add(behavior.evaluation_signature)
+                  template_use[behavior.template_id] += 1
+                  condition_use[behavior.record.condition_id] += 1
+                  chosen.append((card_id, behavior, replace(record, card_id=card_id)))
               return tuple(chosen)
 
-          def metadata_summary(candidate: Candidate) -> tuple[str, str, str, str, str]:
-              record = candidate.record
-              balance = candidate.balance
-              primary_attribute = ATTRIBUTE_NAMES[
-                  max(range(6), key=lambda index: record.attribute_modifiers[index])
-              ]
+          def metadata_copy(behavior: Behavior, record: GateRecordV1) -> tuple[str, ...]:
+              balance = analyze_gate_balance(record)
+              primary_index = max(
+                  range(6), key=lambda index: record.attribute_modifiers[index]
+              )
+              primary_attribute = ATTRIBUTE_NAMES[primary_index]
               preferred_battle = BATTLE_TYPE_NAMES[record.preferred_type]
-              positive_count = balance.attribute.positive_count
-              negative_count = balance.attribute.negative_count
-              gameplay_identity = (
+              gameplay = (
                   f'{GateArchetype(record.archetype).name.title()} Gate using '
-                  f'{candidate.template_id} with {primary_attribute} emphasis.'
+                  f'{behavior.template_id} with {primary_attribute} emphasis.'
               )
               g_summary = (
                   f'{record.flat_bonus_g} flat G, {record.percent_q8_8}/256 '
-                  f'compressed-core scaling, {positive_count} positive and '
-                  f'{negative_count} opposed attribute relationships.'
+                  f'compressed-core scaling, {balance.attribute.positive_count} '
+                  f'positive and {balance.attribute.negative_count} opposed '
+                  'attribute relationships.'
               )
               weight_summary = (
                   f'{balance.battle_weights.pressure.value.replace("_", " ").title()} '
                   f'{preferred_battle} preference; every battle type remains reachable.'
               )
-              effect_description = (
+              rule = (
                   f'{CONDITION_NAMES[record.condition_id]}, applies '
                   f'{record.effect_value} G through effect {record.effect_id} to '
                   f'{TARGET_NAMES[record.target_mode]}.'
               )
               rationale = (
-                  f'Unique {candidate.template_id} variation with '
-                  f'{primary_attribute} as its highest relationship, '
-                  f'{preferred_battle} preference, condition {record.condition_id}, '
-                  f'and evaluated swing {candidate.minimum}..{candidate.maximum} G.'
+                  f'Unique {behavior.template_id} variation with {primary_attribute} '
+                  f'as its highest relationship, {preferred_battle} preference, '
+                  f'condition {record.condition_id}, and evaluated swing '
+                  f'{behavior.minimum}..{behavior.maximum} G.'
               )
-              return (
-                  gameplay_identity,
-                  g_summary,
-                  weight_summary,
-                  effect_description,
-                  rationale,
-              )
+              return gameplay, g_summary, weight_summary, rule, rationale
 
           records = list(load_gate_roster_authoring_document(BASELINE))
           metadata = list(load_gate_roster_metadata(METADATA))
@@ -290,35 +282,29 @@ jobs:
           used_runtime = {serialize_record(replace(juggernoid, card_id=1))}
           used_evaluations = {_evaluate_record(juggernoid).signature()}
 
-          power_candidates = build_candidates(templates, GateArchetype.POWER)
-          attribute_candidates = build_candidates(templates, GateArchetype.ATTRIBUTE)
+          power_behaviors = build_behaviors(templates, GateArchetype.POWER)
+          attribute_behaviors = build_behaviors(templates, GateArchetype.ATTRIBUTE)
           power_batch = choose_batch(
-              power_candidates, POWER_IDS, used_runtime, used_evaluations
+              power_behaviors, POWER_IDS, used_runtime, used_evaluations
           )
           attribute_batch = choose_batch(
-              attribute_candidates, ATTRIBUTE_IDS, used_runtime, used_evaluations
+              attribute_behaviors, ATTRIBUTE_IDS, used_runtime, used_evaluations
           )
 
-          for card_id, candidate in (*power_batch, *attribute_batch):
-              record = replace(candidate.record, card_id=card_id)
+          for card_id, behavior, record in (*power_batch, *attribute_batch):
               records[card_id - 1] = record
-              entry = metadata[card_id - 1]
-              (
-                  gameplay_identity,
-                  g_summary,
-                  weight_summary,
-                  rule_summary,
-                  rationale,
-              ) = metadata_summary(candidate)
+              gameplay, g_summary, weights, rule, rationale = metadata_copy(
+                  behavior, record
+              )
               metadata[card_id - 1] = replace(
-                  entry,
+                  metadata[card_id - 1],
                   archetype=GateArchetype(record.archetype),
-                  design_tier=candidate.tier,
-                  gameplay_identity=gameplay_identity,
+                  design_tier=behavior.tier,
+                  gameplay_identity=gameplay,
                   g_influence_summary=g_summary,
-                  battle_weight_summary=weight_summary,
-                  rule_summary=rule_summary,
-                  net_budget=candidate.balance.budget.net_budget,
+                  battle_weight_summary=weights,
+                  rule_summary=rule,
+                  net_budget=analyze_gate_balance(record).budget.net_budget,
                   differentiation_rationale=rationale,
                   review_status=ReviewStatus.REVIEWED,
               )
@@ -326,43 +312,58 @@ jobs:
           if records[18] != juggernoid:
               raise WorkspaceError('Gate 19 changed during Task 6 authoring')
 
-          authoring_payload = {
-              'format_version': 1,
-              'records': [asdict(record) for record in records],
-          }
           OUTPUT.write_text(
-              json.dumps(authoring_payload, indent=2, sort_keys=True) + '\n',
+              json.dumps(
+                  {
+                      'format_version': 1,
+                      'records': [asdict(record) for record in records],
+                  },
+                  indent=2,
+                  sort_keys=True,
+              )
+              + '\n',
               encoding='utf-8',
           )
           write_gate_roster_metadata(METADATA, tuple(metadata))
-
           print(
               json.dumps(
                   {
-                      'attribute_candidates': len(attribute_candidates),
+                      'attribute_behaviors': len(attribute_behaviors),
                       'attribute_records': len(attribute_batch),
-                      'power_candidates': len(power_candidates),
+                      'power_behaviors': len(power_behaviors),
                       'power_records': len(power_batch),
                   },
                   sort_keys=True,
               )
           )
           PY
-          python /tmp/generate_task6.py
-      - name: Verify exact generated tree
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pytest -q \
-            tests/unit/test_gate_milestone_6e_power_attribute.py \
-            tests/unit/test_gate_roster_templates.py \
-            tests/unit/test_gate_roster_metadata.py \
-            tests/unit/test_gate_roster_analysis.py
-          python -m compileall -q src tests tools
-          python -m ruff check src tests tools
-          python -m mypy src/bakugan_ds
-          python -m pytest -q
-          git diff --check
+
+          {
+            python /tmp/generate_task6.py
+            python -m pytest -q \
+              tests/unit/test_gate_milestone_6e_power_attribute.py \
+              tests/unit/test_gate_roster_templates.py \
+              tests/unit/test_gate_roster_metadata.py \
+              tests/unit/test_gate_roster_analysis.py
+            python -m compileall -q src tests tools
+            python -m ruff check src tests tools
+            python -m mypy src/bakugan_ds
+            python -m pytest -q
+            git diff --check
+          } > /tmp/task6.log 2>&1
+          status=$?
+          if [[ $status -ne 0 ]]; then
+            {
+              echo '### Milestone 6E Task 6 authoring failure'
+              echo
+              echo '```text'
+              tail -c 55000 /tmp/task6.log
+              echo '```'
+            } > /tmp/task6-comment.md
+            gh pr comment 43 --body-file /tmp/task6-comment.md
+            exit $status
+          fi
+          cat /tmp/task6.log
       - name: Commit verified Task 6 batch
         shell: bash
         run: |

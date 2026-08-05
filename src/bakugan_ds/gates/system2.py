@@ -1,40 +1,32 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import IntEnum, StrEnum
+from enum import StrEnum
 from typing import TypeGuard
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.record import GateRecordV1
+from bakugan_ds.gates.conditions import (
+    GateConditionContext,
+    condition_requires_landing,
+)
+from bakugan_ds.gates.effects import (
+    GateEffectContext,
+    GateModifierTrace,
+    dispatch_gate_modifiers,
+)
+from bakugan_ds.gates.record import (
+    GateArchetype,
+    GateConditionId,
+    GateEffectId,
+    GateRecordV1,
+    GateTargetMode,
+    GateTimingPhase,
+)
 
 _MAX_PARTICIPANT_INDEX = 15
 CORE_G_COMPRESSION_THRESHOLD = 400
 CORE_G_COMPRESSION_BASE = 200
 Q8_8_DENOMINATOR = 256
-
-
-class System2Archetype(IntEnum):
-    LEGACY_PASSTHROUGH = 0
-    COMEBACK = 1
-
-
-class System2Condition(IntEnum):
-    NONE = 0
-    OWNER_BEHIND = 1
-
-
-class System2Effect(IntEnum):
-    NONE = 0
-    ADD_GATE_BONUS_G = 1
-
-
-class System2Target(IntEnum):
-    CURRENT_COMBATANT = 0
-    GATE_OWNER_COMBATANT = 1
-
-
-class System2Timing(IntEnum):
-    PRE_GATE = 0
 
 
 class FallbackScope(StrEnum):
@@ -55,6 +47,7 @@ class FallbackReason(StrEnum):
     INVALID_ATTRIBUTE = "invalid_attribute"
     INVALID_PARTICIPANT = "invalid_participant"
     INVALID_SCORE = "invalid_score"
+    INVALID_LANDING = "invalid_landing"
     GATE_ID_MISMATCH = "gate_id_mismatch"
     INVALID_WEIGHT_VECTOR = "invalid_weight_vector"
     INVALID_BATTLE_TYPE = "invalid_battle_type"
@@ -104,6 +97,7 @@ class GateCalculationContext:
     owner_side_score: int
     opposing_side_score: int
     gate_id: int = 19
+    landing_result: int | None = None
 
     def failure_reason(self) -> FallbackReason:
         if not _is_int(self.gate_id) or not 1 <= self.gate_id <= 103:
@@ -126,6 +120,10 @@ class GateCalculationContext:
             or not 0 <= self.opposing_side_score <= 0xFF
         ):
             return FallbackReason.INVALID_SCORE
+        if self.landing_result is not None and (
+            not _is_int(self.landing_result) or not 0 <= self.landing_result <= 0xFF
+        ):
+            return FallbackReason.INVALID_LANDING
         return FallbackReason.NONE
 
     def validate(self) -> None:
@@ -155,8 +153,10 @@ class GateCalculationTrace:
     target_total_g: int
     fallback_scope: FallbackScope
     fallback_reason: FallbackReason
+    modifier_trace: GateModifierTrace | None = None
 
     def to_dict(self) -> dict[str, object]:
+        """Return the stable Milestone 6C-compatible trace shape."""
         return {
             "card_id": self.card_id,
             "current_participant": self.current_participant,
@@ -178,6 +178,20 @@ class GateCalculationTrace:
             "fallback_scope": self.fallback_scope.value,
             "fallback_reason": self.fallback_reason.value,
         }
+
+    def to_balance_dict(self) -> dict[str, object]:
+        result = self.to_dict()
+        if self.modifier_trace is None:
+            result["target_result"] = False
+            result["primary_delta"] = 0
+            result["drawback_delta"] = 0
+            result["secondary_delta"] = 0
+        else:
+            result["target_result"] = self.modifier_trace.target_result
+            result["primary_delta"] = self.modifier_trace.primary_delta
+            result["drawback_delta"] = self.modifier_trace.drawback_delta
+            result["secondary_delta"] = self.modifier_trace.secondary_delta
+        return result
 
 
 @dataclass(frozen=True)
@@ -219,6 +233,7 @@ def _fallback_trace(
         target_total_g=0,
         fallback_scope=scope,
         fallback_reason=reason,
+        modifier_trace=None,
     )
 
 
@@ -243,32 +258,32 @@ def record_fallback_reason(record: GateRecordV1) -> FallbackReason:
     except WorkspaceError:
         return FallbackReason.UNSUPPORTED_RECORD
 
-    if record.archetype == System2Archetype.LEGACY_PASSTHROUGH:
-        return FallbackReason.LEGACY_PASSTHROUGH
-    if record.archetype != System2Archetype.COMEBACK:
+    try:
+        archetype = GateArchetype(record.archetype)
+        GateConditionId(record.condition_id)
+        GateEffectId(record.effect_id)
+        GateEffectId(record.drawback_id)
+        GateTargetMode(record.target_mode)
+        GateTimingPhase(record.timing_phase)
+    except ValueError:
         return FallbackReason.INVALID_ENUM
-    if record.card_id != 19:
-        return FallbackReason.INVALID_CARD_IDENTITY
-    if record.target_mode != System2Target.GATE_OWNER_COMBATANT:
-        return FallbackReason.INVALID_TARGET
-    if (
-        record.condition_id != System2Condition.OWNER_BEHIND
-        or record.effect_id != System2Effect.ADD_GATE_BONUS_G
-        or record.timing_phase != System2Timing.PRE_GATE
-    ):
+
+    if archetype is GateArchetype.LEGACY:
+        return FallbackReason.LEGACY_PASSTHROUGH
+    if record.timing_phase != GateTimingPhase.PRE_GATE_CALCULATION:
         return FallbackReason.INVALID_ENUM
     if any(
         (
-            record.drawback_id,
-            record.drawback_value,
             record.activation_limit,
             record.fatigue_rate,
-            record.condition_value,
             record.secondary_effect_id,
             record.secondary_condition_id,
             record.secondary_value,
+            record.reserved,
         )
     ):
+        return FallbackReason.UNSUPPORTED_RECORD
+    if record.condition_id == GateConditionId.LANDING_GATE_CARD_WON and record.condition_value not in (0, 1):
         return FallbackReason.UNSUPPORTED_RECORD
     return FallbackReason.NONE
 
@@ -283,18 +298,20 @@ def calculate_gate_bonus(
 
     context_reason = context.failure_reason()
     if context_reason is not FallbackReason.NONE:
-        return _fallback(
-            record,
-            context,
-            FallbackScope.CALCULATION,
-            context_reason,
-        )
+        return _fallback(record, context, FallbackScope.CALCULATION, context_reason)
     if context.gate_id != record.card_id:
         return _fallback(
             record,
             context,
             FallbackScope.CALCULATION,
             FallbackReason.GATE_ID_MISMATCH,
+        )
+    if condition_requires_landing(record.condition_id) and context.landing_result is None:
+        return _fallback(
+            record,
+            context,
+            FallbackScope.CALCULATION,
+            FallbackReason.INVALID_LANDING,
         )
 
     scaled_component = trunc_div_toward_zero(
@@ -303,13 +320,29 @@ def calculate_gate_bonus(
     )
     attribute_modifier = record.attribute_modifiers[context.attribute_id]
     base_gate_bonus = record.flat_bonus_g + scaled_component + attribute_modifier
-    condition_result = (
-        context.current_participant == context.owner_participant
-        and context.owner_side_score < context.opposing_side_score
-    )
-    applied_effect = record.effect_value if condition_result else 0
-    unclamped_gate_bonus = base_gate_bonus + applied_effect
-    effective_gate_bonus = clamp_i16(unclamped_gate_bonus)
+    try:
+        modifier_trace = dispatch_gate_modifiers(
+            record,
+            GateConditionContext(
+                owner_side_score=context.owner_side_score,
+                opposing_side_score=context.opposing_side_score,
+                landing_result=context.landing_result,
+            ),
+            GateEffectContext(
+                current_participant=context.current_participant,
+                owner_participant=context.owner_participant,
+            ),
+            base_gate_bonus,
+        )
+    except WorkspaceError:
+        return _fallback(
+            record,
+            context,
+            FallbackScope.CALCULATION,
+            FallbackReason.UNSUPPORTED_RECORD,
+        )
+
+    effective_gate_bonus = modifier_trace.final_result
     target_total_g = clamp_u16(context.compressed_core_g + effective_gate_bonus)
     trace = GateCalculationTrace(
         card_id=record.card_id,
@@ -324,13 +357,14 @@ def calculate_gate_bonus(
         base_gate_bonus=base_gate_bonus,
         owner_side_score=context.owner_side_score,
         opposing_side_score=context.opposing_side_score,
-        condition_result=condition_result,
-        effect_value=applied_effect,
-        unclamped_gate_bonus=unclamped_gate_bonus,
+        condition_result=modifier_trace.condition_result and modifier_trace.target_result,
+        effect_value=modifier_trace.primary_delta,
+        unclamped_gate_bonus=modifier_trace.unclamped_result,
         effective_gate_bonus=effective_gate_bonus,
         target_total_g=target_total_g,
         fallback_scope=FallbackScope.NONE,
         fallback_reason=FallbackReason.NONE,
+        modifier_trace=modifier_trace,
     )
     return GateCalculationResult(
         effective_gate_bonus=effective_gate_bonus,

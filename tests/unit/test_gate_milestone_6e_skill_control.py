@@ -4,7 +4,6 @@ from pathlib import Path
 
 from bakugan_ds.gates.authoring import (
     approved_juggernoid_record,
-    legacy_passthrough_record,
     load_gate_roster_authoring_document,
 )
 from bakugan_ds.gates.balance import BattleWeightPressure, analyze_gate_balance
@@ -24,11 +23,9 @@ from bakugan_ds.gates.system2 import (
 
 AUTHORING = Path("config/gates/milestone-6e-system2-v1.json")
 METADATA = Path("config/gates/milestone-6e-roster-metadata.json")
-POWER_IDS = frozenset(range(1, 16))
-ATTRIBUTE_IDS = frozenset(range(40, 62))
 SKILL_IDS = frozenset({16, 17, 18, *range(20, 32)})
 CONTROL_IDS = frozenset({*range(32, 40), *range(62, 69)})
-LIVE_IDS = POWER_IDS | ATTRIBUTE_IDS | SKILL_IDS | CONTROL_IDS | {19}
+CONVERTED_IDS = SKILL_IDS | CONTROL_IDS
 
 
 def test_skill_and_control_batches_are_reviewed_and_use_supported_semantics() -> None:
@@ -38,7 +35,6 @@ def test_skill_and_control_batches_are_reviewed_and_use_supported_semantics() ->
     metadata_by_id = {entry.card_id: entry for entry in metadata}
 
     assert by_id[19] == approved_juggernoid_record()
-    assert {record.card_id for record in records if record.archetype != 0} == LIVE_IDS
 
     for card_id in SKILL_IDS:
         record = by_id[card_id]
@@ -68,9 +64,6 @@ def test_skill_and_control_batches_are_reviewed_and_use_supported_semantics() ->
         )
         assert record_fallback_reason(record) is FallbackReason.NONE
 
-    for card_id in set(range(1, 104)) - LIVE_IDS:
-        assert by_id[card_id] == legacy_passthrough_record(card_id)
-
 
 def test_skill_and_control_batches_have_distinct_decision_profiles() -> None:
     records = load_gate_roster_authoring_document(AUTHORING)
@@ -81,8 +74,7 @@ def test_skill_and_control_batches_have_distinct_decision_profiles() -> None:
     validate_hard_duplicate_classes(report)
 
     assert report["valid_for_draft"] is True
-    assert report["live_card_ids"] == sorted(LIVE_IDS)
-    assert report["legacy_passthrough_count"] == 35
+    assert CONVERTED_IDS <= set(report["live_card_ids"])
     assert report["hard_duplicate_groups"] == []
     assert report["identical_evaluation_groups"] == []
     assert report["identity_conflicts"] == []

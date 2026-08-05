@@ -1,0 +1,39 @@
+name: Apply Final Milestone 6D Runtime Delta
+
+on:
+  push:
+    branches:
+      - milestone-6d-core-balance-framework
+    paths:
+      - automation/m6d-final-runtime.patch.gz.b64
+      - .github/workflows/m6d-final-runtime-sync.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: milestone-6d-core-balance-framework
+          fetch-depth: 0
+      - name: Apply exact locally verified delta
+        run: |
+          if [[ ! -f automation/m6d-final-runtime.patch.gz.b64 ]]; then
+            echo "No staged delta remains."
+            exit 0
+          fi
+          base64 --decode automation/m6d-final-runtime.patch.gz.b64 \
+            | gzip --decompress > "$RUNNER_TEMP/m6d-final-runtime.patch"
+          git apply -p1 --check "$RUNNER_TEMP/m6d-final-runtime.patch"
+          git apply -p1 "$RUNNER_TEMP/m6d-final-runtime.patch"
+          rm automation/m6d-final-runtime.patch.gz.b64
+          rm .github/workflows/m6d-final-runtime-sync.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: complete Milestone 6D runtime installer"
+          git push origin HEAD:milestone-6d-core-balance-framework

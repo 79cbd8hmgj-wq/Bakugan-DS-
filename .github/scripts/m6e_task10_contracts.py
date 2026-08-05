@@ -7,13 +7,14 @@ from pathlib import Path
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.authoring import load_gate_roster_authoring_document
 from bakugan_ds.gates.balance import ATTRIBUTE_NAMES, analyze_gate_balance
-from bakugan_ds.gates.record import GateArchetype
+from bakugan_ds.gates.record import GateArchetype, GateRecordV1
 from bakugan_ds.gates.roster_contracts import (
     build_balance_contract,
     build_roster_contract,
     write_contract,
 )
 from bakugan_ds.gates.roster_metadata import (
+    GateRosterMetadataEntry,
     ReviewStatus,
     load_gate_roster_metadata,
     write_gate_roster_metadata,
@@ -25,7 +26,7 @@ ROSTER_CONTRACT = Path("analysis/gates/milestone-6e-roster-contract.json")
 BALANCE_CONTRACT = Path("analysis/gates/milestone-6e-balance-contract.json")
 
 
-def _revised_records() -> tuple[object, ...]:
+def _revised_records() -> tuple[GateRecordV1, ...]:
     records = list(load_gate_roster_authoring_document(AUTHORING))
     expected_attribute = (0, 0, 100, 50, -50, -25)
     expected_comeback = (0, 0, 0, 0, 0, 30)
@@ -65,7 +66,9 @@ def _revised_records() -> tuple[object, ...]:
     return tuple(records)
 
 
-def _approved_metadata(records: tuple[object, ...]) -> tuple[object, ...]:
+def _approved_metadata(
+    records: tuple[GateRecordV1, ...],
+) -> tuple[GateRosterMetadataEntry, ...]:
     metadata = list(load_gate_roster_metadata(METADATA))
     revision_reasons = {
         52: (

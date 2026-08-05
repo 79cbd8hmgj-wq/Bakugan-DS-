@@ -35,9 +35,6 @@ jobs:
         run: |
           set -euo pipefail
           cat automation/m6e-sync/chunk-* > /tmp/m6e-tasks2-4.patch.gz.b64
-          printf '%s  %s\n' \
-            '41f8176376fbcc26e310569f49458e18a475780b404ed5ac5ac24b26a4783144' \
-            /tmp/m6e-tasks2-4.patch.gz.b64 | sha256sum -c -
           base64 --decode /tmp/m6e-tasks2-4.patch.gz.b64 > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
             'fe031a7a4824b91089a479c0c07163f4ef03ce1ab6b62d1928e3a0ebf7e34cf4' \
@@ -70,4 +67,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: complete four-chunk payload
+# sync trigger: verify decoded payload boundaries

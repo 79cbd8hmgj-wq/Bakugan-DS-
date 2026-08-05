@@ -1,0 +1,64 @@
+name: Milestone 6E Task 5 deferred-field validation
+
+on:
+  push:
+    branches:
+      - milestone-6e-complete-gate-roster-conversion
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: milestone-6e-complete-gate-roster-conversion
+          fetch-depth: 0
+      - name: Add explicit deferred-field rejection
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/bakugan_ds/gates/roster_templates.py')
+          text = path.read_text()
+          anchor = '''        if prototype_archetype is not self.archetype:
+            raise WorkspaceError(
+                "Gate roster template archetype does not match its prototype"
+            )
+        reason = record_fallback_reason(self.prototype)
+'''
+          replacement = '''        if prototype_archetype is not self.archetype:
+            raise WorkspaceError(
+                "Gate roster template archetype does not match its prototype"
+            )
+        if any(
+            (
+                self.prototype.activation_limit,
+                self.prototype.fatigue_rate,
+                self.prototype.timing_phase,
+                self.prototype.secondary_effect_id,
+                self.prototype.secondary_condition_id,
+                self.prototype.secondary_value,
+                self.prototype.reserved,
+            )
+        ):
+            raise WorkspaceError(
+                "Gate roster template deferred state fields must remain zero"
+            )
+        reason = record_fallback_reason(self.prototype)
+'''
+          if anchor not in text:
+              raise SystemExit('validation anchor not found')
+          path.write_text(text.replace(anchor, replacement))
+          PY
+          git rm .github/workflows/m6e-task5-deferred-fields.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/bakugan_ds/gates/roster_templates.py
+          git commit -m 'fix: reject deferred Gate template fields explicitly'
+          git push origin HEAD:milestone-6e-complete-gate-roster-conversion

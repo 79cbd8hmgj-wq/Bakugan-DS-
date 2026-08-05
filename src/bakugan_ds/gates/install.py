@@ -202,6 +202,34 @@ def _load_install_patches(path: Path) -> tuple[InstallPatch, ...]:
     return tuple(patches)
 
 
+def _generated_install_patches(
+    path: Path,
+) -> tuple[InstallPatch, ...]:
+    stored = _load_install_patches(path)
+    module = build_milestone_6c_module()
+    hooks_by_offset = {hook.component_offset: hook for hook in module.hook_replacements}
+    generated: list[InstallPatch] = []
+    for patch in stored:
+        if patch.target != "overlay:7":
+            generated.append(patch)
+            continue
+        hook = hooks_by_offset.get(patch.offset)
+        if hook is None:
+            raise WorkspaceError(
+                f"install patch contract contains unknown overlay offset: {patch.offset}"
+            )
+        if patch.expected != hook.expected:
+            raise WorkspaceError(
+                f"install patch expected bytes differ from generated hook: {patch.patch_id}"
+            )
+        generated.append(replace(patch, replacement=hook.replacement))
+    if {patch.offset for patch in generated if patch.target == "overlay:7"} != set(
+        hooks_by_offset
+    ):
+        raise WorkspaceError("install patch contract omits a generated overlay hook")
+    return tuple(generated)
+
+
 def _apply_core_patch(original_overlay: bytes) -> bytes:
     buffer = bytearray(original_overlay)
     patch_set = load_patch_set(CORE_PATCH_PATH)
@@ -293,7 +321,7 @@ def _prepare_install(
     records = load_authoring_document(authoring_path)
     trailer = build_trailer(records)
     module = build_milestone_6c_module()
-    patches = _load_install_patches(DEFAULT_PATCH_PATH)
+    patches = _generated_install_patches(DEFAULT_PATCH_PATH)
     _validate_patch_contract(patches)
 
     carrier_entry = next(

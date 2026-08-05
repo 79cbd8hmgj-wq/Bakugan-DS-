@@ -150,6 +150,7 @@ def build_gate_calculation_context(
     current_participant: int,
     compressed_core_g: int,
     attribute_id: int,
+    landing_result: int | None = None,
 ) -> GateCalculationContext:
     snapshot.validate()
     current = _participant_index(current_participant, "current participant")
@@ -164,6 +165,7 @@ def build_gate_calculation_context(
         owner_side_score=side_score(snapshot, snapshot.gate_owner),
         opposing_side_score=_opposing_side_score(snapshot),
         gate_id=snapshot.gate_id,
+        landing_result=landing_result,
     )
     context.validate()
     return context

@@ -83,6 +83,7 @@ jobs:
             > /tmp/changed-source.txt || true
           python -m compileall -q src tests tools
           if [[ -s /tmp/changed-python.txt ]]; then
+            xargs python -m ruff check --fix < /tmp/changed-python.txt
             xargs python -m ruff check < /tmp/changed-python.txt
           fi
           if [[ -s /tmp/changed-source.txt ]]; then
@@ -102,4 +103,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: established changed-file CI contract
+# sync trigger: apply safe Ruff import fixes

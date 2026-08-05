@@ -1,15 +1,18 @@
 name: Export Milestone 6E Workspace
 
 on:
-  push:
+  pull_request:
     branches:
-      - m6e-export-workspace-temp
+      - main
+    paths:
+      - .github/workflows/m6e-export-workspace.yml
 
 permissions:
   contents: read
 
 jobs:
   export:
+    if: github.event.pull_request.head.ref == 'm6e-export-workspace-temp'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

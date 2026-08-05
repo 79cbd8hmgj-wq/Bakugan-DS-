@@ -38,6 +38,7 @@ def test_committed_templates_cover_every_archetype_with_three_valid_variants() -
         (int(template.archetype), template.template_id) for template in templates
     )
     assert all(template.description.strip() for template in templates)
+    assert all(template.prototype.card_id == 1 for template in templates)
 
     signatures = {template.runtime_signature() for template in templates}
     assert len(signatures) == len(templates)

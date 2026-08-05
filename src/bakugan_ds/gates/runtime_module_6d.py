@@ -26,17 +26,10 @@ from bakugan_ds.gates.record import (
     GateEffectId,
     GateTargetMode,
 )
-from bakugan_ds.gates.system2 import (
-    CORE_G_COMPRESSION_BASE,
-    CORE_G_COMPRESSION_THRESHOLD,
-)
 from bakugan_ds.gates.runtime_module import (
     MODULE_BASE,
     RuntimeModule,
     RuntimeSymbol,
-    _RoutineAssembler,
-    _RoutineDefinition,
-    _RoutineImage,
     _add_register,
     _branch,
     _build_clear_cache,
@@ -49,9 +42,16 @@ from bakugan_ds.gates.runtime_module import (
     _emit_participant_pointer,
     _hook_replacements,
     _mov_register,
+    _RoutineAssembler,
+    _RoutineDefinition,
+    _RoutineImage,
     _shift_register,
     _static_routine,
     _with_condition,
+)
+from bakugan_ds.gates.system2 import (
+    CORE_G_COMPRESSION_BASE,
+    CORE_G_COMPRESSION_THRESHOLD,
 )
 
 _MILESTONE_6D_OFFSETS = {

@@ -125,8 +125,8 @@ def test_balance_framework_document_freezes_scope_and_geometry() -> None:
         "Chaos",
     ):
         assert archetype in text
-    assert "0x0228BC20–0x02293C20" in text
-    assert "0x02293C20–0x02293C60" in text
+    assert "0x0228BC20\u20130x02293C20" in text
+    assert "0x02293C20\u20130x02293C60" in text
     assert "0x8000" in text
     assert "maximum probability at most `40%`" in text
     assert "Ability manipulation" in text

@@ -34,9 +34,7 @@ def test_committed_templates_cover_every_archetype_with_three_valid_variants() -
     assert Counter(template.archetype for template in templates) == {
         archetype: 3 for archetype in LIVE_ARCHETYPES
     }
-    assert [
-        (int(template.archetype), template.template_id) for template in templates
-    ] == sorted(
+    assert [(int(template.archetype), template.template_id) for template in templates] == sorted(
         (int(template.archetype), template.template_id) for template in templates
     )
 
@@ -62,15 +60,11 @@ def test_templates_exercise_the_complete_existing_deterministic_surface() -> Non
     assert {template.prototype.preferred_type for template in templates} == set(range(6))
 
     for archetype in LIVE_ARCHETYPES:
-        variants = [
-            template for template in templates if template.archetype is archetype
-        ]
-        assert len(
-            {
-                (item.prototype.flat_bonus_g, item.prototype.percent_q8_8)
-                for item in variants
-            }
-        ) >= 2
+        variants = [template for template in templates if template.archetype is archetype]
+        assert (
+            len({(item.prototype.flat_bonus_g, item.prototype.percent_q8_8) for item in variants})
+            >= 2
+        )
         assert len({item.prototype.attribute_modifiers for item in variants}) >= 2
         assert len({item.prototype.battle_weights for item in variants}) >= 2
         assert len({item.prototype.condition_id for item in variants}) >= 2
@@ -90,19 +84,13 @@ def test_template_parser_rejects_legacy_duplicates_unsupported_state_and_bad_ord
         parse_gate_roster_templates(legacy)
 
     duplicate_id = json.loads(json.dumps(payload))
-    duplicate_id["templates"][1]["template_id"] = duplicate_id["templates"][0][
-        "template_id"
-    ]
+    duplicate_id["templates"][1]["template_id"] = duplicate_id["templates"][0]["template_id"]
     with pytest.raises(WorkspaceError, match="duplicate Gate roster template ID"):
         parse_gate_roster_templates(duplicate_id)
 
     duplicate_runtime = json.loads(json.dumps(payload))
-    duplicate_runtime["templates"][1]["record"] = duplicate_runtime["templates"][0][
-        "record"
-    ]
-    duplicate_runtime["templates"][1]["archetype"] = duplicate_runtime[
-        "templates"
-    ][0]["archetype"]
+    duplicate_runtime["templates"][1]["record"] = duplicate_runtime["templates"][0]["record"]
+    duplicate_runtime["templates"][1]["archetype"] = duplicate_runtime["templates"][0]["archetype"]
     with pytest.raises(WorkspaceError, match="duplicate runtime signature"):
         parse_gate_roster_templates(duplicate_runtime)
 
@@ -124,7 +112,7 @@ def test_template_parser_rejects_incomplete_coverage_unknown_fields_and_bad_card
     payload = _payload()
 
     incomplete = json.loads(json.dumps(payload))
-    incomplete["templates"] = incomplete["templates"][1:]
+    incomplete["templates"] = incomplete["templates"][2:]
     with pytest.raises(WorkspaceError, match="at least two templates"):
         parse_gate_roster_templates(incomplete)
 

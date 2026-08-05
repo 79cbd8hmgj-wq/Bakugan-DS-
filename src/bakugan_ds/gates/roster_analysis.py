@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Iterable
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.balance import analyze_gate_balance
@@ -204,11 +204,7 @@ def find_exact_runtime_duplicate_groups(
     selected = (
         records
         if include_legacy
-        else tuple(
-            record
-            for record in records
-            if record.archetype != GateArchetype.LEGACY
-        )
+        else tuple(record for record in records if record.archetype != GateArchetype.LEGACY)
     )
     return _group_ids_by_signature(selected)
 
@@ -283,13 +279,9 @@ def _card_report(
             "median": _median_fraction(values),
             "minimum": min(values) if values else None,
             "non_owner_maximum": (
-                max(evaluation.non_owner_values)
-                if evaluation.non_owner_values
-                else None
+                max(evaluation.non_owner_values) if evaluation.non_owner_values else None
             ),
-            "owner_maximum": (
-                max(evaluation.owner_values) if evaluation.owner_values else None
-            ),
+            "owner_maximum": (max(evaluation.owner_values) if evaluation.owner_values else None),
         },
         "evaluation_sha256": _evaluation_sha256(evaluation),
         "fallback_case_count": fallback_case_count,
@@ -343,8 +335,7 @@ def _potential_dominance_pairs(
             paired = tuple(
                 (left.effective_gate_bonus, right.effective_gate_bonus)
                 for left, right in zip(candidate.cases, other.cases, strict=True)
-                if left.effective_gate_bonus is not None
-                and right.effective_gate_bonus is not None
+                if left.effective_gate_bonus is not None and right.effective_gate_bonus is not None
             )
             if not paired:
                 continue
@@ -443,21 +434,21 @@ def build_roster_analysis(
         record.validate()
 
     evaluations = tuple(_evaluate_record(record) for record in records)
-    live_records = tuple(
-        record for record in records if record.archetype != GateArchetype.LEGACY
-    )
-    legacy_records = tuple(
-        record for record in records if record.archetype == GateArchetype.LEGACY
-    )
+    live_records = tuple(record for record in records if record.archetype != GateArchetype.LEGACY)
+    legacy_records = tuple(record for record in records if record.archetype == GateArchetype.LEGACY)
     exact_live = find_exact_runtime_duplicate_groups(records)
     legacy_duplicates = _group_ids_by_signature(legacy_records)
     evaluation_duplicates = _evaluation_duplicate_groups(evaluations)
     distribution, distribution_warnings = _distribution(records)
     conflicts = _identity_conflicts(records, metadata)
-    cards = [
-        _card_report(evaluation, entry)
-        for evaluation, entry in zip(evaluations, metadata, strict=True)
-    ] if not conflicts else []
+    cards = (
+        [
+            _card_report(evaluation, entry)
+            for evaluation, entry in zip(evaluations, metadata, strict=True)
+        ]
+        if not conflicts
+        else []
+    )
 
     return {
         "archetype_distribution": distribution,
@@ -466,9 +457,7 @@ def build_roster_analysis(
         "format": "bakugan-ds-gate-milestone-6e-roster-analysis",
         "format_version": 1,
         "hard_duplicate_groups": [list(group) for group in exact_live],
-        "identical_evaluation_groups": [
-            list(group) for group in evaluation_duplicates
-        ],
+        "identical_evaluation_groups": [list(group) for group in evaluation_duplicates],
         "identity_conflicts": conflicts,
         "legacy_duplicate_groups": [list(group) for group in legacy_duplicates],
         "legacy_passthrough_count": len(legacy_records),
@@ -481,9 +470,7 @@ def build_roster_analysis(
             "score_contexts": [name for name, _, _ in REFERENCE_SCORE_CASES],
             "targets": [name for name, _, _ in REFERENCE_TARGET_CASES],
         },
-        "potential_dominance_pairs": list(
-            _potential_dominance_pairs(evaluations)
-        ),
+        "potential_dominance_pairs": list(_potential_dominance_pairs(evaluations)),
         "record_count": len(records),
         "valid_for_draft": not exact_live and not evaluation_duplicates and not conflicts,
     }

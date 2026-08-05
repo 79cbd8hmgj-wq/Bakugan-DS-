@@ -10,8 +10,8 @@ from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.balance import analyze_gate_balance
 from bakugan_ds.gates.model import SUPPORTED_PROFILE_ID
 from bakugan_ds.gates.record import (
-    GATE_RECORD_FIELD_NAMES,
     FIRST_CARD_ID,
+    GATE_RECORD_FIELD_NAMES,
     RECORD_COUNT,
     GateArchetype,
     GateRecordV1,
@@ -57,10 +57,7 @@ def _require_string(value: object, label: str) -> str:
 
 def _require_vector(value: object, label: str) -> tuple[int, ...]:
     items = _require_array(value, label)
-    return tuple(
-        _require_integer(item, f"{label}[{index}]")
-        for index, item in enumerate(items)
-    )
+    return tuple(_require_integer(item, f"{label}[{index}]") for index, item in enumerate(items))
 
 
 @dataclass(frozen=True)
@@ -76,17 +73,13 @@ class GateRosterTemplate:
 
     def validate(self) -> None:
         if not _TEMPLATE_ID.fullmatch(self.template_id):
-            raise WorkspaceError(
-                "Gate roster template ID must use lowercase kebab-case"
-            )
+            raise WorkspaceError("Gate roster template ID must use lowercase kebab-case")
         if not self.description.strip():
             raise WorkspaceError("Gate roster template description must be nonempty")
         if self.archetype is GateArchetype.LEGACY:
             raise WorkspaceError("Gate roster templates require a live archetype")
         if self.prototype.card_id != FIRST_CARD_ID:
-            raise WorkspaceError(
-                "Gate roster template prototype must use placeholder card ID 1"
-            )
+            raise WorkspaceError("Gate roster template prototype must use placeholder card ID 1")
         try:
             prototype_archetype = GateArchetype(self.prototype.archetype)
         except ValueError as exc:
@@ -94,9 +87,7 @@ class GateRosterTemplate:
                 f"unsupported Gate roster template archetype: {self.prototype.archetype}"
             ) from exc
         if prototype_archetype is not self.archetype:
-            raise WorkspaceError(
-                "Gate roster template archetype does not match its prototype"
-            )
+            raise WorkspaceError("Gate roster template archetype does not match its prototype")
         reason = record_fallback_reason(self.prototype)
         if reason is not FallbackReason.NONE:
             raise WorkspaceError(
@@ -110,9 +101,7 @@ class GateRosterTemplate:
             or not isinstance(card_id, int)
             or not FIRST_CARD_ID <= card_id <= RECORD_COUNT
         ):
-            raise WorkspaceError(
-                f"card ID must be between {FIRST_CARD_ID} and {RECORD_COUNT}"
-            )
+            raise WorkspaceError(f"card ID must be between {FIRST_CARD_ID} and {RECORD_COUNT}")
         record = replace(self.prototype, card_id=card_id)
         reason = record_fallback_reason(record)
         if reason is not FallbackReason.NONE:
@@ -153,57 +142,31 @@ def _parse_record(
     if actual_fields != _RECORD_FIELDS:
         missing = sorted(_RECORD_FIELDS - actual_fields)
         extra = sorted(actual_fields - _RECORD_FIELDS)
-        raise WorkspaceError(
-            f"{label} record fields mismatch; missing={missing}, extra={extra}"
-        )
+        raise WorkspaceError(f"{label} record fields mismatch; missing={missing}, extra={extra}")
     try:
         record = GateRecordV1(
             card_id=FIRST_CARD_ID,
             archetype=int(archetype),
             flags=_require_integer(item["flags"], f"{label}.flags"),
-            flat_bonus_g=_require_integer(
-                item["flat_bonus_g"], f"{label}.flat_bonus_g"
-            ),
-            percent_q8_8=_require_integer(
-                item["percent_q8_8"], f"{label}.percent_q8_8"
-            ),
+            flat_bonus_g=_require_integer(item["flat_bonus_g"], f"{label}.flat_bonus_g"),
+            percent_q8_8=_require_integer(item["percent_q8_8"], f"{label}.percent_q8_8"),
             attribute_modifiers=_require_vector(
                 item["attribute_modifiers"], f"{label}.attribute_modifiers"
             ),
-            battle_weights=_require_vector(
-                item["battle_weights"], f"{label}.battle_weights"
-            ),
-            preferred_type=_require_integer(
-                item["preferred_type"], f"{label}.preferred_type"
-            ),
-            condition_id=_require_integer(
-                item["condition_id"], f"{label}.condition_id"
-            ),
+            battle_weights=_require_vector(item["battle_weights"], f"{label}.battle_weights"),
+            preferred_type=_require_integer(item["preferred_type"], f"{label}.preferred_type"),
+            condition_id=_require_integer(item["condition_id"], f"{label}.condition_id"),
             effect_id=_require_integer(item["effect_id"], f"{label}.effect_id"),
-            drawback_id=_require_integer(
-                item["drawback_id"], f"{label}.drawback_id"
-            ),
-            effect_value=_require_integer(
-                item["effect_value"], f"{label}.effect_value"
-            ),
-            drawback_value=_require_integer(
-                item["drawback_value"], f"{label}.drawback_value"
-            ),
+            drawback_id=_require_integer(item["drawback_id"], f"{label}.drawback_id"),
+            effect_value=_require_integer(item["effect_value"], f"{label}.effect_value"),
+            drawback_value=_require_integer(item["drawback_value"], f"{label}.drawback_value"),
             activation_limit=_require_integer(
                 item["activation_limit"], f"{label}.activation_limit"
             ),
-            fatigue_rate=_require_integer(
-                item["fatigue_rate"], f"{label}.fatigue_rate"
-            ),
-            target_mode=_require_integer(
-                item["target_mode"], f"{label}.target_mode"
-            ),
-            timing_phase=_require_integer(
-                item["timing_phase"], f"{label}.timing_phase"
-            ),
-            condition_value=_require_integer(
-                item["condition_value"], f"{label}.condition_value"
-            ),
+            fatigue_rate=_require_integer(item["fatigue_rate"], f"{label}.fatigue_rate"),
+            target_mode=_require_integer(item["target_mode"], f"{label}.target_mode"),
+            timing_phase=_require_integer(item["timing_phase"], f"{label}.timing_phase"),
+            condition_value=_require_integer(item["condition_value"], f"{label}.condition_value"),
             secondary_effect_id=_require_integer(
                 item["secondary_effect_id"], f"{label}.secondary_effect_id"
             ),
@@ -211,9 +174,7 @@ def _parse_record(
                 item["secondary_condition_id"],
                 f"{label}.secondary_condition_id",
             ),
-            secondary_value=_require_integer(
-                item["secondary_value"], f"{label}.secondary_value"
-            ),
+            secondary_value=_require_integer(item["secondary_value"], f"{label}.secondary_value"),
             reserved=_require_integer(item["reserved"], f"{label}.reserved"),
         )
     except KeyError as exc:
@@ -228,13 +189,9 @@ def _parse_template(value: object, index: int) -> GateRosterTemplate:
     if actual_fields != _TEMPLATE_FIELDS:
         missing = sorted(_TEMPLATE_FIELDS - actual_fields)
         extra = sorted(actual_fields - _TEMPLATE_FIELDS)
-        raise WorkspaceError(
-            f"{label} template fields mismatch; missing={missing}, extra={extra}"
-        )
+        raise WorkspaceError(f"{label} template fields mismatch; missing={missing}, extra={extra}")
     try:
-        archetype_value = _require_integer(
-            item["archetype"], f"{label}.archetype"
-        )
+        archetype_value = _require_integer(item["archetype"], f"{label}.archetype")
         try:
             archetype = GateArchetype(archetype_value)
         except ValueError as exc:
@@ -242,16 +199,10 @@ def _parse_template(value: object, index: int) -> GateRosterTemplate:
                 f"unsupported Gate roster template archetype: {archetype_value}"
             ) from exc
         template = GateRosterTemplate(
-            template_id=_require_string(
-                item["template_id"], f"{label}.template_id"
-            ),
+            template_id=_require_string(item["template_id"], f"{label}.template_id"),
             archetype=archetype,
-            description=_require_string(
-                item["description"], f"{label}.description"
-            ),
-            prototype=_parse_record(
-                item["record"], archetype=archetype, label=f"{label}.record"
-            ),
+            description=_require_string(item["description"], f"{label}.description"),
+            prototype=_parse_record(item["record"], archetype=archetype, label=f"{label}.record"),
         )
     except KeyError as exc:
         raise WorkspaceError(f"{label} is missing field {exc.args[0]}") from exc
@@ -266,15 +217,12 @@ def parse_gate_roster_templates(payload: object) -> tuple[GateRosterTemplate, ..
         missing = sorted(_ROOT_FIELDS - actual_fields)
         extra = sorted(actual_fields - _ROOT_FIELDS)
         raise WorkspaceError(
-            "Gate roster template document fields mismatch; "
-            f"missing={missing}, extra={extra}"
+            f"Gate roster template document fields mismatch; missing={missing}, extra={extra}"
         )
     if document.get("format_version") != 1:
         raise WorkspaceError("Gate roster template format_version must be 1")
     if document.get("profile_id") != SUPPORTED_PROFILE_ID:
-        raise WorkspaceError(
-            f"Gate roster template profile_id must be {SUPPORTED_PROFILE_ID}"
-        )
+        raise WorkspaceError(f"Gate roster template profile_id must be {SUPPORTED_PROFILE_ID}")
 
     raw_templates = _require_array(document.get("templates"), "templates")
     templates: list[GateRosterTemplate] = []
@@ -283,9 +231,7 @@ def parse_gate_roster_templates(payload: object) -> tuple[GateRosterTemplate, ..
     for index, raw_template in enumerate(raw_templates):
         template = _parse_template(raw_template, index)
         if template.template_id in template_ids:
-            raise WorkspaceError(
-                f"duplicate Gate roster template ID: {template.template_id}"
-            )
+            raise WorkspaceError(f"duplicate Gate roster template ID: {template.template_id}")
         signature = template.runtime_signature()
         if signature in signatures:
             raise WorkspaceError(
@@ -311,9 +257,7 @@ def parse_gate_roster_templates(payload: object) -> tuple[GateRosterTemplate, ..
         templates, key=lambda template: (int(template.archetype), template.template_id)
     )
     if templates != canonical_order:
-        raise WorkspaceError(
-            "Gate roster templates must use canonical archetype/template order"
-        )
+        raise WorkspaceError("Gate roster templates must use canonical archetype/template order")
     return tuple(templates)
 
 
@@ -321,9 +265,7 @@ def load_gate_roster_templates(path: Path) -> tuple[GateRosterTemplate, ...]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise WorkspaceError(
-            f"could not load Gate roster templates {path}: {exc}"
-        ) from exc
+        raise WorkspaceError(f"could not load Gate roster templates {path}: {exc}") from exc
     return parse_gate_roster_templates(payload)
 
 

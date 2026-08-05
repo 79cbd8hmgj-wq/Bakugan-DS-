@@ -72,11 +72,15 @@ def test_draft_metadata_covers_all_103_gate_ids_deterministically() -> None:
         archetype=GateArchetype.COMEBACK,
         design_tier=DesignTier.MID,
         gameplay_identity="Comeback Gate that rewards its owner for fighting from behind.",
-        g_influence_summary="Hybrid flat, compressed-core percentage, Aquos, and owner-behind G bonuses.",
+        g_influence_summary=(
+            "Hybrid flat, compressed-core percentage, Aquos, and owner-behind G bonuses."
+        ),
         battle_weight_summary="Mild Scratch preference with all six battle types reachable.",
         rule_summary="Adds 40 G to the Gate owner when its side is behind.",
         net_budget=91,
-        differentiation_rationale="Frozen Milestone 6D compatibility fixture and reference Comeback Gate.",
+        differentiation_rationale=(
+            "Frozen Milestone 6D compatibility fixture and reference Comeback Gate."
+        ),
         review_status=ReviewStatus.APPROVED,
     )
     assert by_id[20].name == "Robotallion"
@@ -86,9 +90,7 @@ def test_draft_metadata_covers_all_103_gate_ids_deterministically() -> None:
 
     unassigned = [entry for entry in entries if entry.archetype is GateArchetype.LEGACY]
     unresolved = [
-        entry
-        for entry in entries
-        if entry.mapping_confidence is MappingConfidence.UNRESOLVED
+        entry for entry in entries if entry.mapping_confidence is MappingConfidence.UNRESOLVED
     ]
     assert len(unassigned) == 102
     assert len(unresolved) == 100
@@ -100,17 +102,9 @@ def test_draft_metadata_covers_all_103_gate_ids_deterministically() -> None:
 def test_metadata_uses_canonical_authoring_family_ranges() -> None:
     entries = load_gate_roster_metadata(METADATA)
 
-    assert all(
-        entry.family is RosterFamily.BAKUGAN_CHARACTER for entry in entries[:39]
-    )
-    assert all(
-        entry.family is RosterFamily.ENVIRONMENTAL_FIELD
-        for entry in entries[39:71]
-    )
-    assert all(
-        entry.family is RosterFamily.TACTICAL_CONDITIONAL
-        for entry in entries[71:]
-    )
+    assert all(entry.family is RosterFamily.BAKUGAN_CHARACTER for entry in entries[:39])
+    assert all(entry.family is RosterFamily.ENVIRONMENTAL_FIELD for entry in entries[39:71])
+    assert all(entry.family is RosterFamily.TACTICAL_CONDITIONAL for entry in entries[71:])
 
 
 def test_metadata_parser_rejects_missing_duplicate_unsorted_or_unknown_fields() -> None:

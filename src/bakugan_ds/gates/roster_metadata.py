@@ -339,10 +339,11 @@ def parse_gate_roster_metadata(
 
     expected_ids = set(range(FIRST_CARD_ID, RECORD_COUNT + 1))
     if card_ids != expected_ids:
-        missing = sorted(expected_ids - card_ids)
-        extra = sorted(card_ids - expected_ids)
+        missing_ids = sorted(expected_ids - card_ids)
+        extra_ids = sorted(card_ids - expected_ids)
         raise WorkspaceError(
-            f"Gate roster metadata ID coverage is invalid: missing={missing}, extra={extra}"
+            "Gate roster metadata ID coverage is invalid: "
+            f"missing={missing_ids}, extra={extra_ids}"
         )
     if tuple(entry.card_id for entry in entries) != tuple(
         range(FIRST_CARD_ID, RECORD_COUNT + 1)

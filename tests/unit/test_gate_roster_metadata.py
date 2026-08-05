@@ -93,8 +93,8 @@ def test_draft_metadata_covers_all_103_gate_ids_deterministically() -> None:
     unresolved = [
         entry for entry in entries if entry.mapping_confidence is MappingConfidence.UNRESOLVED
     ]
-    assert len(unassigned) == 65
-    assert len(reviewed) == 37
+    assert len(unassigned) == 35
+    assert len(reviewed) == 67
     assert len(unresolved) == 100
     assert all(entry.design_tier is DesignTier.UNASSIGNED for entry in unassigned)
     assert all(entry.net_budget is None for entry in unassigned)

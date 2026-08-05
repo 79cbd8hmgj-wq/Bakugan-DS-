@@ -29,7 +29,11 @@ RISK_IDS = frozenset(range(82, 96))
 CHAOS_IDS = frozenset(range(96, 104))
 
 
-def _trigger_context(record_card_id: int, condition_id: int, target_mode: int) -> GateCalculationContext:
+def _trigger_context(
+    record_card_id: int,
+    condition_id: int,
+    target_mode: int,
+) -> GateCalculationContext:
     owner_score = 1
     opposing_score = 1
     landing_result: int | None = None

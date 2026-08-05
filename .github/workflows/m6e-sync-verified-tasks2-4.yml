@@ -34,8 +34,21 @@ jobs:
       - name: Reassemble and verify exact patch
         run: |
           set -euo pipefail
-          cat automation/m6e-sync/chunk-* | tr -d '[:space:]' \
-            > /tmp/m6e-tasks2-4.patch.gz.b64
+          wc -c automation/m6e-sync/chunk-*
+          sha256sum automation/m6e-sync/chunk-*
+          printf '%s  %s\n' \
+            '78e93bebd1ad98eec8663aaa97a0ebbede0d6de2ef534b21d5e9097947b1d7d0' \
+            automation/m6e-sync/chunk-000 | sha256sum -c -
+          printf '%s  %s\n' \
+            '6154882d883a95a80bc67f658cc9e2b1a1930456195e34dbbad3f467970bc035' \
+            automation/m6e-sync/chunk-001 | sha256sum -c -
+          printf '%s  %s\n' \
+            '106b672c5055464d8561e573372d59f036e7053f3699cf838680af36558bc027' \
+            automation/m6e-sync/chunk-002 | sha256sum -c -
+          printf '%s  %s\n' \
+            '7a70454c7cebeb5ca01ee387dbcaf4c1ca5b5c5efed793fb64d9b71cc2951294' \
+            automation/m6e-sync/chunk-003 | sha256sum -c -
+          cat automation/m6e-sync/chunk-* > /tmp/m6e-tasks2-4.patch.gz.b64
           base64 --decode /tmp/m6e-tasks2-4.patch.gz.b64 \
             > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
@@ -70,4 +83,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: normalize chunk whitespace
+# sync trigger: diagnose exact chunk hashes

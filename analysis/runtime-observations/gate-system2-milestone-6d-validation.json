@@ -1,0 +1,162 @@
+{
+  "bounded_claims": [
+    "The exact generated module matches the host model for the committed parity matrix.",
+    "The rebuilt ROM boots and remains responsive through the exercised tutorial path.",
+    "Gate 19 is the only live nonlegacy record; Gate 21 remained a canonical legacy passthrough.",
+    "The live cache was cleared completely after tutorial completion."
+  ],
+  "build": {
+    "build_overrides_sha256": "7337139b971e415c0be51f1724185a3a57daeeabbf341d406af4af9afb386ba1",
+    "deterministic_double_build": true,
+    "expanded_overlay_sha256": "748574da0d20ceb99b4ea48f848cab62b1139e5c4398f9d95a29adbc6dce5121",
+    "expanded_overlay_size": 501728,
+    "files_manifest_sha256": "9510deefd0ef418a727ee3278ab9e736c044c08f9141f07e9664e7f4fc632837",
+    "guarded_change_count": 7,
+    "install_manifest_sha256": "4d2de3321d8941a2fdfadfd198cb9c6410881d6d6f48d7e45dea426108551ade",
+    "legacy_passthrough_count": 102,
+    "live_system2_gate_ids": [
+      19
+    ],
+    "modified_components": [
+      {
+        "encoding": "raw",
+        "identifier": "arm9",
+        "kind": "arm9"
+      },
+      {
+        "encoding": "raw-override",
+        "identifier": "2762",
+        "kind": "nitrofs_raw"
+      },
+      {
+        "encoding": "uncompressed-overlay",
+        "identifier": "7",
+        "kind": "overlay"
+      }
+    ],
+    "module_sha256": "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c",
+    "module_size": 32768,
+    "overlays_manifest_sha256": "699fa7a89198c1d0c1707754a70c97617a2eea340abcfe2e77987204d7f57355",
+    "protected_core_g_bytes_unchanged": true,
+    "raw_carrier_sha256": "6961673e91f0ced7afa299d371ba54d73b3e64ab75c79e14224e59c56003b634",
+    "raw_carrier_size": 6992,
+    "rebuilt_rom_sha256": "519edbd5f4e17db3513cff0451109036ad411b44f1f2fd8f8e635fb68d0ffc7c",
+    "rom_size": 134217728,
+    "stored_arm9_sha256": "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8",
+    "trailer_sha256": "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b",
+    "unrelated_fat_payloads_byte_identical": true,
+    "workspace_manifest_sha256": "e924491d9269a3577b62b3d036807b645c999b97d91e4cc01f1009f2fbc98d61"
+  },
+  "emitted_module_parity": {
+    "ability_state_unchanged": true,
+    "activation_counters_unchanged": true,
+    "capture_method": "exact generated ARM32 module executed in the repository interpreter",
+    "condition_vectors": 12,
+    "effect_vectors": 9,
+    "gate_dispatch_controls": 8,
+    "generic_reward_and_drawback_parity": true,
+    "history_bytes_unchanged": true,
+    "invalid_id_fallback": true,
+    "juggernoid_vectors_preserved": true,
+    "landing_condition_parity": true,
+    "missing_landing_context_fallback": true,
+    "module_sha256": "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c",
+    "negative_component_parity": true,
+    "target_vectors": 6,
+    "test_count": 31,
+    "unrelated_gate_uses_legacy_without_weighted_rng": true,
+    "write_boundary": [
+      "current battle-local combatant record",
+      "64-byte Gate System 2.0 cache",
+      "current routine stack frame"
+    ]
+  },
+  "format_version": 1,
+  "implementation_head": "81e8aad4eba7c2b39b0677d664702a2b1a6374f7",
+  "live_runtime": {
+    "completion": {
+      "all_64_cache_bytes_zero": true,
+      "cache_valid_flag": 0,
+      "overlay_failure_observed": false,
+      "post_exit_input_responsive": true,
+      "returned_to_responsive_tutorial_state": true,
+      "tutorial_supported_path_completed": true
+    },
+    "emulator": {
+      "binary_sha256": "fc2e9fde3e0865158c0b228fb6fe726a4da85f29a1fc8464a67d23d094aa95f2",
+      "name": "DeSmuME",
+      "version": "0.9.14 git#0 dev+ x64-JIT SSE2"
+    },
+    "juggernoid_path": {
+      "arithmetic_claim": "approved Milestone 6C vectors remain byte-for-byte executable in the Milestone 6D module",
+      "capture_method": "live rebuilt-ROM tutorial frame plus exact emitted arithmetic and selector controls",
+      "card_id": 19,
+      "card_presented_in_tutorial": true,
+      "naturally_observed_vector_claimed": false,
+      "selector_claim": "approved weights remain 50,30,30,30,30,30 in the exact emitted module"
+    },
+    "module": {
+      "base": "0x0228BC20",
+      "present": true,
+      "sha256": "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c",
+      "size": 32768
+    },
+    "persistent_controls": {
+      "ability_state_write_observed": false,
+      "activation_counter_write_observed": false,
+      "basis": "live post-exit roster read, absence of a battery-save write, and exact emitted-module write-set controls",
+      "history_byte_write_observed": false,
+      "persistent_roster_g_unchanged": true,
+      "save_data_changed": false,
+      "save_file_created": false,
+      "serpenoid_displayed_g": 190,
+      "serpenoid_persistent_raw_g": 19
+    },
+    "unrelated_gate_control": {
+      "cache_record_id": 21,
+      "canonical_legacy_passthrough": true,
+      "card_id": 21,
+      "format_version": 1,
+      "live_cache_observed": true,
+      "selected_card_id": 21,
+      "valid_flag": 1,
+      "weighted_rng_zero_call_claim_method": "exact emitted unrelated-Gate control; not inferred from the live frame"
+    }
+  },
+  "local_evidence_hashes": {
+    "final_memory_capture_sha256": "0ab05bddd2d5cfde808c2aedbe94a2397dec0bfa0dd6de46e2dd1ca35a16f715",
+    "juggernoid_card_frame_sha256": "ac9e4cd89b9ce8712c9867b1480d91d65f20b879e565697f2a7a67cb8e78ae72",
+    "post_tutorial_cache_capture_sha256": "80dd9da9ed137c0fcddb783c8701d40d2ba47b2ff6033beba5e811c25b215c6b",
+    "responsive_arena_frame_sha256": "cf27a7c7c14ee418e4338c97e0dca50dd75728b33935a28e38258cc7334afa1c",
+    "tutorial_return_frame_sha256": "6699af0f43490e7103140c60b99874f79691ffdbb8a6d9a118f3c14204a17d40",
+    "unrelated_gate_cache_capture_sha256": "29a750f2d04def3de5b0e20b7836f4b155943bcebe1efaf40afa37fe61dfdcb8"
+  },
+  "milestone": "6D",
+  "profile_id": "b6re_rev0",
+  "rejected_claims": [
+    "Every parity vector occurred naturally in DeSmuME.",
+    "The complete 103-card roster is converted.",
+    "Ability manipulation, fatigue, history penalties, AI, presentation, or save changes are implemented.",
+    "Arena ID is available to Milestone 6D conditions."
+  ],
+  "repository_boundary": "Only normalized values, contracts, commands, and hashes are committed. ROMs, rebuilt ROMs, frames, states, battery saves, selected live memory, and debugger output remain local and are not committed.",
+  "source": {
+    "decoded_overlay_7_sha256": "82904b4ec35e5eeae243324259e0c984ed8a0f3be2c4c5992d35d71249c194e1",
+    "rom_sha256": "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b",
+    "rom_size": 134217728,
+    "runtime_decoded_arm9_sha256": "7cc01c584d2ecdd7166471f218f9fc3a58cf102b5fbe925287b9b95bae0c221e"
+  },
+  "verification": {
+    "exact_focus": {
+      "command": "PYTHONPATH=src python -m pytest -q tests/integration/test_gate_milestone_6d_build.py tests/integration/test_gate_milestone_6d_reference.py tests/unit/test_gate_milestone_6d_runtime_module.py tests/unit/test_gate_install.py",
+      "failures": 0,
+      "passed": 43
+    },
+    "host_suite": {
+      "command": "PYTHONPATH=src python -m pytest -q",
+      "expected_environment_skips": 41,
+      "failures": 0,
+      "passed": 670
+    }
+  }
+}

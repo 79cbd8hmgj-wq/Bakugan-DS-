@@ -16,6 +16,7 @@ from bakugan_ds.workspace.manifest import (
 from bakugan_ds.workspace.model import WorkspaceLayout
 
 AUTHORING = Path("config/gates/milestone-6c-system2-v1.json")
+AUTHORING_6D = Path("config/gates/milestone-6d-system2-v1.json")
 EXPECTED_PATCH_IDS = {
     "gate-system2-gate-bonus-hook",
     "gate-system2-context-access-hook",
@@ -252,3 +253,65 @@ def test_install_rejects_partial_prior_outputs(
     layout.build_overrides.write_text("{}", encoding="utf-8")
     with pytest.raises(WorkspaceError, match="preexisting divergent"):
         install_milestone_6c(workspace, AUTHORING)
+
+
+def test_milestone_6d_install_is_transactional_and_reinstall_is_noop(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bakugan_ds.gates.install import install_milestone_6d
+
+    workspace = _synthetic_workspace(tmp_path, monkeypatch)
+    first = install_milestone_6d(workspace, AUTHORING_6D)
+    second = install_milestone_6d(workspace, AUTHORING_6D)
+    assert first.no_op is False
+    assert second.no_op is True
+    assert first.module_sha256 == second.module_sha256
+    assert (workspace / "manifests/gate-system2-milestone-6d-install.json").exists()
+
+
+
+def test_milestone_6d_accepts_pristine_extracted_workspace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bakugan_ds.gates.install import install_milestone_6d
+
+    workspace = _synthetic_workspace(tmp_path, monkeypatch)
+    layout = WorkspaceLayout.from_root(workspace)
+    pristine = (layout.original_decoded_overlays / "overlay_007.bin").read_bytes()
+    (layout.modified_overlays / "overlay_007.bin").write_bytes(pristine)
+
+    report = install_milestone_6d(workspace, AUTHORING_6D)
+
+    assert report.no_op is False
+    assert report.dry_run is False
+    assert (workspace / "manifests/gate-system2-milestone-6d-install.json").exists()
+
+def test_milestone_6d_accepts_verified_milestone_6c_upgrade(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bakugan_ds.gates.install import install_milestone_6c, install_milestone_6d
+
+    workspace = _synthetic_workspace(tmp_path, monkeypatch)
+    install_milestone_6c(workspace, AUTHORING)
+    upgraded = install_milestone_6d(workspace, AUTHORING_6D)
+    assert upgraded.no_op is False
+    assert (workspace / "manifests/gate-system2-milestone-6c-install.json").exists()
+    assert (workspace / "manifests/gate-system2-milestone-6d-install.json").exists()
+
+
+def test_milestone_6d_rejects_divergent_verified_upgrade(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bakugan_ds.errors import WorkspaceError
+    from bakugan_ds.gates.install import install_milestone_6c, install_milestone_6d
+
+    workspace = _synthetic_workspace(tmp_path, monkeypatch)
+    install_milestone_6c(workspace, AUTHORING)
+    overlay = workspace / "modified/overlays/overlay_007.bin"
+    overlay.write_bytes(overlay.read_bytes()[:-1] + b"X")
+    with pytest.raises(WorkspaceError, match="prior Gate overlay"):
+        install_milestone_6d(workspace, AUTHORING_6D)

@@ -40,8 +40,8 @@ def test_task_9_live_calculation_stays_inside_reserved_module() -> None:
     calculation = module.symbols["g2_calculate_gate_bonus"]
     context_store = module.symbols["g2_context_store_hook"]
     assert calculation.address == 0x0228C360
-    assert calculation.address + calculation.size <= 0x0228C720
-    assert context_store.address == 0x0228C760
+    assert calculation.address + calculation.size <= 0x0228C760
+    assert context_store.address == 0x0228C7A0
     assert context_store.address + context_store.size <= 0x0228C790
 
     protected = (

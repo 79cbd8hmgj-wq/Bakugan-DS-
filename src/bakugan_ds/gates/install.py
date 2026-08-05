@@ -12,7 +12,10 @@ from bakugan_ds.compression.blz import (
     parse_blz_footer,
 )
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.gates.authoring import load_authoring_document
+from bakugan_ds.gates.authoring import (
+    load_authoring_document,
+    load_milestone_6d_authoring_document,
+)
 from bakugan_ds.gates.loader import (
     ARM9_DECODED_SHA256,
     CACHE_ADDRESS,
@@ -27,7 +30,8 @@ from bakugan_ds.gates.loader import (
     build_expanded_overlay,
 )
 from bakugan_ds.gates.record import build_trailer
-from bakugan_ds.gates.runtime_module import build_milestone_6c_module
+from bakugan_ds.gates.runtime_module import RuntimeModule, build_milestone_6c_module
+from bakugan_ds.gates.runtime_module_6d import build_milestone_6d_module
 from bakugan_ds.patches.model import load_patch_set
 from bakugan_ds.workspace.manifest import load_workspace_manifest, sha256_bytes
 from bakugan_ds.workspace.model import WorkspaceLayout
@@ -43,6 +47,7 @@ DEFAULT_READINESS_PATH = Path("analysis/gates/milestone-6c-readiness.json")
 DEFAULT_PATCH_PATH = Path("patches/gate-system2-milestone-6c-hooks.json")
 CORE_PATCH_PATH = Path("patches/core-g-compression-400.json")
 INSTALL_REPORT_NAME = "gate-system2-milestone-6c-install.json"
+MILESTONE_6D_INSTALL_REPORT_NAME = "gate-system2-milestone-6d-install.json"
 ARENA_LOW_OFFSET = 0x6264
 ARENA_LOW_EXPECTED = bytes.fromhex("20bc2802")
 ARENA_LOW_REPLACEMENT = bytes.fromhex("603c2902")
@@ -202,6 +207,34 @@ def _load_install_patches(path: Path) -> tuple[InstallPatch, ...]:
     return tuple(patches)
 
 
+def _generated_install_patches(
+    path: Path,
+    module: RuntimeModule,
+) -> tuple[InstallPatch, ...]:
+    stored = _load_install_patches(path)
+    hooks_by_offset = {hook.component_offset: hook for hook in module.hook_replacements}
+    generated: list[InstallPatch] = []
+    for patch in stored:
+        if patch.target != "overlay:7":
+            generated.append(patch)
+            continue
+        hook = hooks_by_offset.get(patch.offset)
+        if hook is None:
+            raise WorkspaceError(
+                f"install patch contract contains unknown overlay offset: {patch.offset}"
+            )
+        if patch.expected != hook.expected:
+            raise WorkspaceError(
+                f"install patch expected bytes differ from generated hook: {patch.patch_id}"
+            )
+        generated.append(replace(patch, replacement=hook.replacement))
+    if {patch.offset for patch in generated if patch.target == "overlay:7"} != set(
+        hooks_by_offset
+    ):
+        raise WorkspaceError("install patch contract omits a generated overlay hook")
+    return tuple(generated)
+
+
 def _apply_core_patch(original_overlay: bytes) -> bytes:
     buffer = bytearray(original_overlay)
     patch_set = load_patch_set(CORE_PATCH_PATH)
@@ -220,8 +253,8 @@ def _apply_core_patch(original_overlay: bytes) -> bytes:
 
 def _validate_patch_contract(
     patches: tuple[InstallPatch, ...],
+    module: RuntimeModule,
 ) -> None:
-    module = build_milestone_6c_module()
     expected_overlay = {
         (hook.component_offset, hook.expected, hook.replacement)
         for hook in module.hook_replacements
@@ -283,6 +316,7 @@ def _prepare_install(
     *,
     readiness_path: Path,
     dry_run: bool,
+    milestone_6d: bool = False,
 ) -> _PreparedInstall:
     layout = WorkspaceLayout.from_root(workspace)
     manifest = load_workspace_manifest(layout.manifests / "workspace.json")
@@ -290,11 +324,15 @@ def _prepare_install(
         raise WorkspaceError("Milestone 6C installer supports only b6re_rev0")
     _load_readiness(readiness_path)
 
-    records = load_authoring_document(authoring_path)
+    records = (
+        load_milestone_6d_authoring_document(authoring_path)
+        if milestone_6d
+        else load_authoring_document(authoring_path)
+    )
     trailer = build_trailer(records)
-    module = build_milestone_6c_module()
-    patches = _load_install_patches(DEFAULT_PATCH_PATH)
-    _validate_patch_contract(patches)
+    module = build_milestone_6d_module() if milestone_6d else build_milestone_6c_module()
+    patches = _generated_install_patches(DEFAULT_PATCH_PATH, module)
+    _validate_patch_contract(patches, module)
 
     carrier_entry = next(
         (entry for entry in manifest.files if entry.file_id == REFERENCE_FILE_ID),
@@ -393,7 +431,8 @@ def _prepare_install(
         arm9_bytes=patched_arm9,
         override_path=layout.build_overrides,
         override_bytes=override_bytes,
-        report_path=layout.manifests / INSTALL_REPORT_NAME,
+        report_path=layout.manifests
+        / (MILESTONE_6D_INSTALL_REPORT_NAME if milestone_6d else INSTALL_REPORT_NAME),
     )
 
 
@@ -434,19 +473,49 @@ def _write_transaction(targets: tuple[tuple[Path, bytes], ...]) -> None:
         raise
 
 
-def install_milestone_6c(
+def _load_prior_report(path: Path) -> dict[str, object]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise WorkspaceError(f"cannot load prior Gate install report: {path}") from exc
+    if not isinstance(payload, dict):
+        raise WorkspaceError("prior Gate install report must be an object")
+    return payload
+
+
+def _validate_prior_install(
+    prepared: _PreparedInstall,
+    prior_report_path: Path,
+) -> None:
+    payload = _load_prior_report(prior_report_path)
+    raw_override = payload.get("raw_override")
+    if not isinstance(raw_override, dict):
+        raise WorkspaceError("prior Gate install report lacks raw override data")
+    expected_raw = raw_override.get("replacement_sha256")
+    expected_overlay = payload.get("overlay_sha256")
+    expected_arm9 = payload.get("arm9_sha256")
+    if not all(isinstance(value, str) and len(value) == 64 for value in (
+        expected_raw,
+        expected_overlay,
+        expected_arm9,
+    )):
+        raise WorkspaceError("prior Gate install report hashes are invalid")
+    if sha256_bytes(_read(prepared.raw_path, "prior Gate carrier")) != expected_raw:
+        raise WorkspaceError("prior Gate carrier differs from its install report")
+    if sha256_bytes(_read(prepared.overlay_path, "prior Gate overlay")) != expected_overlay:
+        raise WorkspaceError("prior Gate overlay differs from its install report")
+    if sha256_bytes(_read(prepared.arm9_path, "prior Gate ARM9")) != expected_arm9:
+        raise WorkspaceError("prior Gate ARM9 differs from its install report")
+
+
+def _install_prepared(
     workspace: Path,
-    authoring_path: Path,
+    prepared: _PreparedInstall,
     *,
-    dry_run: bool = False,
-    readiness_path: Path | None = None,
+    milestone_label: str,
+    allow_prior_report: Path | None = None,
+    allow_pristine_extracted: bool = False,
 ) -> InstallReport:
-    prepared = _prepare_install(
-        workspace.expanduser().resolve(),
-        authoring_path.expanduser().resolve(),
-        readiness_path=(readiness_path or DEFAULT_READINESS_PATH).expanduser().resolve(),
-        dry_run=dry_run,
-    )
     marker_exists = prepared.report_path.exists()
     expected_targets = (
         (prepared.raw_path, prepared.raw_bytes),
@@ -456,21 +525,33 @@ def install_milestone_6c(
     )
     if marker_exists:
         if not all(_matches(path, data) for path, data in expected_targets):
-            raise WorkspaceError("existing Milestone 6C install is partial or divergent")
-        return replace(prepared.report, dry_run=dry_run, no_op=True)
+            raise WorkspaceError(f"existing {milestone_label} install is partial or divergent")
+        return replace(prepared.report, dry_run=prepared.report.dry_run, no_op=True)
 
-    if prepared.raw_path.exists() or prepared.override_path.exists():
-        raise WorkspaceError("preexisting divergent Milestone 6C override outputs")
+    prior_validated = False
+    if allow_prior_report is not None and allow_prior_report.exists():
+        _validate_prior_install(prepared, allow_prior_report)
+        prior_validated = True
+
+    if not prior_validated and (prepared.raw_path.exists() or prepared.override_path.exists()):
+        raise WorkspaceError(f"preexisting divergent {milestone_label} override outputs")
 
     layout = WorkspaceLayout.from_root(workspace)
-    current_overlay = _read(prepared.overlay_path, "modified overlay 7")
-    if sha256_bytes(current_overlay) != CORE_PATCHED_OVERLAY_SHA256:
-        raise WorkspaceError("modified overlay 7 is not the approved core-G baseline")
-    current_arm9 = _read(prepared.arm9_path, "modified ARM9")
-    original_arm9 = _read(layout.original / "arm9.bin", "original ARM9")
-    if current_arm9 != original_arm9:
-        raise WorkspaceError("modified ARM9 has divergent preexisting changes")
-    if dry_run:
+    if not prior_validated:
+        current_overlay = _read(prepared.overlay_path, "modified overlay 7")
+        current_overlay_sha256 = sha256_bytes(current_overlay)
+        approved_baselines = {CORE_PATCHED_OVERLAY_SHA256}
+        if allow_pristine_extracted:
+            approved_baselines.add(REFERENCE_OVERLAY_SHA256)
+        if current_overlay_sha256 not in approved_baselines:
+            raise WorkspaceError(
+                "modified overlay 7 is not an approved pristine or core-G baseline"
+            )
+        current_arm9 = _read(prepared.arm9_path, "modified ARM9")
+        original_arm9 = _read(layout.original / "arm9.bin", "original ARM9")
+        if current_arm9 != original_arm9:
+            raise WorkspaceError("modified ARM9 has divergent preexisting changes")
+    if prepared.report.dry_run:
         return prepared.report
 
     installed_report = replace(prepared.report, dry_run=False, no_op=False)
@@ -480,3 +561,49 @@ def install_milestone_6c(
     )
     _write_transaction(targets)
     return installed_report
+
+
+def install_milestone_6c(
+    workspace: Path,
+    authoring_path: Path,
+    *,
+    dry_run: bool = False,
+    readiness_path: Path | None = None,
+) -> InstallReport:
+    resolved_workspace = workspace.expanduser().resolve()
+    prepared = _prepare_install(
+        resolved_workspace,
+        authoring_path.expanduser().resolve(),
+        readiness_path=(readiness_path or DEFAULT_READINESS_PATH).expanduser().resolve(),
+        dry_run=dry_run,
+    )
+    return _install_prepared(
+        resolved_workspace,
+        prepared,
+        milestone_label="Milestone 6C",
+    )
+
+
+def install_milestone_6d(
+    workspace: Path,
+    authoring_path: Path,
+    *,
+    dry_run: bool = False,
+    readiness_path: Path | None = None,
+) -> InstallReport:
+    resolved_workspace = workspace.expanduser().resolve()
+    prepared = _prepare_install(
+        resolved_workspace,
+        authoring_path.expanduser().resolve(),
+        readiness_path=(readiness_path or DEFAULT_READINESS_PATH).expanduser().resolve(),
+        dry_run=dry_run,
+        milestone_6d=True,
+    )
+    layout = WorkspaceLayout.from_root(resolved_workspace)
+    return _install_prepared(
+        resolved_workspace,
+        prepared,
+        milestone_label="Milestone 6D",
+        allow_prior_report=layout.manifests / INSTALL_REPORT_NAME,
+        allow_pristine_extracted=True,
+    )

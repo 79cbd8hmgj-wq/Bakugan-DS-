@@ -281,3 +281,23 @@ def test_context_projection_is_independent_of_combatant_evaluation_order() -> No
     )
     assert results[0].effective_gate_bonus == 74
     assert results[1].effective_gate_bonus == 147
+
+
+def test_build_context_carries_optional_confirmed_landing_result() -> None:
+    snapshot = BattleSnapshot(
+        gate_id=19,
+        gate_owner=0,
+        team_mode=False,
+        participants=(
+            ParticipantSnapshot(index=0, match_score=1, teammate_index=None),
+            ParticipantSnapshot(index=1, match_score=0, teammate_index=None),
+        ),
+    )
+    context = build_gate_calculation_context(
+        snapshot,
+        current_participant=0,
+        compressed_core_g=190,
+        attribute_id=1,
+        landing_result=1,
+    )
+    assert context.landing_result == 1

@@ -1,0 +1,79 @@
+{
+  "archetypes": {
+    "attribute": 6,
+    "chaos": 7,
+    "comeback": 1,
+    "control": 4,
+    "legacy": 0,
+    "power": 2,
+    "risk": 5,
+    "skill": 3
+  },
+  "authoring_path": "config/gates/milestone-6d-system2-v1.json",
+  "balance_report_sha256": "b36b69b4f88f97f4ef17677be97044b0c3712a47224cd572e98eab27aad20a1a",
+  "conditions": {
+    "landing_gate_card_won": 7,
+    "none": 0,
+    "opponent_at_match_point": 6,
+    "owner_ahead": 2,
+    "owner_at_match_point": 5,
+    "owner_behind": 1,
+    "owner_score_zero": 4,
+    "score_tied": 3
+  },
+  "effects": {
+    "add_signed_g": 1,
+    "none": 0,
+    "subtract_magnitude_g": 2
+  },
+  "format_version": 1,
+  "juggernoid": {
+    "aquos_modifier_g": 30,
+    "archetype": "comeback",
+    "battle_weights": [
+      50,
+      30,
+      30,
+      30,
+      30,
+      30
+    ],
+    "card_id": 19,
+    "condition": "owner_behind",
+    "conditional_effect_g": 40,
+    "effective_gate_bonus_maximum": 184,
+    "effective_gate_bonus_minimum": 74,
+    "flat_bonus_g": 60,
+    "net_budget": 91,
+    "percent_q8_8": 20,
+    "target": "gate_owner"
+  },
+  "legacy_passthrough_count": 102,
+  "live_card_ids": [
+    19
+  ],
+  "profile_id": "b6re_rev0",
+  "record_count": 103,
+  "reference_core_g": [
+    190,
+    400,
+    525,
+    650,
+    695
+  ],
+  "scope": {
+    "ability_manipulation": false,
+    "ai_evaluation": false,
+    "arena_id": "deferred",
+    "battle_history_penalties": false,
+    "fatigue": false,
+    "full_roster_conversion": "Milestone 6E",
+    "presentation": false,
+    "save_changes": false
+  },
+  "targets": {
+    "current_combatant": 0,
+    "gate_non_owner": 2,
+    "gate_owner": 1
+  }
+}

@@ -3,6 +3,7 @@ from __future__ import annotations
 import struct
 import zlib
 from dataclasses import dataclass, fields, replace
+from enum import IntEnum
 
 from bakugan_ds.errors import WorkspaceError
 
@@ -25,6 +26,54 @@ if _HEADER.size != G2DT_HEADER_SIZE:
     raise AssertionError("G2DT header struct size is not 32 bytes")
 if _RECORD.size != GATE_RECORD_SIZE:
     raise AssertionError("Gate record struct size is not 40 bytes")
+
+
+class GateArchetype(IntEnum):
+    """Stable version-1 Gate System 2.0 archetype identifiers."""
+
+    LEGACY = 0
+    COMEBACK = 1
+    POWER = 2
+    SKILL = 3
+    CONTROL = 4
+    RISK = 5
+    ATTRIBUTE = 6
+    CHAOS = 7
+
+
+class GateConditionId(IntEnum):
+    """Deterministic conditions supported by the Milestone 6D framework."""
+
+    NONE = 0
+    OWNER_BEHIND = 1
+    OWNER_AHEAD = 2
+    SCORE_TIED = 3
+    OWNER_SCORE_ZERO = 4
+    OWNER_AT_MATCH_POINT = 5
+    OPPONENT_AT_MATCH_POINT = 6
+    LANDING_GATE_CARD_WON = 7
+
+
+class GateEffectId(IntEnum):
+    """Pre-Gate-calculation signed G effects."""
+
+    NONE = 0
+    ADD_SIGNED_G = 1
+    SUBTRACT_MAGNITUDE_G = 2
+
+
+class GateTargetMode(IntEnum):
+    """Target predicates evaluated for the combatant currently being built."""
+
+    CURRENT_COMBATANT = 0
+    GATE_OWNER = 1
+    GATE_NON_OWNER = 2
+
+
+class GateTimingPhase(IntEnum):
+    """Runtime phases supported by the deterministic Milestone 6D engine."""
+
+    PRE_GATE_CALCULATION = 0
 
 
 def _require_int(value: int, label: str) -> None:

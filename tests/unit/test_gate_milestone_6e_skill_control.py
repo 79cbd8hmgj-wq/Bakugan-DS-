@@ -74,7 +74,7 @@ def test_skill_and_control_batches_have_distinct_decision_profiles() -> None:
     validate_hard_duplicate_classes(report)
 
     assert report["valid_for_draft"] is True
-    assert CONVERTED_IDS <= set(report["live_card_ids"])
+    assert set(report["live_card_ids"]) >= CONVERTED_IDS
     assert report["hard_duplicate_groups"] == []
     assert report["identical_evaluation_groups"] == []
     assert report["identity_conflicts"] == []

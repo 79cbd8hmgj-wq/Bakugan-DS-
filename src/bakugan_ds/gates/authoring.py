@@ -189,8 +189,18 @@ def _load_authoring_records(path: Path) -> tuple[GateRecordV1, ...]:
     )
 
 
-def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+def load_gate_roster_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
     records = _load_authoring_records(path)
+    if len(records) != RECORD_COUNT:
+        raise WorkspaceError("Gate authoring roster must contain exactly 103 records")
+    expected_ids = tuple(range(1, RECORD_COUNT + 1))
+    if tuple(record.card_id for record in records) != expected_ids:
+        raise WorkspaceError("Gate authoring records must contain sorted IDs 1 through 103")
+    return records
+
+
+def load_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+    records = load_gate_roster_authoring_document(path)
     validate_milestone_6c_roster(records)
     return records
 

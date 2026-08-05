@@ -66,6 +66,7 @@ Validate:
 - nonempty name or explicit provisional label;
 - confidence enum;
 - evidence reference;
+- authoring-only roster family;
 - archetype identity;
 - design tier;
 - concise identity and differentiation rationale;

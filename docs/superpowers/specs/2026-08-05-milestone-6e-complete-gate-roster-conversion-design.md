@@ -59,6 +59,217 @@ The conversion uses four distinct information classes and must not conflate them
 
 Every name-to-ID mapping must carry a confidence value. Unconfirmed names remain explicitly provisional and cannot silently become authoritative.
 
+## Conversion approach
+
+### Rejected approach A: fully automatic conversion
+
+A formula based only on legacy mean, spread, and fixed type would be deterministic but would produce repeated templates and ignore thematic cards such as comeback, exchange, lockdown, bait, delayed attack, and high-risk fields.
+
+### Rejected approach B: unstructured manual authoring
+
+Hand-writing 103 unrelated records would preserve theme but make budgets, duplicate detection, regression review, and later tuning difficult to reproduce.
+
+### Approved approach C: deterministic seed plus authored override
+
+1. Generate a local seed from exact legacy data.
+2. Preserve the rank order of the six legacy attribute values when generating the first attribute profile.
+3. Preserve the legacy fixed battle type as the preferred type unless an override includes a written reason.
+4. Classify the card into one of three roster families and one of seven archetypes.
+5. Apply a reviewed archetype template.
+6. Author card-specific values, condition, target, effect, and drawback within the existing budget rules.
+7. Run duplicate, dominance, context-matrix, and effective-swing analysis.
+8. Adjust only the smallest necessary fields until the roster passes.
+
+The seed generator is an authoring aid. The committed converted roster is the source of truth.
+
+## Roster families
+
+### Family A — Bakugan-character Gates, IDs `1..39`
+
+These cards preserve a recognizable relationship to the named Bakugan.
+
+Default tendencies:
+
+- pronounced legacy-derived attribute profile;
+- original battle type remains preferred;
+- Attribute, Power, Skill, and Comeback are the primary archetypes;
+- evolved forms trade reliability for scaling, condition pressure, or narrower affinity rather than strictly increasing every output;
+- universal legacy rows become Power, Skill, Comeback, or Chaos rather than featureless all-attribute bonuses.
+
+### Family B — environmental and attribute fields, IDs `40..71`
+
+These cards express battlefield conditions.
+
+Default tendencies:
+
+- Attribute, Control, Skill, and Chaos are primary;
+- cyclic legacy attribute patterns remain recognizable;
+- field names guide positive and opposed relationships locally, without creating a universal elemental wheel;
+- low-energy or vacuum-like cards may use lower flat values, non-owner targeting, or drawbacks rather than becoming dead cards;
+- duplicate legacy rows must diverge through condition, target, weights, or risk profile.
+
+### Family C — tactical and conditional Gates, IDs `72..103`
+
+These cards express decisions implied by names such as stand-off, delayed attack, bait and switch, lockdown, overtake, exchange, swap, reflexes, trap, cover, siphon, or wrath.
+
+Default tendencies:
+
+- Control, Comeback, Risk, Skill, and Chaos are primary;
+- conditions and targeting carry more identity than attribute spread;
+- high legacy means are not preserved as unconditional power;
+- explicit drawbacks purchase high upside;
+- cards suggesting exchange or denial use only the supported signed-G and target predicates, not unimplemented cross-record swaps or Ability denial.
+
+## Archetype authoring rules
+
+### Power
+
+- dependable G influence is the largest gross-budget component;
+- condition is normally `none`, `owner_ahead`, or `score_tied`;
+- battle pressure is neutral or mild;
+- at most two positive affinities;
+- no strict dominance over another Power record across the reference matrix.
+
+### Skill
+
+- strong or extreme-bounded battle pressure is required;
+- direct G influence remains lower than comparable Power cards;
+- original fixed type is normally the unique maximum;
+- every type remains possible;
+- cards with the same preferred type must differ materially in G profile, condition, or target.
+
+### Control
+
+- Gate-owner/non-owner targeting or a score/landing condition is required;
+- control is represented through supported signed G influence, not hidden state mutation;
+- unconditional current-combatant-only records are rejected;
+- battle pressure is neutral, mild, or strong.
+
+### Comeback
+
+- condition must be `owner_behind` or `owner_score_zero`;
+- the conditional reward is meaningful but bounded;
+- the owner receives the central benefit;
+- tied or leading owners do not receive the comeback rider;
+- evolved forms may trade base reliability for a stronger conditional reward.
+
+### Risk
+
+- explicit drawback is required;
+- gross value must exceed the typical unconditional band before credit;
+- reward and drawback target choices must be understandable from the committed rationale category;
+- high-risk records are tested at both favorable and unfavorable contexts;
+- effective swing may reach 250 G only with a real drawback.
+
+### Attribute
+
+- at least one primary and one opposed modifier are required by the merged invariant;
+- legacy attribute rank order is preserved unless a documented thematic override exists;
+- no more than three attributes may be positive above neutral without explicit review;
+- flat and percentage components remain moderate so the profile, not generic power, defines the card.
+
+### Chaos
+
+- explicit drawback is required;
+- weighting is unusual but still bounded;
+- record uses a deterministic condition or target combination that does not fit the other six archetypes;
+- Chaos is not a license for random effects, unsupported state, or arbitrary inflation.
+
+## Soft roster-distribution bands
+
+The final 103-card roster must fall within these review bands:
+
+| Archetype | Minimum | Maximum |
+|---|---:|---:|
+| Power | 12 | 18 |
+| Skill | 14 | 20 |
+| Control | 14 | 20 |
+| Comeback | 10 | 16 |
+| Risk | 12 | 18 |
+| Attribute | 18 | 26 |
+| Chaos | 6 | 12 |
+
+These are diversity guards, not quotas. The final exact counts are generated from the reviewed roster and committed in the Milestone 6E contract.
+
+## Attribute-profile derivation
+
+The local seed process centers each legacy six-value row around its median and maps its relative tiers to a bounded first draft:
+
+- strongest legacy entry: primary affinity;
+- second distinct high entry: secondary affinity where appropriate;
+- middle entries: neutral or small secondary values;
+- weakest distinct entry: opposed value;
+- ties remain ties unless a thematic override is documented.
+
+The final authoring values remain within `-100..+100 G` and pass the merged archetype invariants. Milestone 6E does not claim the resulting relationships form a universal anime attribute wheel.
+
+## Battle-weight derivation
+
+The original fixed battle type is the default preferred type.
+
+Template pressures:
+
+- neutral: near-even weights, maximum probability at most 20%;
+- mild: maximum probability above 20% and at most 25%;
+- strong: above 25% and at most 33.34%;
+- extreme bounded: above 33.34% and at most 40%.
+
+Power and Attribute cards normally use neutral or mild pressure. Skill requires strong or extreme-bounded pressure. Control, Comeback, and Risk may use mild or strong pressure. Chaos may use two co-maximum types or an unusual bounded distribution, but `preferred_type` still references a maximum entry.
+
+A preferred-type override requires a committed generic rationale category. The complete original name is not required in the committed report.
+
+## Effective-swing analysis
+
+Every record is evaluated over this deterministic reference matrix:
+
+- compressed core G: `190, 400, 525, 650, 695`;
+- all six attributes;
+- current combatant is owner and non-owner;
+- scores `0–2` for both sides;
+- landing result absent and confirmed Gate-card-won;
+- all supported true and false condition branches;
+- favorable and unfavorable drawback paths.
+
+Review bands:
+
+- early/common-style output: `70–130 G`;
+- mid output: `110–180 G`;
+- rare or specialized output: `140–220 G`;
+- high-risk favorable output: at most `250 G`;
+- signed negative outcomes remain bounded and intentional.
+
+A card may cross more than one band across contexts. The report records minimum, median, maximum, owner-only maximum, non-owner maximum, and drawback result.
+
+## Duplicate and dominance rules
+
+### Exact signature uniqueness
+
+No two live records may share all of:
+
+- archetype;
+- flat and percentage components;
+- six attribute modifiers;
+- six battle weights and preferred type;
+- condition and condition value;
+- target mode;
+- effect and value;
+- drawback and value.
+
+### Contextual differentiation
+
+Cards sharing an archetype and preferred type must differ in at least two gameplay dimensions: G profile, attribute profile, condition, target, pressure class, or drawback.
+
+### Strict-dominance rejection
+
+The deterministic report compares records within comparable target/condition groups. A record is rejected when another record has:
+
+- equal or greater effective G in every applicable reference context;
+- equal or stronger battle pressure toward the same preferred type;
+- no greater drawback;
+- and a strict advantage in at least one context.
+
+Different conditions, targets, opposed profiles, or drawback exposure may justify apparent numerical advantages and are reported rather than automatically rejected.
+
 ## Canonical deliverables
 
 Milestone 6E adds:
@@ -124,6 +335,20 @@ Runtime records remain compact and contain no display strings. The metadata side
 - review status.
 
 The sidecar is authoring evidence, not a save or runtime format.
+
+### Authoring-only roster families
+
+The metadata also records one authoring-only family that mirrors the original
+three card-type blocks without creating a new runtime semantic:
+
+- Gate IDs `1..39`: Bakugan-character / Gold cards;
+- Gate IDs `40..71`: environmental-field / Silver cards;
+- Gate IDs `72..103`: tactical-conditional / Copper cards.
+
+These ranges are corroborated by the canonical global card-name ID domain and
+the reference type inventory. Guide row order remains forbidden for assigning
+individual card IDs. The family field organizes review and template selection
+only; it is never serialized into the 40-byte runtime record.
 
 ## Power and effective-swing bands
 

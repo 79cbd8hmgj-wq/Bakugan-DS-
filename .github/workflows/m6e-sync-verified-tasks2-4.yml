@@ -34,13 +34,16 @@ jobs:
       - name: Reassemble and verify exact patch
         run: |
           set -euo pipefail
-          cat automation/m6e-sync/chunk-* > /tmp/m6e-tasks2-4.patch.gz.b64
-          base64 --decode /tmp/m6e-tasks2-4.patch.gz.b64 > /tmp/m6e-tasks2-4.patch.gz
+          cat automation/m6e-sync/chunk-* | tr -d '[:space:]' \
+            > /tmp/m6e-tasks2-4.patch.gz.b64
+          base64 --decode /tmp/m6e-tasks2-4.patch.gz.b64 \
+            > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
             'fe031a7a4824b91089a479c0c07163f4ef03ce1ab6b62d1928e3a0ebf7e34cf4' \
             /tmp/m6e-tasks2-4.patch.gz | sha256sum -c -
           gzip --test /tmp/m6e-tasks2-4.patch.gz
-          gzip --decompress --stdout /tmp/m6e-tasks2-4.patch.gz > /tmp/m6e-tasks2-4.patch
+          gzip --decompress --stdout /tmp/m6e-tasks2-4.patch.gz \
+            > /tmp/m6e-tasks2-4.patch
           printf '%s  %s\n' \
             '23998ce7dd4f42c453922ccb855ff49aa2e059b40126d89744411165adfe62be' \
             /tmp/m6e-tasks2-4.patch | sha256sum -c -
@@ -67,4 +70,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: verify decoded payload boundaries
+# sync trigger: normalize chunk whitespace

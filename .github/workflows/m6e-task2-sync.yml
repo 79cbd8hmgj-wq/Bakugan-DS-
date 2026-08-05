@@ -61,4 +61,4 @@ jobs:
           git commit -m 'feat: add Milestone 6E roster metadata model'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# recovery trigger: 2026-08-05
+# recovery trigger: 2026-08-05T09:24-04:00

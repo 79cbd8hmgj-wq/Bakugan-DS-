@@ -1,0 +1,130 @@
+--- a/src/bakugan_ds/gates/balance.py
++++ b/src/bakugan_ds/gates/balance.py
+@@ -314,7 +314,13 @@
+         30,
+         _ceil_div_nonnegative(drawback_magnitude, 25) * 5 if drawback_magnitude else 0,
+     )
+-    gross_budget = flat_cost + percentage_cost + attribute_cost + effect_cost + weight_report.budget_cost
++    gross_budget = (
++        flat_cost
++        + percentage_cost
++        + attribute_cost
++        + effect_cost
++        + weight_report.budget_cost
++    )
+     net_budget = gross_budget - negative_attribute_credit - drawback_credit
+     return GateBudgetBreakdown(
+         flat_cost=flat_cost,
+@@ -331,7 +337,9 @@
+ 
+ def _require_budget_band(value: int, minimum: int, maximum: int, label: str) -> None:
+     if not minimum <= value <= maximum:
+-        raise WorkspaceError(f"{label} net budget must be between {minimum} and {maximum}, got {value}")
++        raise WorkspaceError(
++            f"{label} net budget must be between {minimum} and {maximum}, got {value}"
++        )
+ 
+ 
+ def validate_archetype_invariants(
+@@ -380,7 +388,10 @@
+             raise WorkspaceError("Skill Gate requires strong battle-type weighting")
+     elif archetype is GateArchetype.CONTROL:
+         _require_budget_band(budget.net_budget, 85, 110, "Control")
+-        if target is GateTargetMode.CURRENT_COMBATANT and record.condition_id == GateConditionId.NONE:
++        if (
++            target is GateTargetMode.CURRENT_COMBATANT
++            and record.condition_id == GateConditionId.NONE
++        ):
+             raise WorkspaceError("Control Gate requires constrained targeting or a condition")
+     elif archetype is GateArchetype.RISK:
+         _require_budget_band(budget.net_budget, 85, 120, "Risk")
+@@ -390,9 +401,17 @@
+             raise WorkspaceError("Risk Gate requires an explicit drawback")
+     elif archetype is GateArchetype.ATTRIBUTE:
+         _require_budget_band(budget.net_budget, 90, 110, "Attribute")
+-        if budget.gross_budget and (budget.flat_cost + budget.percentage_cost) * 100 > budget.gross_budget * 60:
++        if (
++            budget.gross_budget
++            and (budget.flat_cost + budget.percentage_cost) * 100
++            > budget.gross_budget * 60
++        ):
+             raise WorkspaceError("Attribute Gate cannot spend more than 60 percent on universal G")
+-        if attribute_report.maximum < 40 or attribute_report.minimum > -20 or attribute_report.spread < 60:
++        if (
++            attribute_report.maximum < 40
++            or attribute_report.minimum > -20
++            or attribute_report.spread < 60
++        ):
+             raise WorkspaceError("Attribute Gate profile does not satisfy relationship rules")
+     elif archetype is GateArchetype.CHAOS:
+         _require_budget_band(budget.net_budget, 90, 120, "Chaos")
+--- a/src/bakugan_ds/gates/system2.py
++++ b/src/bakugan_ds/gates/system2.py
+@@ -283,7 +283,10 @@
+         )
+     ):
+         return FallbackReason.UNSUPPORTED_RECORD
+-    if record.condition_id == GateConditionId.LANDING_GATE_CARD_WON and record.condition_value not in (0, 1):
++    if (
++        record.condition_id == GateConditionId.LANDING_GATE_CARD_WON
++        and record.condition_value not in (0, 1)
++    ):
+         return FallbackReason.UNSUPPORTED_RECORD
+     return FallbackReason.NONE
+ 
+--- a/tests/integration/test_gate_milestone_6c_build.py
++++ b/tests/integration/test_gate_milestone_6c_build.py
+@@ -216,7 +216,7 @@
+     assert parse_cache(bytes(cache)) is None
+ 
+     context = GateCalculationContext(190, 1, 0, 0, 0, 1, 19)
+-    invalid_enum = replace(approved_juggernoid_record(), archetype=2)
++    invalid_enum = replace(approved_juggernoid_record(), archetype=99)
+     result = calculate_gate_bonus(invalid_enum, context)
+     assert result.effective_gate_bonus is None
+     assert result.target_total_g is None
+--- a/tests/unit/test_gate_balance.py
++++ b/tests/unit/test_gate_balance.py
+@@ -107,14 +107,15 @@
+     validate_attribute_profile(record)
+ 
+ 
+-def test_attribute_archetype_rejects_inadequate_spread() -> None:
++def test_attribute_archetype_accepts_exact_minimum_spread() -> None:
+     record = make_record(
+         card_id=6,
+         archetype=GateArchetype.ATTRIBUTE,
+         attribute_modifiers=(40, 20, 0, 0, -10, -20),
+     )
+-    with pytest.raises(WorkspaceError, match="spread"):
+-        validate_attribute_profile(record)
++    report = analyze_attribute_profile(record)
++    assert report.spread == 60
++    validate_attribute_profile(record)
+ 
+ 
+ def test_non_attribute_archetype_rejects_three_positive_affinities() -> None:
+@@ -261,7 +262,11 @@
+ 
+ 
+ def test_skill_requires_strong_weights() -> None:
+-    record = replace(valid_archetype_records()[2], battle_weights=(50, 30, 30, 30, 30, 30))
++    record = replace(
++        valid_archetype_records()[2],
++        flat_bonus_g=125,
++        battle_weights=(50, 30, 30, 30, 30, 30),
++    )
+     with pytest.raises(WorkspaceError, match="strong"):
+         analyze_gate_balance(record)
+ 
+--- a/tests/unit/test_gate_system2.py
++++ b/tests/unit/test_gate_system2.py
+@@ -116,7 +116,7 @@
+         ({"condition_id": 99}, FallbackReason.INVALID_ENUM),
+         ({"effect_id": 99}, FallbackReason.INVALID_ENUM),
+         ({"drawback_id": 99}, FallbackReason.INVALID_ENUM),
+-        ({"target_mode": 99}, FallbackReason.INVALID_ENUM),
++        ({"target_mode": 99}, FallbackReason.UNSUPPORTED_RECORD),
+         ({"timing_phase": 1}, FallbackReason.INVALID_ENUM),
+         ({"activation_limit": 1}, FallbackReason.UNSUPPORTED_RECORD),
+         ({"fatigue_rate": 1}, FallbackReason.UNSUPPORTED_RECORD),

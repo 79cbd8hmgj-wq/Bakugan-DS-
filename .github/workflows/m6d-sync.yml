@@ -6,6 +6,7 @@ on:
       - milestone-6d-core-balance-framework
     paths:
       - automation/m6d-sync.patch
+      - .github/workflows/m6d-sync.yml
 
 permissions:
   contents: write
@@ -21,7 +22,10 @@ jobs:
           fetch-depth: 0
       - name: Apply exact locally verified patch
         run: |
-          test -f automation/m6d-sync.patch
+          if [[ ! -f automation/m6d-sync.patch ]]; then
+            echo "No staged patch remains."
+            exit 0
+          fi
           git apply automation/m6d-sync.patch
           cp config/gates/milestone-6c-system2-v1.json \
             config/gates/milestone-6d-system2-v1.json

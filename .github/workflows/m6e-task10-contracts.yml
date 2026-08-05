@@ -57,7 +57,12 @@ jobs:
           run_checked python -m ruff check \
             .github/scripts/m6e_task10_contracts.py \
             src/bakugan_ds/gates/roster_contracts.py \
-            tests/unit/test_gate_roster_contracts.py
+            tests/unit/test_gate_roster_contracts.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_milestone_6e_skill_control.py \
+            tests/unit/test_gate_milestone_6e_comeback.py \
+            tests/unit/test_gate_milestone_6e_risk_chaos.py \
+            tests/unit/test_gate_roster_metadata.py
           run_checked python -m mypy src/bakugan_ds
           run_checked python -m pytest -q
           run_checked git diff --check
@@ -81,6 +86,11 @@ jobs:
             config/gates/milestone-6e-system2-v1.json \
             config/gates/milestone-6e-roster-metadata.json \
             src/bakugan_ds/gates/roster_contracts.py \
-            tests/unit/test_gate_roster_contracts.py
+            tests/unit/test_gate_roster_contracts.py \
+            tests/unit/test_gate_milestone_6e_power_attribute.py \
+            tests/unit/test_gate_milestone_6e_skill_control.py \
+            tests/unit/test_gate_milestone_6e_comeback.py \
+            tests/unit/test_gate_milestone_6e_risk_chaos.py \
+            tests/unit/test_gate_roster_metadata.py
           git commit -m 'feat: freeze final Gate roster contracts'
           git push origin HEAD:${{ github.head_ref }}

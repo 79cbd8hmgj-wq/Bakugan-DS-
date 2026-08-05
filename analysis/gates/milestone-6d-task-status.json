@@ -18,8 +18,8 @@
   ],
   "current_batch": [],
   "external_handoff": {
-    "final_pr_review": "pending",
-    "github_ci": "pending",
+    "final_pr_review": "in_progress",
+    "github_ci": "rerun_after_ruff_remediation",
     "github_sync": "passed",
     "merge": "pending"
   },

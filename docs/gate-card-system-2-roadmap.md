@@ -20,7 +20,7 @@ moderate scalable G bonus
 + optional condition or drawback
 ```
 
-No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B. Milestone 6C is now complete and enables only the reviewed Juggernoid prototype; it does not authorize the full roster or the Milestone 6D balance framework.
+No System 2.0 gameplay effect is implemented by Milestone 6A or Milestone 6B. Milestone 6C enables only the reviewed Juggernoid prototype. Milestone 6D is complete and provides the reusable deterministic balance framework, but it still does not authorize the full roster.
 
 ## Milestone 6A — reverse-engineering foundation
 
@@ -138,21 +138,38 @@ Completed deliverables:
 
 Only Gate ID `19`, Juggernoid, is active. Arena ID remains deferred. Ability interaction, fatigue, history penalties, AI, presentation, saves, reusable effects, power budgets, and the full roster remain excluded.
 
-## Milestone 6D — core balance framework
+## Milestone 6D — core balance framework — complete
 
-- Finalize hybrid flat/percentage scaling.
-- Define attribute relationships.
-- Define Gate archetypes and internal power budgets.
-- Establish bounded battle-type weights and probability rules.
-- Implement the initial reusable condition and effect library.
+Completed deliverables:
+
+- seven fixed archetypes backed by shared deterministic mechanics;
+- internal gross/net power-budget accounting and archetype bands;
+- record-local attribute relationship tiers and profile rules;
+- bounded six-type battle weights with a maximum 40% outcome probability;
+- reusable owner, score, match-point, and confirmed landing conditions;
+- current, owner, and non-owner target predicates;
+- signed G effects and explicit drawbacks;
+- generic emitted ARM condition, target, effect, calculation, and selector dispatch;
+- transactional exact-ROM installation and deterministic double rebuild;
+- host/emitted parity and bounded live-runtime acceptance.
+
+Only Gate ID `19`, Juggernoid, is live. The remaining 102 records are canonical legacy passthroughs. Arena ID remains deferred. Ability manipulation, fatigue, history penalties, AI, presentation, and save changes remain excluded.
 
 ## Milestone 6E — complete roster conversion
 
-- Convert IDs `1–103` to System 2.0 records.
-- Assign one readable identity to every Gate.
-- Remove purely inferior duplicates through differentiated rules rather than simple inflation.
-- Validate power budgets against compressed core G.
-- Preserve selected exceptional cards intentionally.
+Entry requires merged Milestone 6D verification, a clean exact-build baseline, and no expansion of the supported semantic domain without a separate design review.
+
+For every Gate ID `1–103`:
+
+- assign exactly one of the seven archetypes;
+- satisfy the archetype budget band and invariants;
+- preserve bounded battle probabilities and nonzero access to all six battle types;
+- use only supported deterministic conditions, targets, effects, and drawbacks;
+- assign a readable gameplay identity and documented balance rationale;
+- remove purely inferior duplicates through differentiated rules rather than inflation;
+- pass reference-value analysis before exact-ROM and live testing.
+
+Milestone 6E must not silently add Ability effects, fatigue, history penalties, AI changes, presentation changes, save changes, or arena-dependent mechanics.
 
 ## Milestone 6F — advanced stateful mechanics
 

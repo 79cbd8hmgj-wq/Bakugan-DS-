@@ -251,3 +251,13 @@ def test_report_milestone_6d_writes_atomically(
     assert output.read_bytes() == first
     assert json.loads(first)["live_card_ids"] == [19]
     assert "sha256=" in capsys.readouterr().out
+
+
+def test_gate_parser_accepts_milestone_6d_install() -> None:
+    parser = gate_cli.build_gate_parser()
+    arguments = parser.parse_args(
+        ["install-milestone-6d", "work", "--dry-run"]
+    )
+    assert arguments.gate_command == "install-milestone-6d"
+    assert arguments.authoring == Path("config/gates/milestone-6d-system2-v1.json")
+    assert arguments.dry_run is True

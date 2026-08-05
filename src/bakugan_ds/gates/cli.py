@@ -120,7 +120,7 @@ def _add_gate_commands(subparsers: Any) -> None:
         help="write the deterministic Milestone 6D Gate balance report",
     )
     report_6d_parser.add_argument("authoring", type=Path)
-    report_6d_Parser.add_argument("output", type=Path)
+    report_6d_parser.add_argument("output", type=Path)
 
     readiness_parser = subparsers.add_parser(
         "readiness",

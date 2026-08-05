@@ -224,7 +224,661 @@ def _build_matches_target_6d() -> _RoutineImage:
     asm.branch("valid")
     asm.label("owner")
     asm.emit(_compare_register(Register.R0, Register.R2))
-   ²È="25}}‰Õ¥±‘}±•…É}¡½½­|Ù ¤€´ø}I½ÕÑ¥¹•%µ…”è(€€€…Í´€ô}I½ÕÑ¥¹•ÍÍ•µ‰±•È¡}…‘‘É•ÍÍ|Ù ‰œÉ}±•…É}¡½½¬ˆ¤¤(€€€Í…Ù•€ô€ (€€€€€€€I•¥ÍÑ•È¹HÄ°(€€€€€€€I•¥ÍÑ•È¹HÈ°(€€€€€€€I•¥ÍÑ•È¹HÌ°(€€€€€€€I•¥ÍÑ•È¹HÐ°(€€€€€€€I•¥ÍÑ•È¹HÄÈ°(€€€€€€€I•¥ÍÑ•È¹1H°(€€€€¤(€€€…Í´¹•µ¥Ð¡•¹½‘•}ÁÕÍ ¡Í…Ù•¤¤(€€€…Í´¹‰É…¹ ¡}…‘‘É•ÍÍ|Ù ‰œÉ}±•…É}…¡”ˆ¤°±¥¹¬õQÉÕ”¤(€€€…Í´¹±½…‘}½¹ÍÑ…¹Ð¡I•¥ÍÑ•È¹HÄÈ°€‰±•…å}±½…‘}…‘‘É•ÍÌˆ°€ÁàÀÈÈÐÅÁ¤(€€€…Í´¹•µ¥Ð¡•¹½‘•}±½…‘}ÍÑ½É”¡I•¥ÍÑ•È¹HÀ°I•¥ÍÑ•È¹HÄÈ°½™™Í•ÐôÀ°±½…õQÉÕ”¤¤(€€€…Í´¹•µ¥Ð (€€€€€€€•¹½‘•}Á½À (€€€€€€€€€€€€ (€€€€€€€€€€€€€€€I•¥ÍÑ•È¹HÄ°(€€€€€€€€€€€€€€€I•¥ÍÑ•È¹HÈ°(€€€€€€€€€€€€€€€I•¥ÍÑ•È¹HÌ°(€€€€€€€€€€€€€€€I•¥ÍÑ•È¹HÐ°(€€€€€€€€€€€€€€€I•¥ÍÑ•È¹HÄÈ°(€€€€€€€€€€€€€€€I•¥ÍÑ•È¹A°(€€€€€€€€€€€€¤(€€€€€€€€¤(€€€€¤(€€€É•ÑÕÉ¸…Í´¹™¥¹¥Í  ¤(()‘•˜}µ¥±•ÍÑ½¹•|Ù‘}É½ÕÑ¥¹•}‘•™¥¹¥Ñ¥½¹Ì ¤€´øÑÕÁ±•m}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸°€¸¸¹tè(€€€±•…ä€ô}…‘‘É•ÍÍ|Ù ‰œÉ}±•…å}…Ñ•}‰½¹ÕÌˆ¤(€€€É•ÑÕÉ¸€ (€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}±•…É}…¡”ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}±•…É}…¡”‰t°(€€€€€€€€€€€}‰Õ¥±‘}±•…É}…¡” ¤°(€€€€€€€€€€€€‰±•…È•á…Ñ±äÍ¥áÑ••¸…¡”Ý½É‘Ì…¹É•ÑÕÉ¸¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}Ù…±¥‘…Ñ•}…¡”ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}Ù…±¥‘…Ñ•}…¡”‰t°(€€€€€€€€€€€}‰Õ¥±‘}Ù…±¥‘…Ñ•}…¡” ¤°(€€€€€€€€€€€€‰Y…±¥‘…Ñ”…¡”™±…œ°Ù•ÉÍ¥½¸°µ•Ñ…‘…Ñ„%°…¹É•½É%¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}ÉŒÌÉ}ÕÁ‘…Ñ”ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}ÉŒÌÉ}ÕÁ‘…Ñ”‰t°(€€€€€€€€€€€}‰Õ¥±‘}ÉŒÌÉ}ÕÁ‘…Ñ” ¤°(€€€€€€€€€€€€‰UÁ‘…Ñ”„É•™±•Ñ•%IÌÈ½Ù•È„‰½Õ¹‘•‰åÑ”‰Õ™™•È¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}±½…‘}Í•±•Ñ•‘}É•½Éˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}±½…‘}Í•±•Ñ•‘}É•½É‰t°(€€€€€€€€€€€}‰Õ¥±‘}±½…‘}Í•±•Ñ•‘}É•½É ¤°(€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€‰I•……±°€ÄÀÌ½É‘•É•É•½É‘Ì°É•½µÁÕÑ”Á…å±½…IÌÈ°…¹ÍÑ…”€ˆ(€€€€€€€€€€€€€€€€‰Ñ¡”Í•±•Ñ•É•½ÉÑ¡É½Õ ½¹™¥Éµ•9¥ÑÉ½L…±±Ì¸ˆ(€€€€€€€€€€€€¤°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}Ù…±¥‘…Ñ•}Í•±•Ñ•‘}É•½Éˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}Ù…±¥‘…Ñ•}Í•±•Ñ•‘}É•½É‰t°(€€€€€€€€€€€}‰Õ¥±‘}Ù…±¥‘…Ñ•}Í•±•Ñ•‘}É•½É ¤°(€€€€€€€€€€€€‰Y…±¥‘…Ñ”…¹½¹¥…°Á…ÍÍÑ¡É½Õ ‰åÑ•Ì½ÈÑ¡”•á…Ð…ÁÁÉ½Ù•…Ñ”€ÄäÉ•½É¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}±•…å}…Ñ•}‰½¹ÕÌˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}±•…å}…Ñ•}‰½¹ÕÌ‰t°(€€€€€€€€€€€}ÍÑ…Ñ¥}É½ÕÑ¥¹” (€€€€€€€€€€€€€€€±•…ä°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€€ÁáÑLÄÀÄä°(€€€€€€€€€€€€€€€€€€€€ÁáÅØÀÁÐ°(€€€€€€€€€€€€€€€€€€€€ÁáÅÀÅÀÄ°(€€€€€€€€€€€€€€€€€€€€ÁáÅÀÅÈÄ°(€€€€€€€€€€€€€€€€€€€}‰É…¹ ¡±•…ä€¬€ÄØ°€ÁàÀÈÀØÕ	Ð°±¥¹¬õQÉÕ”¤°(€€€€€€€€€€€€€€€€€€€€ÁáÍÀÄÀÁ°(€€€€€€€€€€€€€€€€€€€€ÁáÀÀÄÀÄäÀ°(€€€€€€€€€€€€€€€€€€€€ÁáÅÔÄÅÈ°(€€€€€€€€€€€€€€€€€€€€ÁáÍÀÌÀÀÀ°(€€€€€€€€€€€€€€€€€€€}‰É…¹ ¡±•…ä€¬€ÌØ°€ÁàÀÈÈÍÈÜà¤°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€€ Ð°€ä¤°(€€€€€€€€€€€€¤°(€€€€€€€€€€€€‰I•±½…Ñ••á…Ð½É¥¥¹…°…Ñ”±½½­ÕÀ°Í…±”°…¹ÍÑ½É”‰±½¬¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}…±Õ±…Ñ•}…Ñ•}‰½¹ÕÌˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}…±Õ±…Ñ•}…Ñ•}‰½¹ÕÌ‰t°(€€€€€€€€€€€}‰Õ¥±‘}…±Õ±…Ñ•}…Ñ•}‰½¹ÕÍ|Ù ¤°(€€€€€€€€€€€€‰Ù…±Õ…Ñ”Ñ¡”Í•±•Ñ•Ù•ÉÍ¥½¸´Ä…Ñ”É•½ÉÑ¡É½Õ •¹•É¥Œ‘•Ñ•Éµ¥¹¥ÍÑ¥Œ‘¥ÍÁ…Ñ ¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}…Ñ•}‰½¹ÕÍ}¡½½¬ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}…Ñ•}‰½¹ÕÍ}¡½½¬‰t°(€€€€€€€€€€€}ÍÑ…Ñ¥}É½ÕÑ¥¹” (€€€€€€€€€€€€€€€}…‘‘É•ÍÍ|Ù ‰œÉ}…Ñ•}‰½¹ÕÍ}¡½½¬ˆ¤°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€}‰É…¹  (€€€€€€€€€€€€€€€€€€€€€€€}…‘‘É•ÍÍ|Ù ‰œÉ}…Ñ•}‰½¹ÕÍ}¡½½¬ˆ¤°(€€€€€€€€€€€€€€€€€€€€€€€}…‘‘É•ÍÍ|Ù ‰œÉ}…±Õ±…Ñ•}…Ñ•}‰½¹ÕÌˆ¤°(€€€€€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€€ À°¤°(€€€€€€€€€€€€¤°(€€€€€€€€€€€€‰MÑ…‰±”…Ñ”¡½½¬•¹ÑÉäÉ½ÕÑ•Ñ¡É½Õ Ñ¡”5¥±•ÍÑ½¹”€Ù‘¥ÍÁ…Ñ¡•È¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}½¹Ñ•áÑ}ÍÑ½É•}¡½½¬ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}½¹Ñ•áÑ}ÍÑ½É•}¡½½¬‰t°(€€€€€€€€€€€}‰Õ¥±‘}½¹Ñ•áÑ}ÍÑ½É•}¡½½­|Ù ¤°(€€€€€€€€€€€€‰±…µÀÍ¥¹•MåÍÑ•´€È¸ÀÑ½Ñ…±Ì…¹É•Á±…äÑ¡”•á…Ð±•…ä…‘½ÍÑ½É”Á…Ñ ¸ˆ°(€€€€€€€€¤°(€€€€€€€}I½ÕÑ¥¹••™¥¹¥Ñ¥½¸ (€€€€€€€€€€€€‰œÉ}Í•±•Ñ}‰…ÑÑ±•}ÑåÁ”ˆ°(€€€€€€€€€€€}5%1MQ=9|Ù}=MQMl‰œÉ}Í•±•Ñ}‰…ÑÑ±•}ÑåÁ”‰t°(€€€€€€€€€€€}‰Õ¥±‘}Í•±•Ñ}‰…ÑÑ±•}ÑåÁ•|Ù ¤°(€€€€€€€€€€€€‰UÍ”‰½Õ¹‘•…¡•Ý•¥¡ÑÌ™½È¹½¹±•…äÉ•½É‘Ì…¹±•…äµ•Ñ…‘…Ñ„½Ñ¡•ÉÝ¥Íe.",
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.MOV,
+            rd=Register.R0,
+            immediate=1,
+            condition=Condition.EQ,
+        )
+    )
+    asm.branch("valid")
+    asm.label("non_owner")
+    asm.emit(_compare_register(Register.R0, Register.R2))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.MOV,
+            rd=Register.R0,
+            immediate=1,
+            condition=Condition.NE,
+        )
+    )
+    asm.branch("valid")
+    asm.label("invalid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R1, immediate=0))
+    asm.emit(encode_bx(Register.LR))
+    asm.label("valid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R1, immediate=1))
+    asm.emit(encode_bx(Register.LR))
+    return asm.finish()
+
+
+def _build_apply_effect_6d() -> _RoutineImage:
+    """Return r0=new signed value and r1=valid for one deterministic G effect."""
+    asm = _RoutineAssembler(_address_6d("g2_apply_effect"))
+    asm.emit(_mov_register(Register.R12, Register.R0))
+    asm.emit(_compare_immediate(Register.R12, int(GateEffectId.NONE)))
+    asm.branch("none", condition=Condition.EQ)
+    asm.emit(_compare_immediate(Register.R12, int(GateEffectId.ADD_SIGNED_G)))
+    asm.branch("add", condition=Condition.EQ)
+    asm.emit(_compare_immediate(Register.R12, int(GateEffectId.SUBTRACT_MAGNITUDE_G)))
+    asm.branch("subtract_magnitude", condition=Condition.EQ)
+    asm.branch("invalid")
+
+    asm.label("none")
+    asm.emit(_mov_register(Register.R0, Register.R2))
+    asm.branch("valid")
+
+    asm.label("add")
+    asm.emit(
+        encode_data_processing_register(
+            DataOpcode.ADD,
+            rd=Register.R0,
+            rn=Register.R2,
+            rm=Register.R1,
+            set_flags=True,
+        )
+    )
+    asm.branch("invalid", condition=Condition.VS)
+    asm.branch("valid")
+
+    asm.label("subtract_magnitude")
+    asm.load_constant(Register.R0, "i32_min", 0x80000000)
+    asm.emit(_compare_register(Register.R1, Register.R0))
+    asm.branch("invalid", condition=Condition.EQ)
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R3, immediate=0))
+    asm.emit(_compare_immediate(Register.R1, 0))
+    asm.emit(
+        encode_data_processing_register(
+            DataOpcode.SUB,
+            rd=Register.R3,
+            rn=Register.R3,
+            rm=Register.R1,
+            condition=Condition.MI,
+        )
+    )
+    asm.emit(_with_condition(_mov_register(Register.R3, Register.R1), Condition.PL))
+    asm.emit(
+        encode_data_processing_register(
+            DataOpcode.SUB,
+            rd=Register.R0,
+            rn=Register.R2,
+            rm=Register.R3,
+            set_flags=True,
+        )
+    )
+    asm.branch("invalid", condition=Condition.VS)
+    asm.branch("valid")
+
+    asm.label("invalid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=0))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R1, immediate=0))
+    asm.emit(encode_bx(Register.LR))
+    asm.label("valid")
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R1, immediate=1))
+    asm.emit(encode_bx(Register.LR))
+    return asm.finish()
+
+
+def _build_calculate_gate_bonus_6d() -> _RoutineImage:
+    asm = _RoutineAssembler(_address_6d("g2_calculate_gate_bonus"))
+    saved = (*tuple(Register(value) for value in range(4, 13)), Register.LR)
+    asm.emit(encode_push(saved))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.SUB,
+            rd=Register.SP,
+            rn=Register.SP,
+            immediate=32,
+        )
+    )
+    asm.emit(encode_load_store(Register.R4, Register.SP, offset=0, load=False))
+
+    asm.emit(encode_halfword_transfer(Register.R11, Register.R6, offset=4, load=True))
+    asm.emit(_compare_immediate(Register.R11, 0))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(_compare_immediate(Register.R11, 104))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_mov_register(Register.R0, Register.R11))
+    asm.branch(_address_6d("g2_validate_cache"), link=True)
+    asm.emit(_compare_immediate(Register.R0, 1))
+    asm.branch("fallback", condition=Condition.NE)
+
+    asm.load_constant(Register.R7, "cache", CACHE_ADDRESS)
+    asm.emit(encode_load_store(Register.R0, Register.R7, offset=1, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R0, 0))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(_compare_immediate(Register.R0, 8))
+    asm.branch("fallback", condition=Condition.HS)
+    for offset, upper_bound in ((21, 8), (22, 3), (23, 3), (30, 3)):
+        asm.emit(encode_load_store(Register.R0, Register.R7, offset=offset, load=True, byte=True))
+        asm.emit(_compare_immediate(Register.R0, upper_bound))
+        asm.branch("fallback", condition=Condition.HS)
+    for offset in (28, 29, 31, 34, 35):
+        asm.emit(encode_load_store(Register.R0, Register.R7, offset=offset, load=True, byte=True))
+        asm.emit(_compare_immediate(Register.R0, 0))
+        asm.branch("fallback", condition=Condition.NE)
+    for offset in (36, 38):
+        asm.emit(encode_halfword_transfer(Register.R0, Register.R7, offset=offset, load=True))
+        asm.emit(_compare_immediate(Register.R0, 0))
+        asm.branch("fallback", condition=Condition.NE)
+
+    asm.emit(encode_load_store(Register.R4, Register.R6, offset=6, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R4, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(encode_load_store(Register.R4, Register.SP, offset=20, load=False))
+
+    asm.emit(encode_load_store(Register.R0, Register.R5, offset=0x19, load=True, byte=True))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.AND,
+            rd=Register.R9,
+            rn=Register.R0,
+            immediate=0x0F,
+        )
+    )
+    asm.emit(_compare_immediate(Register.R9, 6))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(encode_load_store(Register.R9, Register.SP, offset=8, load=False))
+    asm.emit(_shift_register(Register.R8, Register.R0, ShiftType.LSR, 4))
+    asm.emit(_compare_immediate(Register.R8, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(encode_load_store(Register.R8, Register.SP, offset=16, load=False))
+
+    asm.load_constant(Register.R9, "global_config", 0x020D433C)
+    asm.emit(encode_load_store(Register.R10, Register.R9, load=True))
+    asm.emit(_compare_immediate(Register.R10, 0))
+    asm.branch("fallback", condition=Condition.EQ)
+
+    asm.emit(encode_load_store(Register.R11, Register.SP, offset=0, load=True))
+    asm.emit(_compare_immediate(Register.R11, 2))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_compare_immediate(Register.R11, 0))
+    asm.emit(
+        encode_load_store(
+            Register.R0,
+            Register.R10,
+            offset=0x28D,
+            load=True,
+            byte=True,
+            condition=Condition.EQ,
+        )
+    )
+    asm.emit(
+        encode_load_store(
+            Register.R0,
+            Register.R10,
+            offset=0x28E,
+            load=True,
+            byte=True,
+            condition=Condition.NE,
+        )
+    )
+    asm.emit(_compare_immediate(Register.R0, 26))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_shift_register(Register.R1, Register.R0, ShiftType.LSL, 2))
+    asm.emit(_add_register(Register.R1, Register.R1, Register.R0))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSL, 2))
+    asm.emit(_add_register(Register.R12, Register.R10, Register.R1))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R12,
+            rn=Register.R12,
+            immediate=0x7C,
+        )
+    )
+    asm.emit(encode_load_store(Register.R1, Register.R12, offset=0x0F, load=True, byte=True))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.AND,
+            rd=Register.R1,
+            rn=Register.R1,
+            immediate=0x0F,
+        )
+    )
+    asm.emit(_compare_register(Register.R1, Register.R8))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.emit(encode_load_store(Register.R0, Register.R12, offset=0x0E, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R0, 3))
+    asm.branch("fallback", condition=Condition.HS)
+
+    _emit_participant_pointer(
+        asm,
+        session=Register.R10,
+        participant_index=Register.R8,
+        destination=Register.R1,
+        scratch=Register.R2,
+        failure_label="fallback",
+    )
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R2, immediate=12))
+    asm.emit(encode_mul(Register.R0, Register.R0, Register.R2))
+    asm.emit(_add_register(Register.R12, Register.R1, Register.R0))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R12,
+            rn=Register.R12,
+            immediate=12,
+        )
+    )
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R12, offset=4, load=True))
+    asm.emit(_compare_immediate(Register.R0, CORE_G_COMPRESSION_THRESHOLD))
+    asm.emit(
+        _shift_register(
+            Register.R0,
+            Register.R0,
+            ShiftType.LSR,
+            1,
+            condition=Condition.HI,
+        )
+    )
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R0,
+            rn=Register.R0,
+            immediate=CORE_G_COMPRESSION_BASE,
+            condition=Condition.HI,
+        )
+    )
+    asm.emit(encode_load_store(Register.R0, Register.SP, offset=4, load=False))
+
+    asm.emit(encode_halfword_transfer(Register.R1, Register.R7, offset=4, load=True))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSL, 16))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.ASR, 16))
+    asm.emit(encode_halfword_transfer(Register.R2, Register.R7, offset=6, load=True))
+    asm.emit(_shift_register(Register.R2, Register.R2, ShiftType.LSL, 16))
+    asm.emit(_shift_register(Register.R2, Register.R2, ShiftType.ASR, 16))
+    asm.emit(encode_mul(Register.R3, Register.R0, Register.R2))
+    asm.emit(_compare_immediate(Register.R3, 0))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.R3,
+            rn=Register.R3,
+            immediate=255,
+            condition=Condition.MI,
+        )
+    )
+    asm.emit(_shift_register(Register.R3, Register.R3, ShiftType.ASR, 8))
+    asm.emit(encode_load_store(Register.R0, Register.SP, offset=8, load=True))
+    asm.emit(_add_register(Register.R12, Register.R7, Register.R0))
+    asm.emit(encode_load_store(Register.R0, Register.R12, offset=8, load=True, byte=True))
+    asm.emit(_shift_register(Register.R0, Register.R0, ShiftType.LSL, 24))
+    asm.emit(_shift_register(Register.R0, Register.R0, ShiftType.ASR, 24))
+    asm.emit(_add_register(Register.R3, Register.R3, Register.R1))
+    asm.emit(_add_register(Register.R3, Register.R3, Register.R0))
+    asm.emit(encode_load_store(Register.R3, Register.SP, offset=12, load=False))
+
+    asm.emit(encode_load_store(Register.R0, Register.R6, offset=0x19, load=True, byte=True))
+    asm.emit(_shift_register(Register.R0, Register.R0, ShiftType.LSR, 4))
+    asm.emit(_compare_immediate(Register.R0, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(encode_load_store(Register.R1, Register.R6, offset=0x2D, load=True, byte=True))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSR, 4))
+    asm.emit(_compare_immediate(Register.R1, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_compare_register(Register.R0, Register.R1))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(_compare_register(Register.R4, Register.R0))
+    asm.emit(_with_condition(_mov_register(Register.R12, Register.R1), Condition.EQ))
+    asm.branch("owner_resolved", condition=Condition.EQ)
+    asm.emit(_compare_register(Register.R4, Register.R1))
+    asm.emit(_with_condition(_mov_register(Register.R12, Register.R0), Condition.EQ))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.label("owner_resolved")
+    asm.emit(encode_load_store(Register.R12, Register.SP, offset=24, load=False))
+
+    _emit_participant_pointer(
+        asm,
+        session=Register.R10,
+        participant_index=Register.R4,
+        destination=Register.R1,
+        scratch=Register.R11,
+        failure_label="fallback",
+    )
+    _emit_participant_pointer(
+        asm,
+        session=Register.R10,
+        participant_index=Register.R12,
+        destination=Register.R0,
+        scratch=Register.R11,
+        failure_label="fallback",
+    )
+    asm.emit(encode_load_store(Register.R2, Register.R1, offset=0xEE, load=True, byte=True))
+    asm.emit(encode_load_store(Register.R3, Register.R0, offset=0xEE, load=True, byte=True))
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0x98, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R6, 0))
+    asm.branch("scores_ready", condition=Condition.EQ)
+
+    asm.emit(encode_load_store(Register.R11, Register.R1, offset=0xF2, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R11, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_compare_register(Register.R11, Register.R4))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(_compare_register(Register.R11, Register.R12))
+    asm.branch("fallback", condition=Condition.EQ)
+    _emit_participant_pointer(
+        asm,
+        session=Register.R10,
+        participant_index=Register.R11,
+        destination=Register.R9,
+        scratch=Register.R6,
+        failure_label="fallback",
+    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xF2, load=True, byte=True))
+    asm.emit(_compare_register(Register.R6, Register.R4))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xEE, load=True, byte=True))
+    asm.emit(_add_register(Register.R2, Register.R2, Register.R6))
+
+    asm.emit(encode_load_store(Register.R11, Register.R0, offset=0xF2, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R11, 16))
+    asm.branch("fallback", condition=Condition.HS)
+    asm.emit(_compare_register(Register.R11, Register.R12))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(_compare_register(Register.R11, Register.R4))
+    asm.branch("fallback", condition=Condition.EQ)
+    _emit_participant_pointer(
+        asm,
+        session=Register.R10,
+        participant_index=Register.R11,
+        destination=Register.R9,
+        scratch=Register.R6,
+        failure_label="fallback",
+    )
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xF2, load=True, byte=True))
+    asm.emit(_compare_register(Register.R6, Register.R12))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.emit(encode_load_store(Register.R6, Register.R9, offset=0xEE, load=True, byte=True))
+    asm.emit(_add_register(Register.R3, Register.R3, Register.R6))
+
+    asm.label("scores_ready")
+    asm.emit(encode_load_store(Register.R0, Register.R7, offset=21, load=True, byte=True))
+    asm.emit(_mov_register(Register.R1, Register.R2))
+    asm.emit(_mov_register(Register.R2, Register.R3))
+    asm.load_constant(Register.R3, "landing_unavailable", 0xFFFFFFFF)
+    asm.emit(_compare_immediate(Register.R0, int(GateConditionId.LANDING_GATE_CARD_WON)))
+    asm.branch("condition_ready", condition=Condition.NE)
+    asm.emit(encode_load_store(Register.R3, Register.R10, offset=0x298, load=True))
+    asm.emit(_compare_immediate(Register.R3, 0))
+    asm.branch("fallback", condition=Condition.EQ)
+    asm.emit(encode_load_store(Register.R3, Register.R3, offset=0x1D2, load=True, byte=True))
+    asm.label("condition_ready")
+    asm.branch(_address_6d("g2_evaluate_condition"), link=True)
+    asm.emit(_compare_immediate(Register.R1, 1))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.emit(_mov_register(Register.R11, Register.R0))
+
+    asm.emit(encode_load_store(Register.R0, Register.R7, offset=30, load=True, byte=True))
+    asm.emit(encode_load_store(Register.R1, Register.SP, offset=16, load=True))
+    asm.emit(encode_load_store(Register.R2, Register.SP, offset=20, load=True))
+    asm.branch(_address_6d("g2_matches_target"), link=True)
+    asm.emit(_compare_immediate(Register.R1, 1))
+    asm.branch("fallback", condition=Condition.NE)
+    asm.emit(_compare_immediate(Register.R11, 0))
+    asm.branch("effects_complete", condition=Condition.EQ)
+    asm.emit(_compare_immediate(Register.R0, 0))
+    asm.branch("effects_complete", condition=Condition.EQ)
+
+    for effect_offset, value_offset in ((22, 24), (23, 26)):
+        asm.emit(
+            encode_load_store(
+                Register.R0,
+                Register.R7,
+                offset=effect_offset,
+                load=True,
+                byte=True,
+            )
+        )
+        asm.emit(encode_halfword_transfer(Register.R1, Register.R7, offset=value_offset, load=True))
+        asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSL, 16))
+        asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.ASR, 16))
+        asm.emit(encode_load_store(Register.R2, Register.SP, offset=12, load=True))
+        asm.branch(_address_6d("g2_apply_effect"), link=True)
+        asm.emit(_compare_immediate(Register.R1, 1))
+        asm.branch("fallback", condition=Condition.NE)
+        asm.emit(encode_load_store(Register.R0, Register.SP, offset=12, load=False))
+
+    asm.label("effects_complete")
+    asm.emit(encode_load_store(Register.R7, Register.SP, offset=12, load=True))
+    asm.load_constant(Register.R0, "i16_max", 0x7FFF)
+    asm.emit(_compare_register(Register.R7, Register.R0))
+    asm.emit(_with_condition(_mov_register(Register.R7, Register.R0), Condition.GT))
+    asm.load_constant(Register.R0, "i16_min", 0xFFFF8000)
+    asm.emit(_compare_register(Register.R7, Register.R0))
+    asm.emit(_with_condition(_mov_register(Register.R7, Register.R0), Condition.LT))
+    asm.emit(encode_halfword_transfer(Register.R7, Register.R5, offset=0x12, load=False))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.SP,
+            rn=Register.SP,
+            immediate=32,
+        )
+    )
+    asm.emit(encode_pop(saved))
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R3, immediate=1))
+    asm.branch(0x0223D278)
+
+    asm.label("fallback")
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.ADD,
+            rd=Register.SP,
+            rn=Register.SP,
+            immediate=32,
+        )
+    )
+    asm.emit(encode_pop(saved))
+    asm.branch(_address_6d("g2_legacy_gate_bonus"))
+    return asm.finish()
+
+
+
+def _build_context_store_hook_6d() -> _RoutineImage:
+    asm = _RoutineAssembler(_address_6d("g2_context_store_hook"))
+    asm.emit(_compare_immediate(Register.R3, 1))
+    asm.branch("legacy", condition=Condition.NE)
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.LSL, 16))
+    asm.emit(_shift_register(Register.R1, Register.R1, ShiftType.ASR, 16))
+    asm.emit(_add_register(Register.R0, Register.R2, Register.R1))
+    asm.emit(_compare_immediate(Register.R0, 0))
+    asm.emit(
+        encode_data_processing_immediate(
+            DataOpcode.MOV,
+            rd=Register.R0,
+            immediate=0,
+            condition=Condition.LT,
+        )
+    )
+    asm.load_constant(Register.R12, "u16_max", 0xFFFF)
+    asm.emit(_compare_register(Register.R0, Register.R12))
+    asm.emit(_with_condition(_mov_register(Register.R0, Register.R12), Condition.HI))
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R5, offset=0x0E, load=False))
+    asm.branch(0x0223D290)
+    asm.label("legacy")
+    asm.emit(_add_register(Register.R0, Register.R2, Register.R1))
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R5, offset=0x0E, load=False))
+    asm.branch(0x0223D290)
+    return asm.finish()
+
+
+def _build_select_battle_type_6d() -> _RoutineImage:
+    asm = _RoutineAssembler(_address_6d("g2_select_battle_type"))
+    asm.emit(encode_push((Register.R4, Register.LR)))
+    asm.emit(_mov_register(Register.R4, Register.R0))
+    asm.emit(encode_halfword_transfer(Register.R0, Register.R4, offset=4, load=True))
+    asm.branch(_address_6d("g2_validate_cache"), link=True)
+    asm.emit(_compare_immediate(Register.R0, 1))
+    asm.branch("legacy", condition=Condition.NE)
+    asm.load_constant(Register.R1, "cache", CACHE_ADDRESS)
+    asm.emit(encode_load_store(Register.R2, Register.R1, offset=1, load=True, byte=True))
+    asm.emit(_compare_immediate(Register.R2, 0))
+    asm.branch("legacy", condition=Condition.EQ)
+    asm.emit(encode_data_processing_immediate(DataOpcode.MOV, rd=Register.R0, immediate=6))
+    asm.load_constant(
+        Register.R1,
+        "battle_weights",
+        CACHE_ADDRESS + GATE_RECORD_BATTLE_WEIGHTS_OFFSET,
+    )
+    asm.branch(WEIGHTED_SELECTOR_ADDRESS, link=True)
+    asm.emit(_compare_immediate(Register.R0, 5))
+    asm.branch("done", condition=Condition.LS)
+    asm.label("legacy")
+    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.branch(0x022433AC, link=True)
+    asm.label("done")
+    asm.emit(encode_pop((Register.R4, Register.PC)))
+    return asm.finish()
+
+
+def _build_loader_trampoline_6d() -> _RoutineImage:
+    asm = _RoutineAssembler(_address_6d("g2_loader_trampoline"))
+    asm.emit(0xE92D4008)
+    extra = (
+        Register.R0,
+        Register.R1,
+        Register.R2,
+        *tuple(Register(value) for value in range(4, 13)),
+    )
+    asm.emit(encode_push(extra))
+    asm.emit(encode_load_store(Register.R1, Register.R0, offset=0x38, load=True))
+    asm.emit(encode_halfword_transfer(Register.R4, Register.R1, offset=4, load=True))
+    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.branch(_address_6d("g2_validate_cache"), link=True)
+    asm.emit(_compare_immediate(Register.R0, 1))
+    asm.branch("restore", condition=Condition.EQ)
+    asm.emit(_mov_register(Register.R0, Register.R4))
+    asm.branch(_address_6d("g2_load_selected_record") + 8, link=True)
+    asm.label("restore")
+    asm.emit(encode_pop(extra))
+    asm.branch(0x022433B0)
+    return asm.finish()
+
+
+def _build_clear_hook_6d() -> _RoutineImage:
+    asm = _RoutineAssembler(_address_6d("g2_clear_hook"))
+    saved = (
+        Register.R1,
+        Register.R2,
+        Register.R3,
+        Register.R4,
+        Register.R12,
+        Register.LR,
+    )
+    asm.emit(encode_push(saved))
+    asm.branch(_address_6d("g2_clear_cache"), link=True)
+    asm.load_constant(Register.R12, "legacy_load_address", 0x02241B0C)
+    asm.emit(encode_load_store(Register.R0, Register.R12, offset=0, load=True))
+    asm.emit(
+        encode_pop(
+            (
+                Register.R1,
+                Register.R2,
+                Register.R3,
+                Register.R4,
+                Register.R12,
+                Register.PC,
+            )
+        )
+    )
+    return asm.finish()
+
+
+def _milestone_6d_routine_definitions() -> tuple[_RoutineDefinition, ...]:
+    legacy = _address_6d("g2_legacy_gate_bonus")
+    return (
+        _RoutineDefinition(
+            "g2_clear_cache",
+            _MILESTONE_6D_OFFSETS["g2_clear_cache"],
+            _build_clear_cache(),
+            "Clear exactly sixteen cache words and return.",
+        ),
+        _RoutineDefinition(
+            "g2_validate_cache",
+            _MILESTONE_6D_OFFSETS["g2_validate_cache"],
+            _build_validate_cache(),
+            "Validate cache flag, version, metadata ID, and record ID.",
+        ),
+        _RoutineDefinition(
+            "g2_crc32_update",
+            _MILESTONE_6D_OFFSETS["g2_crc32_update"],
+            _build_crc32_update(),
+            "Update a reflected IEEE CRC32 over a bounded byte buffer.",
+        ),
+        _RoutineDefinition(
+            "g2_load_selected_record",
+            _MILESTONE_6D_OFFSETS["g2_load_selected_record"],
+            _build_load_selected_record(),
+            (
+                "Read all 103 ordered records, recompute payload CRC32, and stage "
+                "the selected record through confirmed NitroFS calls."
+            ),
+        ),
+        _RoutineDefinition(
+            "g2_validate_selected_record",
+            _MILESTONE_6D_OFFSETS["g2_validate_selected_record"],
+            _build_validate_selected_record(),
+            "Validate canonical passthrough bytes or the exact approved Gate 19 record.",
+        ),
+        _RoutineDefinition(
+            "g2_legacy_gate_bonus",
+            _MILESTONE_6D_OFFSETS["g2_legacy_gate_bonus"],
+            _static_routine(
+                legacy,
+                (
+                    0xE5D51019,
+                    0xE1D600B4,
+                    0xE1A01E01,
+                    0xE1A01E21,
+                    _branch(legacy + 16, 0x02065BF4, link=True),
+                    0xE3A0100A,
+                    0xE0010190,
+                    0xE1C511B2,
+                    0xE3A03000,
+                    _branch(legacy + 36, 0x0223D278),
+                ),
+                (4, 9),
+            ),
+            "Relocated exact original Gate lookup, scale, and store block.",
+        ),
+        _RoutineDefinition(
+            "g2_calculate_gate_bonus",
+            _MILESTONE_6D_OFFSETS["g2_calculate_gate_bonus"],
+            _build_calculate_gate_bonus_6d(),
+            "Evaluate the selected version-1 Gate record through generic deterministic dispatch.",
+        ),
+        _RoutineDefinition(
+            "g2_gate_bonus_hook",
+            _MILESTONE_6D_OFFSETS["g2_gate_bonus_hook"],
+            _static_routine(
+                _address_6d("g2_gate_bonus_hook"),
+                (
+                    _branch(
+                        _address_6d("g2_gate_bonus_hook"),
+                        _address_6d("g2_calculate_gate_bonus"),
+                    ),
+                ),
+                (0,),
+            ),
+            "Stable Gate hook entry routed through the Milestone 6D dispatcher.",
+        ),
+        _RoutineDefinition(
+            "g2_context_store_hook",
+            _MILESTONE_6D_OFFSETS["g2_context_store_hook"],
+            _build_context_store_hook_6d(),
+            "Clamp signed System 2.0 totals and replay the exact legacy add/store path.",
+        ),
+        _RoutineDefinition(
+            "g2_select_battle_type",
+            _MILESTONE_6D_OFFSETS["g2_select_battle_type"],
+            _build_select_battle_type_6d(),
+            "Use bounded cached weights for nonlegacy records and legacy metadata otherwise.",
         ),
         _RoutineDefinition(
             "g2_selector_hook",

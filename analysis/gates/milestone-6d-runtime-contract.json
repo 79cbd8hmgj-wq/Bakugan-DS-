@@ -1,0 +1,134 @@
+{
+  "build": {
+    "deterministic_double_build": true,
+    "expanded_overlay_sha256": "748574da0d20ceb99b4ea48f848cab62b1139e5c4398f9d95a29adbc6dce5121",
+    "expanded_overlay_size": 501728,
+    "guarded_change_count": 7,
+    "raw_carrier_sha256": "6961673e91f0ced7afa299d371ba54d73b3e64ab75c79e14224e59c56003b634",
+    "raw_carrier_size": 6992,
+    "rebuild_report_sha256": "15ff35fba12fa05b338fff60727423c520e1d12f707909e9291ceea96e266d5b",
+    "rebuilt_rom_sha256": "519edbd5f4e17db3513cff0451109036ad411b44f1f2fd8f8e635fb68d0ffc7c",
+    "rom_size": 134217728,
+    "stored_arm9_sha256": "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8",
+    "trailer_sha256": "c67d3bad47ad318ea782a938fc3412a6244509e96b0d2fb75e3bf8424c9fe72b"
+  },
+  "forbidden_writes": [
+    "ability state",
+    "activation counters",
+    "battle history",
+    "persistent roster G",
+    "save data",
+    "unrelated combatant record"
+  ],
+  "format_version": 1,
+  "helper_contract": {
+    "condition_return": "r0=result, r1=valid",
+    "effect_return": "r0=signed result, r1=valid",
+    "false_condition": "valid base hybrid calculation with zero conditional delta",
+    "missing_landing_context": "complete legacy calculation fallback",
+    "selector_failure": "phase-local original fixed selector fallback",
+    "target_return": "r0=result, r1=valid",
+    "unknown_ids": "complete legacy calculation fallback"
+  },
+  "hook_count": 6,
+  "live_system2_gate_ids": [
+    19
+  ],
+  "module": {
+    "base": "0x0228BC20",
+    "cache_end": "0x02293C60",
+    "cache_start": "0x02293C20",
+    "end": "0x02293C20",
+    "size": 32768
+  },
+  "module_sha256": "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c",
+  "profile_id": "b6re_rev0",
+  "symbol_count": 16,
+  "symbols": {
+    "g2_apply_effect": {
+      "address": "0x0228CBA0",
+      "purpose": "Apply one checked signed Gate G effect and return validity.",
+      "size": 116
+    },
+    "g2_calculate_gate_bonus": {
+      "address": "0x0228C360",
+      "purpose": "Evaluate the selected version-1 Gate record through generic deterministic dispatch.",
+      "size": 992
+    },
+    "g2_clear_cache": {
+      "address": "0x0228BC20",
+      "purpose": "Clear exactly sixteen cache words and return.",
+      "size": 32
+    },
+    "g2_clear_hook": {
+      "address": "0x0228C920",
+      "purpose": "Clear cache, replay displaced result-path load, and return.",
+      "size": 24
+    },
+    "g2_context_store_hook": {
+      "address": "0x0228C7A0",
+      "purpose": "Clamp signed System 2.0 totals and replay the exact legacy add/store path.",
+      "size": 64
+    },
+    "g2_crc32_update": {
+      "address": "0x0228BCC0",
+      "purpose": "Update a reflected IEEE CRC32 over a bounded byte buffer.",
+      "size": 68
+    },
+    "g2_evaluate_condition": {
+      "address": "0x0228CA20",
+      "purpose": "Evaluate one deterministic Gate condition and return result plus validity.",
+      "size": 232
+    },
+    "g2_gate_bonus_hook": {
+      "address": "0x0228C760",
+      "purpose": "Stable Gate hook entry routed through the Milestone 6D dispatcher.",
+      "size": 4
+    },
+    "g2_legacy_gate_bonus": {
+      "address": "0x0228C320",
+      "purpose": "Relocated exact original Gate lookup, scale, and store block.",
+      "size": 40
+    },
+    "g2_load_selected_record": {
+      "address": "0x0228BD20",
+      "purpose": "Read all 103 ordered records, recompute payload CRC32, and stage the selected record through confirmed NitroFS calls.",
+      "size": 596
+    },
+    "g2_loader_trampoline": {
+      "address": "0x0228C8E0",
+      "purpose": "Validate selected cache identity, reload on mismatch, then continue selector.",
+      "size": 48
+    },
+    "g2_matches_target": {
+      "address": "0x0228CB20",
+      "purpose": "Evaluate the current-combatant Gate target predicate.",
+      "size": 96
+    },
+    "g2_select_battle_type": {
+      "address": "0x0228C820",
+      "purpose": "Use bounded cached weights for nonlegacy records and legacy metadata otherwise.",
+      "size": 80
+    },
+    "g2_selector_hook": {
+      "address": "0x0228C8A0",
+      "purpose": "Stable selector entry routed through bounded Milestone 6D weights.",
+      "size": 4
+    },
+    "g2_validate_cache": {
+      "address": "0x0228BC60",
+      "purpose": "Validate cache flag, version, metadata ID, and record ID.",
+      "size": 72
+    },
+    "g2_validate_selected_record": {
+      "address": "0x0228C120",
+      "purpose": "Validate canonical passthrough bytes or the exact approved Gate 19 record.",
+      "size": 396
+    }
+  },
+  "write_boundary": [
+    "current battle-local combatant record",
+    "64-byte Gate System 2.0 cache",
+    "current routine stack frame"
+  ]
+}

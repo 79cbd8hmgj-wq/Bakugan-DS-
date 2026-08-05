@@ -186,6 +186,27 @@ bakugan-ds rebuild "/path/to/game.nds" work/bakugan output/Bakugan-M6C.nds
 See [the Milestone 6C prototype contract](docs/gate-card-system-2-prototype.md)
 and [the verification record](docs/superpowers/plans/2026-08-03-milestone-6c-verification.md).
 
+Milestone 6D generalizes that prototype into the deterministic seven-archetype
+balance framework while keeping Juggernoid as the only live System 2.0 Gate.
+Validate, report, and install the committed roster with:
+
+```bash
+bakugan-ds gate validate-milestone-6d \
+  --authoring config/gates/milestone-6d-system2-v1.json
+bakugan-ds gate report-milestone-6d \
+  work/reports/gates/milestone-6d-balance.json \
+  --authoring config/gates/milestone-6d-system2-v1.json
+bakugan-ds gate install-milestone-6d work/bakugan \
+  --authoring config/gates/milestone-6d-system2-v1.json
+```
+
+The framework defines record-local attribute relationships, bounded battle
+weights, internal power budgets, reusable owner/score/landing conditions,
+target predicates, signed G effects, and explicit drawbacks. Full-roster
+conversion remains Milestone 6E. See the
+[balance framework](docs/gate-card-system-2-balance-framework.md) and
+[Milestone 6D verification](docs/superpowers/plans/2026-08-05-milestone-6d-verification.md).
+
 ## Build the runtime debugger
 
 Milestone 4B requires a Linux x86_64 DeSmuME CLI with ARM9 GDB-stub support.

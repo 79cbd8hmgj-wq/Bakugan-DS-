@@ -32,9 +32,6 @@ REQUIRED_SYMBOLS = {
     "g2_selector_hook",
     "g2_loader_trampoline",
     "g2_clear_hook",
-    "g2_evaluate_condition",
-    "g2_matches_target",
-    "g2_apply_effect",
 }
 
 EXPECTED_HOOKS = {
@@ -196,12 +193,7 @@ def test_runtime_contract_documents_abi_and_legacy_only_boundary() -> None:
         "r11",
         "lr",
     ]
-    assert set(payload["symbols"]).issubset(REQUIRED_SYMBOLS)
-    assert {
-        "g2_evaluate_condition",
-        "g2_matches_target",
-        "g2_apply_effect",
-    }.isdisjoint(payload["symbols"])
+    assert set(payload["symbols"]) == REQUIRED_SYMBOLS
 
 
 def test_runtime_loader_failure_edges_leave_zero_cache() -> None:
@@ -489,20 +481,15 @@ def _execute_emitted_gate_case(
     team_scores: tuple[int, int] | None = None,
     descriptor_participant_override: int | None = None,
     ai_owner: bool = False,
-    record: object | None = None,
-    landing_result: int | None = None,
 ) -> tuple[int, int, int]:
     from bakugan_ds.gates.authoring import approved_juggernoid_record
-    from bakugan_ds.gates.record import GateRecordV1
     from bakugan_ds.gates.loader import build_cache
     from tests.support.arm32_interpreter import ArmCpu, SparseMemory
 
     module = build_milestone_6c_module()
-    selected_record = approved_juggernoid_record() if record is None else record
-    assert isinstance(selected_record, GateRecordV1)
     memory = SparseMemory()
     memory.map(MODULE_BASE, module.image)
-    memory.map(CACHE_ADDRESS, build_cache(selected_record, arena_entry=0))
+    memory.map(CACHE_ADDRESS, build_cache(approved_juggernoid_record(), arena_entry=0))
 
     global_config = 0x020D433C
     session = 0x0229FC80
@@ -510,12 +497,8 @@ def _execute_emitted_gate_case(
     participants = (0x022E24E0, 0x022E2640, 0x022E27A0, 0x022E2900)
     memory.write32(global_config, session)
     memory.write8(global_config + 0x98, int(team_scores is not None))
-    memory.write16(battle + 0x04, selected_record.card_id)
+    memory.write16(battle + 0x04, 19)
     memory.write8(battle + 0x06, owner_participant)
-    if landing_result is not None:
-        throw_controller = 0x022F1000
-        memory.write32(session + 0x298, throw_controller)
-        memory.write8(throw_controller + 0x1D2, landing_result)
 
     scores = [owner_score, opposing_score, 0, 0]
     if owner_participant == 1:
@@ -672,120 +655,6 @@ def test_emitted_gate_invalid_attribute_uses_complete_legacy_fallback() -> None:
     )
     assert (bonus, target, fallback_flag) == (100, 290, 0)
 
-
-
-def test_emitted_generic_control_target_and_drawback_match_host() -> None:
-    from dataclasses import replace
-
-    from bakugan_ds.gates.authoring import approved_juggernoid_record
-    from bakugan_ds.gates.record import GateArchetype, GateConditionId, GateEffectId, GateTargetMode
-    from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus
-
-    record = replace(
-        approved_juggernoid_record(),
-        card_id=20,
-        archetype=GateArchetype.CONTROL,
-        flat_bonus_g=50,
-        percent_q8_8=0,
-        attribute_modifiers=(0, 0, 0, 0, 0, 0),
-        condition_id=GateConditionId.OWNER_AHEAD,
-        effect_id=GateEffectId.ADD_SIGNED_G,
-        effect_value=50,
-        drawback_id=GateEffectId.SUBTRACT_MAGNITUDE_G,
-        drawback_value=25,
-        target_mode=GateTargetMode.GATE_OWNER,
-    )
-    host = calculate_gate_bonus(
-        record,
-        GateCalculationContext(190, 0, 0, 0, 2, 1, 20),
-    )
-    emitted = _execute_emitted_gate_case(
-        compressed_core_g=190,
-        attribute_id=0,
-        owner_score=2,
-        opposing_score=1,
-        record=record,
-    )
-    assert emitted == (host.effective_gate_bonus, host.target_total_g, 1)
-
-
-def test_emitted_generic_non_owner_target_matches_host() -> None:
-    from dataclasses import replace
-
-    from bakugan_ds.gates.authoring import approved_juggernoid_record
-    from bakugan_ds.gates.record import GateArchetype, GateConditionId, GateEffectId, GateTargetMode
-    from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus
-
-    record = replace(
-        approved_juggernoid_record(),
-        card_id=21,
-        archetype=GateArchetype.CONTROL,
-        flat_bonus_g=80,
-        percent_q8_8=-16,
-        attribute_modifiers=(-20, 0, 20, 0, 0, 0),
-        condition_id=GateConditionId.NONE,
-        effect_id=GateEffectId.SUBTRACT_MAGNITUDE_G,
-        effect_value=30,
-        target_mode=GateTargetMode.GATE_NON_OWNER,
-    )
-    host = calculate_gate_bonus(
-        record,
-        GateCalculationContext(190, 0, 1, 0, 1, 1, 21),
-    )
-    emitted = _execute_emitted_gate_case(
-        compressed_core_g=190,
-        attribute_id=0,
-        owner_score=1,
-        opposing_score=1,
-        current_participant=1,
-        owner_participant=0,
-        record=record,
-    )
-    assert emitted == (host.effective_gate_bonus, host.target_total_g, 1)
-
-
-def test_emitted_landing_condition_uses_confirmed_throw_result() -> None:
-    from dataclasses import replace
-
-    from bakugan_ds.gates.authoring import approved_juggernoid_record
-    from bakugan_ds.gates.record import GateArchetype, GateConditionId, GateTargetMode
-
-    record = replace(
-        approved_juggernoid_record(),
-        card_id=22,
-        archetype=GateArchetype.CONTROL,
-        flat_bonus_g=60,
-        percent_q8_8=0,
-        attribute_modifiers=(0, 0, 0, 0, 0, 0),
-        condition_id=GateConditionId.LANDING_GATE_CARD_WON,
-        target_mode=GateTargetMode.CURRENT_COMBATANT,
-    )
-    won = _execute_emitted_gate_case(
-        compressed_core_g=190,
-        attribute_id=0,
-        owner_score=1,
-        opposing_score=1,
-        record=record,
-        landing_result=1,
-    )
-    other = _execute_emitted_gate_case(
-        compressed_core_g=190,
-        attribute_id=0,
-        owner_score=1,
-        opposing_score=1,
-        record=record,
-        landing_result=2,
-    )
-    missing = _execute_emitted_gate_case(
-        compressed_core_g=190,
-        attribute_id=0,
-        owner_score=1,
-        opposing_score=1,
-        record=record,
-    )
-    assert won == (100, 290, 1)
-    assert other == (60, 250, 1)
-    assert missing == (100, 290, 0)
 
 def test_emitted_context_store_clamps_system2_total_but_not_legacy_path() -> None:
     from tests.support.arm32_interpreter import ArmCpu, SparseMemory

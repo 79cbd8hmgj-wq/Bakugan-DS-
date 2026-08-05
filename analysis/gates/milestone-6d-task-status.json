@@ -11,29 +11,37 @@
     8,
     9,
     10,
-    11
-  ],
-  "current_batch": [
-    12
-  ],
-  "format_version": 1,
-  "latest_local_verification": {
-    "expected_environment_skips": 39,
-    "failures": 0,
-    "passed": 667,
-    "python_compilation": "passed"
-  },
-  "milestone": "6D",
-  "profile_id": "b6re_rev0",
-  "remaining_tasks": [
+    11,
+    12,
     13,
     14
   ],
+  "current_batch": [],
+  "external_handoff": {
+    "final_pr_review": "pending",
+    "github_ci": "pending",
+    "github_sync": "pending",
+    "merge": "pending"
+  },
+  "format_version": 1,
+  "latest_local_verification": {
+    "expected_environment_skips": 41,
+    "failures": 0,
+    "focused_exact_runtime_passed": 44,
+    "passed": 679,
+    "python_compilation": "passed",
+    "ruff": "unavailable locally; required in GitHub CI",
+    "strict_mypy": "unavailable locally; required in GitHub CI",
+    "whitespace_validation": "passed"
+  },
+  "milestone": "6D",
+  "profile_id": "b6re_rev0",
+  "remaining_tasks": [],
   "scope_boundary": {
+    "arena_id": "deferred",
+    "full_roster_conversion": "Milestone 6E",
     "live_system2_gate_ids": [
       19
-    ],
-    "full_roster_conversion": "Milestone 6E",
-    "arena_id": "deferred"
+    ]
   }
 }

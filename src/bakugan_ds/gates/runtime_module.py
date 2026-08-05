@@ -52,9 +52,6 @@ from bakugan_ds.gates.loader import (
 )
 from bakugan_ds.gates.record import (
     GATE_RECORD_BATTLE_WEIGHTS_OFFSET,
-    GateConditionId,
-    GateEffectId,
-    GateTargetMode,
     serialize_record,
 )
 from bakugan_ds.gates.system2 import (

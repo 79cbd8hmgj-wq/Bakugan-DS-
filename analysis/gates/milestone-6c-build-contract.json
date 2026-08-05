@@ -14,10 +14,7 @@
     "stored_sha256": "95494b52cb94c85f7209ddf00fd37b6289fdecd6ad855f7344132b3f840236f8",
     "stored_size": 448192
   },
-  "cache_range": [
-    "0x02293C20",
-    "0x02293C60"
-  ],
+  "cache_range": ["0x02293C20", "0x02293C60"],
   "format_version": 1,
   "generated_products_committed": false,
   "guarded_change_count": 7,

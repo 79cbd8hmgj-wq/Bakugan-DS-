@@ -44,12 +44,22 @@ jobs:
             '106b672c5055464d8561e573372d59f036e7053f3699cf838680af36558bc027' \
             automation/m6e-sync/chunk-002 | sha256sum -c -
           printf '%s  %s\n' \
-            'a2d14a9c48f09c1c47ea713b129744772d27dacee772a25a801726334270e47a' \
-            automation/m6e-sync/chunk-003 | sha256sum -c -
+            '3ff09a2de8151d9435e018bcb969937c4624eb5f21eedcfc13b0326236564233' \
+            automation/m6e-sync/tail-000 | sha256sum -c -
           printf '%s  %s\n' \
-            '380918b946a526640a40df5dced6516794f3d97bbd9e6bb553d037c4439f31c3' \
-            automation/m6e-sync/chunk-004 | sha256sum -c -
-          cat automation/m6e-sync/chunk-* > /tmp/m6e-tasks2-4.patch.gz.b64
+            'e175d138fc2a03dd54f185558284b1dfe37aa8012e76b2b68e3be6f4be992c08' \
+            automation/m6e-sync/tail-001 | sha256sum -c -
+          printf '%s  %s\n' \
+            '2e04060f832d24a1d332cd864715a33a6d105fb99ab124f8ff4fbbaf824f4d34' \
+            automation/m6e-sync/tail-002 | sha256sum -c -
+          cat \
+            automation/m6e-sync/chunk-000 \
+            automation/m6e-sync/chunk-001 \
+            automation/m6e-sync/chunk-002 \
+            automation/m6e-sync/tail-000 \
+            automation/m6e-sync/tail-001 \
+            automation/m6e-sync/tail-002 \
+            > /tmp/m6e-tasks2-4.patch.gz.b64
           base64 --decode /tmp/m6e-tasks2-4.patch.gz.b64 \
             > /tmp/m6e-tasks2-4.patch.gz
           printf '%s  %s\n' \
@@ -84,4 +94,4 @@ jobs:
           git commit -m 'feat: complete Milestone 6E Tasks 2-4'
           git push origin HEAD:milestone-6e-complete-gate-roster-conversion
 
-# sync trigger: restored final padding byte
+# sync trigger: exact split tail payload

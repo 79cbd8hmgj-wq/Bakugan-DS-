@@ -22,8 +22,6 @@ from bakugan_ds.gates.roster_metadata import load_gate_roster_metadata
 
 AUTHORING = Path("config/gates/milestone-6e-system2-v1.json")
 METADATA = Path("config/gates/milestone-6e-roster-metadata.json")
-LIVE_IDS = list(range(1, 82))
-LEGACY_IDS = list(range(82, 104))
 
 
 def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
@@ -34,8 +32,8 @@ def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
 
     assert report["format"] == "bakugan-ds-gate-milestone-6e-roster-analysis"
     assert report["record_count"] == 103
-    assert report["live_card_ids"] == LIVE_IDS
-    assert report["legacy_passthrough_count"] == 22
+    assert report["live_card_ids"] == list(range(1, 104))
+    assert report["legacy_passthrough_count"] == 0
     assert report["matrix"]["case_count_per_record"] == REFERENCE_CASE_COUNT == 1080
     assert report["matrix"]["core_g"] == [190, 400, 525, 650, 695]
     assert report["matrix"]["attributes"] == [0, 1, 2, 3, 4, 5]
@@ -54,13 +52,17 @@ def test_whole_roster_analysis_uses_complete_deterministic_matrix() -> None:
     assert report["hard_duplicate_groups"] == []
     assert report["identical_evaluation_groups"] == []
     assert report["identity_conflicts"] == []
-    assert report["legacy_duplicate_groups"] == [LEGACY_IDS]
-    assert report["archetype_distribution"]["comeback"] == 14
-    assert report["archetype_distribution"]["power"] == 15
-    assert report["archetype_distribution"]["skill"] == 15
-    assert report["archetype_distribution"]["control"] == 15
-    assert report["archetype_distribution"]["attribute"] == 22
-    assert report["archetype_distribution_warnings"]
+    assert report["legacy_duplicate_groups"] == []
+    assert report["archetype_distribution"] == {
+        "attribute": 22,
+        "chaos": 8,
+        "comeback": 14,
+        "control": 15,
+        "power": 15,
+        "risk": 14,
+        "skill": 15,
+    }
+    assert report["archetype_distribution_warnings"] == []
 
 
 def test_exact_runtime_duplicate_detection_ignores_card_id_but_separates_legacy() -> None:

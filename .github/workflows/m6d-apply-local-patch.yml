@@ -1,0 +1,33 @@
+name: Apply Milestone 6D Local Patch
+
+on:
+  push:
+    branches:
+      - milestone-6d-core-balance-framework
+    paths:
+      - automation/m6d-local-fixes.patch
+      - .github/workflows/m6d-apply-local-patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/milestone-6d-core-balance-framework'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: milestone-6d-core-balance-framework
+          fetch-depth: 0
+      - name: Apply verified local patch
+        run: |
+          git apply automation/m6d-local-fixes.patch
+          rm automation/m6d-local-fixes.patch
+          rm .github/workflows/m6d-apply-local-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: repair Milestone 6D host regressions"
+          git push origin HEAD:milestone-6d-core-balance-framework

@@ -125,7 +125,9 @@ jobs:
 
           encoded = Path("automation/m6e-installer-fix-test.b64").read_text(encoding="utf-8")
           target = Path("tests/integration/test_gate_milestone_6e_build.py")
-          target.write_bytes(base64.b64decode(encoded))
+          test_text = base64.b64decode(encoded).decode("utf-8")
+          test_text = test_text.replace("bakugan_ds.compression.blZ", "bakugan_ds.compression.blz")
+          target.write_text(test_text, encoding="utf-8")
           PY
       - name: Verify correction
         shell: bash

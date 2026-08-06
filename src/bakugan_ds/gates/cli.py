@@ -19,7 +19,11 @@ from bakugan_ds.gates.authoring import (
 )
 from bakugan_ds.gates.context import context_report, load_context_fields
 from bakugan_ds.gates.discovery import load_discovery_artifact
-from bakugan_ds.gates.install import install_milestone_6c, install_milestone_6d
+from bakugan_ds.gates.install import (
+    install_milestone_6c,
+    install_milestone_6d,
+    install_milestone_6e,
+)
 from bakugan_ds.gates.io import load_json_object, write_evidence
 from bakugan_ds.gates.legacy import (
     LegacyGateRecord,
@@ -111,6 +115,18 @@ def _add_gate_commands(subparsers: Any) -> None:
         default=Path("config/gates/milestone-6d-system2-v1.json"),
     )
     install_6d_parser.add_argument("--dry-run", action="store_true")
+
+    install_6e = subparsers.add_parser(
+        "install-milestone-6e",
+        help="transactionally install the complete Milestone 6E Gate roster",
+    )
+    install_6e.add_argument("workspace", type=Path)
+    install_6e.add_argument(
+        "--authoring",
+        type=Path,
+        default=Path("config/gates/milestone-6e-system2-v1.json"),
+    )
+    install_6e.add_argument("--dry-run", action="store_true")
 
     validate_6d_parser = subparsers.add_parser(
         "validate-milestone-6d",
@@ -322,6 +338,15 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
             f"patches={len(install_report.binary_patches)}"
         )
         return 0
+    if arguments.gate_command == "install-milestone-6e":
+        install_report = install_milestone_6e(
+            arguments.workspace,
+            arguments.authoring,
+            dry_run=arguments.dry_run,
+        )
+        print(json.dumps(install_report.to_dict(), indent=2, sort_keys=True))
+        return 0
+
     if arguments.gate_command == "install-milestone-6d":
         install_report = install_milestone_6d(
             arguments.workspace,

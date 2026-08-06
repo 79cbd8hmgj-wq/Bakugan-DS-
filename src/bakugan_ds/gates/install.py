@@ -48,6 +48,7 @@ DEFAULT_PATCH_PATH = Path("patches/gate-system2-milestone-6c-hooks.json")
 CORE_PATCH_PATH = Path("patches/core-g-compression-400.json")
 INSTALL_REPORT_NAME = "gate-system2-milestone-6c-install.json"
 MILESTONE_6D_INSTALL_REPORT_NAME = "gate-system2-milestone-6d-install.json"
+MILESTONE_6E_INSTALL_REPORT_NAME = "gate-system2-milestone-6e-install.json"
 ARENA_LOW_OFFSET = 0x6264
 ARENA_LOW_EXPECTED = bytes.fromhex("20bc2802")
 ARENA_LOW_REPLACEMENT = bytes.fromhex("603c2902")
@@ -317,6 +318,7 @@ def _prepare_install(
     readiness_path: Path,
     dry_run: bool,
     milestone_6d: bool = False,
+    report_name: str | None = None,
 ) -> _PreparedInstall:
     layout = WorkspaceLayout.from_root(workspace)
     manifest = load_workspace_manifest(layout.manifests / "workspace.json")
@@ -432,7 +434,14 @@ def _prepare_install(
         override_path=layout.build_overrides,
         override_bytes=override_bytes,
         report_path=layout.manifests
-        / (MILESTONE_6D_INSTALL_REPORT_NAME if milestone_6d else INSTALL_REPORT_NAME),
+        / (
+            report_name
+            or (
+                MILESTONE_6D_INSTALL_REPORT_NAME
+                if milestone_6d
+                else INSTALL_REPORT_NAME
+            )
+        ),
     )
 
 
@@ -605,5 +614,32 @@ def install_milestone_6d(
         prepared,
         milestone_label="Milestone 6D",
         allow_prior_report=layout.manifests / INSTALL_REPORT_NAME,
+        allow_pristine_extracted=True,
+    )
+
+
+def install_milestone_6e(
+    workspace: Path,
+    authoring_path: Path,
+    *,
+    dry_run: bool = False,
+    readiness_path: Path | None = None,
+) -> InstallReport:
+    """Install the approved complete 103-card Milestone 6E roster transactionally."""
+    resolved_workspace = workspace.expanduser().resolve()
+    prepared = _prepare_install(
+        resolved_workspace,
+        authoring_path.expanduser().resolve(),
+        readiness_path=(readiness_path or DEFAULT_READINESS_PATH).expanduser().resolve(),
+        dry_run=dry_run,
+        milestone_6d=True,
+        report_name=MILESTONE_6E_INSTALL_REPORT_NAME,
+    )
+    layout = WorkspaceLayout.from_root(resolved_workspace)
+    return _install_prepared(
+        resolved_workspace,
+        prepared,
+        milestone_label="Milestone 6E",
+        allow_prior_report=layout.manifests / MILESTONE_6D_INSTALL_REPORT_NAME,
         allow_pristine_extracted=True,
     )

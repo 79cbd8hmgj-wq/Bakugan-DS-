@@ -1,0 +1,22 @@
+{
+  "format_version": 1,
+  "milestone": "6E",
+  "tasks": {
+    "1": "complete",
+    "2": "complete",
+    "3": "complete",
+    "4": "complete",
+    "5": "complete",
+    "6": "complete",
+    "7": "complete",
+    "8": "complete",
+    "9": "complete",
+    "10": "complete",
+    "11": "complete_pending_exact_head_ci",
+    "12": "complete_pending_exact_rom_ci",
+    "13": "blocked_missing_runtime_bundle_and_playable_state",
+    "14": "in_progress"
+  },
+  "merge_ready": false,
+  "next_action": "Mount the validated Linux DeSmuME GDB bundle and playable Milestone 6E battle save/state, then execute the bounded seven-archetype representative runtime matrix."
+}

@@ -58,7 +58,9 @@ jobs:
           install.write_text(text, encoding="utf-8")
 
           parity = Path("tests/unit/test_gate_milestone_6e_runtime_parity.py")
-          text = parity.read_text(encoding="utf-8").replace("\n@pytest.mark.slow\n", "\n")
+          text = parity.read_text(encoding="utf-8")
+          text = text.replace("import pytest\n\n", "")
+          text = text.replace("\n@pytest.mark.slow\n", "\n")
           parity.write_text(text, encoding="utf-8")
           PY
           git add src/bakugan_ds/gates/install.py tests/unit/test_gate_milestone_6e_runtime_parity.py

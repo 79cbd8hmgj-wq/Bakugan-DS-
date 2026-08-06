@@ -37,6 +37,31 @@ jobs:
           set -euo pipefail
           base64 -d automation/m6e-tasks11-14.patch.gz.b64 | gzip -d > /tmp/m6e.patch
           git apply --index /tmp/m6e.patch
+          python - <<'PY'
+          from pathlib import Path
+
+          install = Path("src/bakugan_ds/gates/install.py")
+          text = install.read_text(encoding="utf-8")
+          text = text.replace(
+              "        report_path=layout.manifests\n"
+              "        / (report_name or (MILESTONE_6D_INSTALL_REPORT_NAME if milestone_6d else INSTALL_REPORT_NAME)),\n",
+              "        report_path=layout.manifests\n"
+              "        / (\n"
+              "            report_name\n"
+              "            or (\n"
+              "                MILESTONE_6D_INSTALL_REPORT_NAME\n"
+              "                if milestone_6d\n"
+              "                else INSTALL_REPORT_NAME\n"
+              "            )\n"
+              "        ),\n",
+          )
+          install.write_text(text, encoding="utf-8")
+
+          parity = Path("tests/unit/test_gate_milestone_6e_runtime_parity.py")
+          text = parity.read_text(encoding="utf-8").replace("\n@pytest.mark.slow\n", "\n")
+          parity.write_text(text, encoding="utf-8")
+          PY
+          git add src/bakugan_ds/gates/install.py tests/unit/test_gate_milestone_6e_runtime_parity.py
       - name: Verify synchronized work
         shell: bash
         run: |

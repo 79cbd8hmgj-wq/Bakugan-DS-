@@ -1947,7 +1947,7 @@
         0,
         100,
         50,
-        -50,
+        0,
         -25
       ],
       "battle_weights": [
@@ -2175,7 +2175,7 @@
         0,
         100,
         50,
-        -50,
+        0,
         -25
       ],
       "battle_weights": [
@@ -2817,12 +2817,12 @@
       "activation_limit": 0,
       "archetype": 1,
       "attribute_modifiers": [
+        30,
         0,
         0,
         0,
         0,
-        0,
-        30
+        0
       ],
       "battle_weights": [
         50,
@@ -2856,11 +2856,11 @@
       "archetype": 1,
       "attribute_modifiers": [
         0,
+        30,
         0,
         0,
         0,
-        0,
-        30
+        0
       ],
       "battle_weights": [
         30,

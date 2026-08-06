@@ -90,11 +90,13 @@ def test_draft_metadata_covers_all_103_gate_ids_deterministically() -> None:
 
     unassigned = [entry for entry in entries if entry.archetype is GateArchetype.LEGACY]
     reviewed = [entry for entry in entries if entry.review_status is ReviewStatus.REVIEWED]
+    approved = [entry for entry in entries if entry.review_status is ReviewStatus.APPROVED]
     unresolved = [
         entry for entry in entries if entry.mapping_confidence is MappingConfidence.UNRESOLVED
     ]
     assert len(unassigned) == 0
-    assert len(reviewed) == 102
+    assert len(reviewed) == 0
+    assert len(approved) == 103
     assert len(unresolved) == 100
     assert all(entry.design_tier is DesignTier.UNASSIGNED for entry in unassigned)
     assert all(entry.net_budget is None for entry in unassigned)

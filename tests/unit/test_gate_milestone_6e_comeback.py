@@ -67,7 +67,7 @@ def test_comeback_batch_is_reviewed_bounded_and_preserves_juggernoid() -> None:
 
         assert GateArchetype(record.archetype) is GateArchetype.COMEBACK
         assert entry.archetype is GateArchetype.COMEBACK
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert entry.net_budget == report.budget.net_budget
         assert record.condition_id in {
             GateConditionId.OWNER_BEHIND,

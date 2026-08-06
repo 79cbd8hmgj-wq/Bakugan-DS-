@@ -79,7 +79,7 @@ def test_risk_and_chaos_batches_are_reviewed_with_real_drawbacks() -> None:
         report = analyze_gate_balance(record)
         assert GateArchetype(record.archetype) is GateArchetype.RISK
         assert entry.archetype is GateArchetype.RISK
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert entry.net_budget == report.budget.net_budget
         assert report.budget.gross_budget >= 110
         assert report.budget.drawback_credit > 0
@@ -95,7 +95,7 @@ def test_risk_and_chaos_batches_are_reviewed_with_real_drawbacks() -> None:
         report = analyze_gate_balance(record)
         assert GateArchetype(record.archetype) is GateArchetype.CHAOS
         assert entry.archetype is GateArchetype.CHAOS
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert entry.net_budget == report.budget.net_budget
         assert report.budget.drawback_credit > 0
         assert report.battle_weights.pressure in {

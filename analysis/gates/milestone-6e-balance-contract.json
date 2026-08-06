@@ -1,0 +1,38 @@
+{
+  "analysis_sha256": "30df6ffb782b6b7977844e85d83be02dbc246803caa4441bf446e0ec16746e01",
+  "distribution_warnings": [],
+  "dominance_dispositions": [
+    {
+      "disposition": "accepted_tier_progression",
+      "dominant_card_id": 38,
+      "dominated_card_id": 66,
+      "rationale": "Gate 038 (provisional) uses high_risk_conditional while Gate 066 (provisional) uses mid; the stronger evaluated profile is an explicit tier progression."
+    },
+    {
+      "disposition": "accepted_tier_progression",
+      "dominant_card_id": 62,
+      "dominated_card_id": 68,
+      "rationale": "Gate 062 (provisional) uses high_risk_conditional while Gate 068 (provisional) uses mid; the stronger evaluated profile is an explicit tier progression."
+    }
+  ],
+  "format": "bakugan-ds-gate-milestone-6e-balance-contract",
+  "format_version": 1,
+  "hard_duplicate_groups": [],
+  "identical_evaluation_groups": [],
+  "identity_conflicts": [],
+  "out_of_tier_card_ids": [
+    19
+  ],
+  "potential_dominance_pairs": [
+    {
+      "dominant_card_id": 38,
+      "dominated_card_id": 66
+    },
+    {
+      "dominant_card_id": 62,
+      "dominated_card_id": 68
+    }
+  ],
+  "reference_case_count_per_record": 1080,
+  "unresolved_dominance_pairs": []
+}

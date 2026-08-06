@@ -1,0 +1,26 @@
+{
+  "archetype_distribution": {
+    "attribute": 22,
+    "chaos": 8,
+    "comeback": 14,
+    "control": 15,
+    "power": 15,
+    "risk": 14,
+    "skill": 15
+  },
+  "deferred_state_record_ids": [],
+  "format": "bakugan-ds-gate-milestone-6e-roster-contract",
+  "format_version": 1,
+  "juggernoid_preserved": true,
+  "live_record_count": 103,
+  "metadata_sha256": "9e6874a32f8e0fb96291a9a4d6bbfa96a134a3151555cd1f64cbf8c252e19a93",
+  "profile_id": "b6re_rev0",
+  "record_count": 103,
+  "records_sha256": "09591c2e9cd9be7a23be0f3334c3f15983bf9fa255e4476f0ef4878ba7864e93",
+  "review_status_counts": {
+    "approved": 103,
+    "provisional": 0,
+    "reviewed": 0
+  },
+  "unsupported_record_ids": []
+}

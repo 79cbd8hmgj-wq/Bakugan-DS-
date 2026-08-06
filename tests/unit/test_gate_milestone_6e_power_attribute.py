@@ -42,7 +42,7 @@ def test_power_and_attribute_batches_are_reviewed_and_juggernoid_is_frozen() -> 
         assert entry.archetype is GateArchetype.POWER
         assert entry.net_budget == report.budget.net_budget
         assert entry.design_tier is not DesignTier.UNASSIGNED
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert report.attribute.positive_count <= 2
         assert record_fallback_reason(record) is FallbackReason.NONE
 
@@ -54,7 +54,7 @@ def test_power_and_attribute_batches_are_reviewed_and_juggernoid_is_frozen() -> 
         assert entry.archetype is GateArchetype.ATTRIBUTE
         assert entry.net_budget == report.budget.net_budget
         assert entry.design_tier is not DesignTier.UNASSIGNED
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert report.attribute.maximum >= 40
         assert report.attribute.minimum <= -20
         assert report.attribute.spread >= 60

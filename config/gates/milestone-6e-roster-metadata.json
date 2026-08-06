@@ -13,7 +13,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 001 (provisional)",
       "net_budget": 96,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -29,7 +29,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 002 (provisional)",
       "net_budget": 96,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -45,7 +45,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 003 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -61,7 +61,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 004 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -77,7 +77,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 005 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -93,7 +93,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 006 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -109,7 +109,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 007 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -125,7 +125,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 008 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -141,7 +141,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 009 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -157,7 +157,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 010 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -173,7 +173,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 011 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -189,7 +189,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 012 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -205,7 +205,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 013 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -221,7 +221,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 014 (provisional)",
       "net_budget": 96,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -237,7 +237,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 015 (provisional)",
       "net_budget": 96,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -253,7 +253,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 016 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -269,7 +269,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 017 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -285,7 +285,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 018 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -317,7 +317,7 @@
       "mapping_confidence": "confirmed",
       "name": "Robotallion",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -333,7 +333,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 021 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -349,7 +349,7 @@
       "mapping_confidence": "confirmed",
       "name": "Serpenoid",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -365,7 +365,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 023 (provisional)",
       "net_budget": 90,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -381,7 +381,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 024 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -397,7 +397,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 025 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -413,7 +413,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 026 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -429,7 +429,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 027 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -445,7 +445,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 028 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -461,7 +461,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 029 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -477,7 +477,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 030 (provisional)",
       "net_budget": 90,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -493,7 +493,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 031 (provisional)",
       "net_budget": 94,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -509,7 +509,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 032 (provisional)",
       "net_budget": 96,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -525,7 +525,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 033 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, applies 25 G through effect 2 to the non-owner combatant."
     },
     {
@@ -541,7 +541,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 034 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, applies 25 G through effect 2 to the non-owner combatant."
     },
     {
@@ -557,7 +557,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 035 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, applies 0 G through effect 2 to the non-owner combatant."
     },
     {
@@ -573,7 +573,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 036 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -589,7 +589,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 037 (provisional)",
       "net_budget": 98,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -605,7 +605,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 038 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -621,7 +621,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 039 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -637,7 +637,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 040 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -653,7 +653,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 041 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -669,7 +669,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 042 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -685,7 +685,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 043 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -701,7 +701,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 044 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -717,7 +717,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 045 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -733,7 +733,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 046 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -749,7 +749,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 047 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -765,7 +765,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 048 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -781,7 +781,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 049 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -797,7 +797,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 050 (provisional)",
       "net_budget": 102,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -813,7 +813,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 051 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 50 G through effect 1 to the Gate owner."
     },
     {
@@ -821,15 +821,15 @@
       "battle_weight_summary": "Strong scratch preference; every battle type remains reachable.",
       "card_id": 52,
       "design_tier": "high_risk_conditional",
-      "differentiation_rationale": "Unique attribute-pure-relationship:template variation with subterra as its highest relationship, scratch preference, condition 3, and evaluated swing 0..200 G.",
+      "differentiation_rationale": "Task 10 relationship revision removes strict dominance by retaining its strongest Subterra relationship while neutralizing one former opposition matchup.",
       "evidence_reference": "unresolved-card-id-052",
       "family": "environmental_field",
-      "g_influence_summary": "50 flat G, 0/256 compressed-core scaling, 2 positive and 2 opposed attribute relationships.",
-      "gameplay_identity": "Attribute Gate using attribute-pure-relationship:template with subterra emphasis.",
+      "g_influence_summary": "50 flat G, 0/256 compressed-core scaling, 2 positive and 1 opposed attribute relationships.",
+      "gameplay_identity": "Attribute Gate with subterra relationship emphasis.",
       "mapping_confidence": "unresolved",
       "name": "Gate 052 (provisional)",
-      "net_budget": 97,
-      "review_status": "reviewed",
+      "net_budget": 103,
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -845,7 +845,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 053 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -861,7 +861,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 054 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -877,7 +877,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 055 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -893,7 +893,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 056 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -909,7 +909,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 057 (provisional)",
       "net_budget": 97,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 50 G through effect 1 to the current combatant."
     },
     {
@@ -917,15 +917,15 @@
       "battle_weight_summary": "Strong scratch preference; every battle type remains reachable.",
       "card_id": 58,
       "design_tier": "high_risk_conditional",
-      "differentiation_rationale": "Unique attribute-pure-relationship:template variation with subterra as its highest relationship, scratch preference, condition 3, and evaluated swing 11..218 G.",
+      "differentiation_rationale": "Task 10 relationship revision removes strict dominance by pairing its smaller tied-score rider with a safer Haos relationship matchup.",
       "evidence_reference": "unresolved-card-id-058",
       "family": "environmental_field",
-      "g_influence_summary": "50 flat G, 16/256 compressed-core scaling, 2 positive and 2 opposed attribute relationships.",
-      "gameplay_identity": "Attribute Gate using attribute-pure-relationship:template with subterra emphasis.",
+      "g_influence_summary": "50 flat G, 16/256 compressed-core scaling, 2 positive and 1 opposed attribute relationships.",
+      "gameplay_identity": "Attribute Gate with subterra relationship emphasis.",
       "mapping_confidence": "unresolved",
       "name": "Gate 058 (provisional)",
-      "net_budget": 92,
-      "review_status": "reviewed",
+      "net_budget": 98,
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -941,7 +941,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 059 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -957,7 +957,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 060 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -973,7 +973,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 061 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -989,7 +989,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 062 (provisional)",
       "net_budget": 98,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -1005,7 +1005,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 063 (provisional)",
       "net_budget": 95,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, applies 25 G through effect 1 to the current combatant."
     },
     {
@@ -1021,7 +1021,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 064 (provisional)",
       "net_budget": 85,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, applies 25 G through effect 2 to the non-owner combatant."
     },
     {
@@ -1037,7 +1037,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 065 (provisional)",
       "net_budget": 85,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, applies 0 G through effect 2 to the non-owner combatant."
     },
     {
@@ -1053,7 +1053,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 066 (provisional)",
       "net_budget": 95,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -1069,7 +1069,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 067 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -1085,7 +1085,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 068 (provisional)",
       "net_budget": 92,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, applies 25 G through effect 1 to the Gate owner."
     },
     {
@@ -1101,7 +1101,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 069 (provisional)",
       "net_budget": 98,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 75 G to the Gate owner."
     },
     {
@@ -1117,7 +1117,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 070 (provisional)",
       "net_budget": 98,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 75 G to the Gate owner."
     },
     {
@@ -1133,7 +1133,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 071 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 75 G to the Gate owner."
     },
     {
@@ -1149,7 +1149,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 072 (provisional)",
       "net_budget": 93,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 75 G to the Gate owner."
     },
     {
@@ -1165,7 +1165,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 073 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 40 G to the Gate owner."
     },
     {
@@ -1181,7 +1181,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 074 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 40 G to the Gate owner."
     },
     {
@@ -1189,15 +1189,15 @@
       "battle_weight_summary": "Mild scratch preference; every battle type remains reachable.",
       "card_id": 75,
       "design_tier": "high_risk_conditional",
-      "differentiation_rationale": "Unique comeback-hybrid:owner_behind:effect-50 variation with ventus as its highest relationship, scratch preference, and evaluated swing 74..194 G.",
+      "differentiation_rationale": "Task 10 affinity rotation removes strict dominance by shifting the owner-behind bonus profile to Pyrus.",
       "evidence_reference": "unresolved-card-id-075",
       "family": "tactical_conditional",
       "g_influence_summary": "60 flat G, 20/256 compressed-core scaling, 1 positive and 0 opposed attribute relationships.",
-      "gameplay_identity": "Comeback Gate using comeback-hybrid:owner_behind:effect-50 with ventus emphasis.",
+      "gameplay_identity": "Comeback Gate with pyrus relationship emphasis.",
       "mapping_confidence": "unresolved",
       "name": "Gate 075 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 50 G to the Gate owner."
     },
     {
@@ -1205,15 +1205,15 @@
       "battle_weight_summary": "Mild timing preference; every battle type remains reachable.",
       "card_id": 76,
       "design_tier": "high_risk_conditional",
-      "differentiation_rationale": "Unique comeback-hybrid:owner_score_zero:effect-50 variation with ventus as its highest relationship, timing preference, and evaluated swing 74..194 G.",
+      "differentiation_rationale": "Task 10 affinity rotation removes strict dominance by shifting the owner-score-zero bonus profile to Aquos.",
       "evidence_reference": "unresolved-card-id-076",
       "family": "tactical_conditional",
       "g_influence_summary": "60 flat G, 20/256 compressed-core scaling, 1 positive and 0 opposed attribute relationships.",
-      "gameplay_identity": "Comeback Gate using comeback-hybrid:owner_score_zero:effect-50 with ventus emphasis.",
+      "gameplay_identity": "Comeback Gate with aquos relationship emphasis.",
       "mapping_confidence": "unresolved",
       "name": "Gate 076 (provisional)",
       "net_budget": 91,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 50 G to the Gate owner."
     },
     {
@@ -1229,7 +1229,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 077 (provisional)",
       "net_budget": 87,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 75 G to the Gate owner."
     },
     {
@@ -1245,7 +1245,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 078 (provisional)",
       "net_budget": 87,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 75 G to the Gate owner."
     },
     {
@@ -1261,7 +1261,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 079 (provisional)",
       "net_budget": 86,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 40 G to the Gate owner."
     },
     {
@@ -1277,7 +1277,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 080 (provisional)",
       "net_budget": 86,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 40 G to the Gate owner."
     },
     {
@@ -1293,7 +1293,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 081 (provisional)",
       "net_budget": 86,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 50 G to the Gate owner."
     },
     {
@@ -1309,7 +1309,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 082 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 100 G to the Gate owner and then applies a 50 G drawback."
     },
     {
@@ -1325,7 +1325,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 083 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, adds 100 G to the non-owner combatant and then applies a 100 G drawback."
     },
     {
@@ -1341,7 +1341,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 084 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, adds 100 G to the current combatant and then applies a 100 G drawback."
     },
     {
@@ -1357,7 +1357,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 085 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, adds 75 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1373,7 +1373,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 086 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, adds 75 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1389,7 +1389,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 087 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 100 G to the Gate owner and then applies a 50 G drawback."
     },
     {
@@ -1405,7 +1405,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 088 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, adds 100 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1421,7 +1421,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 089 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, adds 100 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1437,7 +1437,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 090 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, adds 100 G to the non-owner combatant and then applies a 50 G drawback."
     },
     {
@@ -1453,7 +1453,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 091 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, adds 100 G to the current combatant and then applies a 50 G drawback."
     },
     {
@@ -1469,7 +1469,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 092 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 100 G to the Gate owner and then applies a 75 G drawback."
     },
     {
@@ -1485,7 +1485,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 093 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, adds 75 G to the Gate owner and then applies a 75 G drawback."
     },
     {
@@ -1501,7 +1501,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 094 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, adds 75 G to the Gate owner and then applies a 75 G drawback."
     },
     {
@@ -1517,7 +1517,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 095 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 100 G to the Gate owner and then applies a 75 G drawback."
     },
     {
@@ -1533,7 +1533,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 096 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is behind, adds 100 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1549,7 +1549,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 097 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the score is tied, adds 100 G to the current combatant and then applies a 100 G drawback."
     },
     {
@@ -1565,7 +1565,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 098 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "after a winning Gate landing, adds 100 G to the non-owner combatant and then applies a 25 G drawback."
     },
     {
@@ -1581,7 +1581,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 099 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the opposing side is at match point, adds 75 G to the Gate owner and then applies a 25 G drawback."
     },
     {
@@ -1597,7 +1597,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 100 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is at match point, adds 75 G to the Gate owner and then applies a 25 G drawback."
     },
     {
@@ -1613,7 +1613,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 101 (provisional)",
       "net_budget": 100,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side has no captures, adds 100 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1629,7 +1629,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 102 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "while the owner side is ahead, adds 100 G to the Gate owner and then applies a 100 G drawback."
     },
     {
@@ -1645,7 +1645,7 @@
       "mapping_confidence": "unresolved",
       "name": "Gate 103 (provisional)",
       "net_budget": 101,
-      "review_status": "reviewed",
+      "review_status": "approved",
       "rule_summary": "unconditionally, adds 100 G to the Gate owner and then applies a 100 G drawback."
     }
   ],

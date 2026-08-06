@@ -42,7 +42,7 @@ def test_skill_and_control_batches_are_reviewed_and_use_supported_semantics() ->
         report = analyze_gate_balance(record)
         assert GateArchetype(record.archetype) is GateArchetype.SKILL
         assert entry.archetype is GateArchetype.SKILL
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert entry.net_budget == report.budget.net_budget
         assert report.battle_weights.pressure in {
             BattleWeightPressure.STRONG,
@@ -56,7 +56,7 @@ def test_skill_and_control_batches_are_reviewed_and_use_supported_semantics() ->
         report = analyze_gate_balance(record)
         assert GateArchetype(record.archetype) is GateArchetype.CONTROL
         assert entry.archetype is GateArchetype.CONTROL
-        assert entry.review_status is ReviewStatus.REVIEWED
+        assert entry.review_status in {ReviewStatus.REVIEWED, ReviewStatus.APPROVED}
         assert entry.net_budget == report.budget.net_budget
         assert (
             record.condition_id != GateConditionId.NONE

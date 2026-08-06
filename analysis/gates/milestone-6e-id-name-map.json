@@ -1,0 +1,627 @@
+{
+  "complete_name_table_committed": false,
+  "entries": [
+    {
+      "card_id": 1,
+      "evidence_reference": "unresolved-card-id-001",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 001 (provisional)"
+    },
+    {
+      "card_id": 2,
+      "evidence_reference": "unresolved-card-id-002",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 002 (provisional)"
+    },
+    {
+      "card_id": 3,
+      "evidence_reference": "unresolved-card-id-003",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 003 (provisional)"
+    },
+    {
+      "card_id": 4,
+      "evidence_reference": "unresolved-card-id-004",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 004 (provisional)"
+    },
+    {
+      "card_id": 5,
+      "evidence_reference": "unresolved-card-id-005",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 005 (provisional)"
+    },
+    {
+      "card_id": 6,
+      "evidence_reference": "unresolved-card-id-006",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 006 (provisional)"
+    },
+    {
+      "card_id": 7,
+      "evidence_reference": "unresolved-card-id-007",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 007 (provisional)"
+    },
+    {
+      "card_id": 8,
+      "evidence_reference": "unresolved-card-id-008",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 008 (provisional)"
+    },
+    {
+      "card_id": 9,
+      "evidence_reference": "unresolved-card-id-009",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 009 (provisional)"
+    },
+    {
+      "card_id": 10,
+      "evidence_reference": "unresolved-card-id-010",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 010 (provisional)"
+    },
+    {
+      "card_id": 11,
+      "evidence_reference": "unresolved-card-id-011",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 011 (provisional)"
+    },
+    {
+      "card_id": 12,
+      "evidence_reference": "unresolved-card-id-012",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 012 (provisional)"
+    },
+    {
+      "card_id": 13,
+      "evidence_reference": "unresolved-card-id-013",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 013 (provisional)"
+    },
+    {
+      "card_id": 14,
+      "evidence_reference": "unresolved-card-id-014",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 014 (provisional)"
+    },
+    {
+      "card_id": 15,
+      "evidence_reference": "unresolved-card-id-015",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 015 (provisional)"
+    },
+    {
+      "card_id": 16,
+      "evidence_reference": "unresolved-card-id-016",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 016 (provisional)"
+    },
+    {
+      "card_id": 17,
+      "evidence_reference": "unresolved-card-id-017",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 017 (provisional)"
+    },
+    {
+      "card_id": 18,
+      "evidence_reference": "unresolved-card-id-018",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 018 (provisional)"
+    },
+    {
+      "card_id": 19,
+      "evidence_reference": "gate-id-019",
+      "mapping_confidence": "confirmed",
+      "name": "Juggernoid"
+    },
+    {
+      "card_id": 20,
+      "evidence_reference": "gate-id-020",
+      "mapping_confidence": "confirmed",
+      "name": "Robotallion"
+    },
+    {
+      "card_id": 21,
+      "evidence_reference": "unresolved-card-id-021",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 021 (provisional)"
+    },
+    {
+      "card_id": 22,
+      "evidence_reference": "gate-id-022",
+      "mapping_confidence": "confirmed",
+      "name": "Serpenoid"
+    },
+    {
+      "card_id": 23,
+      "evidence_reference": "unresolved-card-id-023",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 023 (provisional)"
+    },
+    {
+      "card_id": 24,
+      "evidence_reference": "unresolved-card-id-024",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 024 (provisional)"
+    },
+    {
+      "card_id": 25,
+      "evidence_reference": "unresolved-card-id-025",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 025 (provisional)"
+    },
+    {
+      "card_id": 26,
+      "evidence_reference": "unresolved-card-id-026",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 026 (provisional)"
+    },
+    {
+      "card_id": 27,
+      "evidence_reference": "unresolved-card-id-027",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 027 (provisional)"
+    },
+    {
+      "card_id": 28,
+      "evidence_reference": "unresolved-card-id-028",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 028 (provisional)"
+    },
+    {
+      "card_id": 29,
+      "evidence_reference": "unresolved-card-id-029",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 029 (provisional)"
+    },
+    {
+      "card_id": 30,
+      "evidence_reference": "unresolved-card-id-030",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 030 (provisional)"
+    },
+    {
+      "card_id": 31,
+      "evidence_reference": "unresolved-card-id-031",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 031 (provisional)"
+    },
+    {
+      "card_id": 32,
+      "evidence_reference": "unresolved-card-id-032",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 032 (provisional)"
+    },
+    {
+      "card_id": 33,
+      "evidence_reference": "unresolved-card-id-033",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 033 (provisional)"
+    },
+    {
+      "card_id": 34,
+      "evidence_reference": "unresolved-card-id-034",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 034 (provisional)"
+    },
+    {
+      "card_id": 35,
+      "evidence_reference": "unresolved-card-id-035",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 035 (provisional)"
+    },
+    {
+      "card_id": 36,
+      "evidence_reference": "unresolved-card-id-036",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 036 (provisional)"
+    },
+    {
+      "card_id": 37,
+      "evidence_reference": "unresolved-card-id-037",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 037 (provisional)"
+    },
+    {
+      "card_id": 38,
+      "evidence_reference": "unresolved-card-id-038",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 038 (provisional)"
+    },
+    {
+      "card_id": 39,
+      "evidence_reference": "unresolved-card-id-039",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 039 (provisional)"
+    },
+    {
+      "card_id": 40,
+      "evidence_reference": "unresolved-card-id-040",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 040 (provisional)"
+    },
+    {
+      "card_id": 41,
+      "evidence_reference": "unresolved-card-id-041",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 041 (provisional)"
+    },
+    {
+      "card_id": 42,
+      "evidence_reference": "unresolved-card-id-042",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 042 (provisional)"
+    },
+    {
+      "card_id": 43,
+      "evidence_reference": "unresolved-card-id-043",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 043 (provisional)"
+    },
+    {
+      "card_id": 44,
+      "evidence_reference": "unresolved-card-id-044",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 044 (provisional)"
+    },
+    {
+      "card_id": 45,
+      "evidence_reference": "unresolved-card-id-045",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 045 (provisional)"
+    },
+    {
+      "card_id": 46,
+      "evidence_reference": "unresolved-card-id-046",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 046 (provisional)"
+    },
+    {
+      "card_id": 47,
+      "evidence_reference": "unresolved-card-id-047",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 047 (provisional)"
+    },
+    {
+      "card_id": 48,
+      "evidence_reference": "unresolved-card-id-048",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 048 (provisional)"
+    },
+    {
+      "card_id": 49,
+      "evidence_reference": "unresolved-card-id-049",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 049 (provisional)"
+    },
+    {
+      "card_id": 50,
+      "evidence_reference": "unresolved-card-id-050",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 050 (provisional)"
+    },
+    {
+      "card_id": 51,
+      "evidence_reference": "unresolved-card-id-051",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 051 (provisional)"
+    },
+    {
+      "card_id": 52,
+      "evidence_reference": "unresolved-card-id-052",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 052 (provisional)"
+    },
+    {
+      "card_id": 53,
+      "evidence_reference": "unresolved-card-id-053",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 053 (provisional)"
+    },
+    {
+      "card_id": 54,
+      "evidence_reference": "unresolved-card-id-054",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 054 (provisional)"
+    },
+    {
+      "card_id": 55,
+      "evidence_reference": "unresolved-card-id-055",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 055 (provisional)"
+    },
+    {
+      "card_id": 56,
+      "evidence_reference": "unresolved-card-id-056",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 056 (provisional)"
+    },
+    {
+      "card_id": 57,
+      "evidence_reference": "unresolved-card-id-057",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 057 (provisional)"
+    },
+    {
+      "card_id": 58,
+      "evidence_reference": "unresolved-card-id-058",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 058 (provisional)"
+    },
+    {
+      "card_id": 59,
+      "evidence_reference": "unresolved-card-id-059",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 059 (provisional)"
+    },
+    {
+      "card_id": 60,
+      "evidence_reference": "unresolved-card-id-060",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 060 (provisional)"
+    },
+    {
+      "card_id": 61,
+      "evidence_reference": "unresolved-card-id-061",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 061 (provisional)"
+    },
+    {
+      "card_id": 62,
+      "evidence_reference": "unresolved-card-id-062",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 062 (provisional)"
+    },
+    {
+      "card_id": 63,
+      "evidence_reference": "unresolved-card-id-063",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 063 (provisional)"
+    },
+    {
+      "card_id": 64,
+      "evidence_reference": "unresolved-card-id-064",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 064 (provisional)"
+    },
+    {
+      "card_id": 65,
+      "evidence_reference": "unresolved-card-id-065",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 065 (provisional)"
+    },
+    {
+      "card_id": 66,
+      "evidence_reference": "unresolved-card-id-066",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 066 (provisional)"
+    },
+    {
+      "card_id": 67,
+      "evidence_reference": "unresolved-card-id-067",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 067 (provisional)"
+    },
+    {
+      "card_id": 68,
+      "evidence_reference": "unresolved-card-id-068",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 068 (provisional)"
+    },
+    {
+      "card_id": 69,
+      "evidence_reference": "unresolved-card-id-069",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 069 (provisional)"
+    },
+    {
+      "card_id": 70,
+      "evidence_reference": "unresolved-card-id-070",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 070 (provisional)"
+    },
+    {
+      "card_id": 71,
+      "evidence_reference": "unresolved-card-id-071",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 071 (provisional)"
+    },
+    {
+      "card_id": 72,
+      "evidence_reference": "unresolved-card-id-072",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 072 (provisional)"
+    },
+    {
+      "card_id": 73,
+      "evidence_reference": "unresolved-card-id-073",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 073 (provisional)"
+    },
+    {
+      "card_id": 74,
+      "evidence_reference": "unresolved-card-id-074",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 074 (provisional)"
+    },
+    {
+      "card_id": 75,
+      "evidence_reference": "unresolved-card-id-075",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 075 (provisional)"
+    },
+    {
+      "card_id": 76,
+      "evidence_reference": "unresolved-card-id-076",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 076 (provisional)"
+    },
+    {
+      "card_id": 77,
+      "evidence_reference": "unresolved-card-id-077",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 077 (provisional)"
+    },
+    {
+      "card_id": 78,
+      "evidence_reference": "unresolved-card-id-078",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 078 (provisional)"
+    },
+    {
+      "card_id": 79,
+      "evidence_reference": "unresolved-card-id-079",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 079 (provisional)"
+    },
+    {
+      "card_id": 80,
+      "evidence_reference": "unresolved-card-id-080",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 080 (provisional)"
+    },
+    {
+      "card_id": 81,
+      "evidence_reference": "unresolved-card-id-081",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 081 (provisional)"
+    },
+    {
+      "card_id": 82,
+      "evidence_reference": "unresolved-card-id-082",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 082 (provisional)"
+    },
+    {
+      "card_id": 83,
+      "evidence_reference": "unresolved-card-id-083",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 083 (provisional)"
+    },
+    {
+      "card_id": 84,
+      "evidence_reference": "unresolved-card-id-084",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 084 (provisional)"
+    },
+    {
+      "card_id": 85,
+      "evidence_reference": "unresolved-card-id-085",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 085 (provisional)"
+    },
+    {
+      "card_id": 86,
+      "evidence_reference": "unresolved-card-id-086",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 086 (provisional)"
+    },
+    {
+      "card_id": 87,
+      "evidence_reference": "unresolved-card-id-087",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 087 (provisional)"
+    },
+    {
+      "card_id": 88,
+      "evidence_reference": "unresolved-card-id-088",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 088 (provisional)"
+    },
+    {
+      "card_id": 89,
+      "evidence_reference": "unresolved-card-id-089",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 089 (provisional)"
+    },
+    {
+      "card_id": 90,
+      "evidence_reference": "unresolved-card-id-090",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 090 (provisional)"
+    },
+    {
+      "card_id": 91,
+      "evidence_reference": "unresolved-card-id-091",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 091 (provisional)"
+    },
+    {
+      "card_id": 92,
+      "evidence_reference": "unresolved-card-id-092",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 092 (provisional)"
+    },
+    {
+      "card_id": 93,
+      "evidence_reference": "unresolved-card-id-093",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 093 (provisional)"
+    },
+    {
+      "card_id": 94,
+      "evidence_reference": "unresolved-card-id-094",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 094 (provisional)"
+    },
+    {
+      "card_id": 95,
+      "evidence_reference": "unresolved-card-id-095",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 095 (provisional)"
+    },
+    {
+      "card_id": 96,
+      "evidence_reference": "unresolved-card-id-096",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 096 (provisional)"
+    },
+    {
+      "card_id": 97,
+      "evidence_reference": "unresolved-card-id-097",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 097 (provisional)"
+    },
+    {
+      "card_id": 98,
+      "evidence_reference": "unresolved-card-id-098",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 098 (provisional)"
+    },
+    {
+      "card_id": 99,
+      "evidence_reference": "unresolved-card-id-099",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 099 (provisional)"
+    },
+    {
+      "card_id": 100,
+      "evidence_reference": "unresolved-card-id-100",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 100 (provisional)"
+    },
+    {
+      "card_id": 101,
+      "evidence_reference": "unresolved-card-id-101",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 101 (provisional)"
+    },
+    {
+      "card_id": 102,
+      "evidence_reference": "unresolved-card-id-102",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 102 (provisional)"
+    },
+    {
+      "card_id": 103,
+      "evidence_reference": "unresolved-card-id-103",
+      "mapping_confidence": "unresolved",
+      "name": "Gate 103 (provisional)"
+    }
+  ],
+  "format_version": 1,
+  "guide_order_used_for_ids": false,
+  "profile_id": "b6re_rev0",
+  "source_evidence": "analysis/gates/card-id-evidence.json"
+}

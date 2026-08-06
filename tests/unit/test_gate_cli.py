@@ -261,3 +261,40 @@ def test_gate_parser_accepts_milestone_6d_install() -> None:
     assert arguments.gate_command == "install-milestone-6d"
     assert arguments.authoring == Path("config/gates/milestone-6d-system2-v1.json")
     assert arguments.dry_run is True
+
+
+def test_gate_parser_accepts_milestone_6e_roster_report() -> None:
+    parser = gate_cli.build_gate_parser()
+    arguments = parser.parse_args(
+        [
+            "report-milestone-6e-roster",
+            "config/gates/milestone-6d-system2-v1.json",
+            "work/milestone-6e-roster-analysis.json",
+            "--metadata",
+            "config/gates/milestone-6e-roster-metadata.json",
+        ]
+    )
+    assert arguments.gate_command == "report-milestone-6e-roster"
+
+
+def test_report_milestone_6e_roster_writes_repeatable_report(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output = tmp_path / "roster-analysis.json"
+    arguments = Namespace(
+        gate_command="report-milestone-6e-roster",
+        authoring=Path("config/gates/milestone-6d-system2-v1.json"),
+        metadata=Path("config/gates/milestone-6e-roster-metadata.json"),
+        output=output,
+    )
+
+    assert gate_cli.run_gate_command(arguments) == 0
+    first = output.read_bytes()
+    assert gate_cli.run_gate_command(arguments) == 0
+    assert output.read_bytes() == first
+    assert json.loads(first)["matrix"]["case_count_per_record"] == 1080
+    printed = capsys.readouterr().out
+    assert "record_count=103" in printed
+    assert "live_count=1" in printed
+    assert "sha256=" in printed

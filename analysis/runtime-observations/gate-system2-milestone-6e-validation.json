@@ -1,0 +1,29 @@
+{
+  "format_version": 1,
+  "milestone": "6E",
+  "profile_id": "b6re_rev0",
+  "status": "runtime_representative_capture_pending",
+  "bounded_claims": [
+    "The unchanged Milestone 6D runtime module and cache lifecycle retain their previously accepted live-ROM evidence.",
+    "All 103 Milestone 6E records are validated by the host model and exact emitted-ARM interpreter.",
+    "No new runtime condition, effect, targeting, timing, cache, or selector semantics were introduced."
+  ],
+  "live_runtime_reused_baseline": {
+    "source": "analysis/runtime-observations/gate-system2-milestone-6d-validation.json",
+    "module_geometry_unchanged": true,
+    "cache_geometry_unchanged": true,
+    "tutorial_completion_previously_confirmed": true,
+    "standard_arena_exit_previously_confirmed": true,
+    "cache_clear_previously_confirmed": true
+  },
+  "milestone_6e_representative_matrix": {
+    "required_archetypes": ["power", "skill", "control", "comeback", "risk", "attribute", "chaos"],
+    "exact_emitted_arm_complete_roster": true,
+    "natural_emulator_representatives_complete": false
+  },
+  "rejected_claims": [
+    "Every Milestone 6E archetype has already been exercised naturally in DeSmuME.",
+    "The prior Milestone 6D live capture alone proves every new authored record is reachable through normal gameplay."
+  ],
+  "blocker": "The Linux DeSmuME GDB bundle and the preserved playable battle save/state are not mounted in the current execution runtime."
+}

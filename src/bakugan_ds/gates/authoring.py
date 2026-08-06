@@ -12,7 +12,12 @@ from bakugan_ds.gates.record import (
     GateArchetype,
     GateRecordV1,
 )
-from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus
+from bakugan_ds.gates.system2 import (
+    FallbackReason,
+    GateCalculationContext,
+    calculate_gate_bonus,
+    record_fallback_reason,
+)
 
 _RECORD_FIELDS = frozenset(GATE_RECORD_FIELD_NAMES)
 _ROOT_FIELDS = frozenset({"format_version", "records"})
@@ -235,6 +240,31 @@ def validate_milestone_6d_roster(
 def load_milestone_6d_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
     records = _load_authoring_records(path)
     validate_milestone_6d_roster(records)
+    return records
+
+
+def validate_milestone_6e_roster(records: tuple[GateRecordV1, ...]) -> None:
+    if len(records) != RECORD_COUNT:
+        raise WorkspaceError("Milestone 6E roster must contain exactly 103 records")
+    expected_ids = tuple(range(1, RECORD_COUNT + 1))
+    if tuple(record.card_id for record in records) != expected_ids:
+        raise WorkspaceError("Milestone 6E records must contain sorted IDs 1 through 103")
+    for record in records:
+        record.validate()
+        if record.archetype is GateArchetype.LEGACY:
+            raise WorkspaceError(f"Gate {record.card_id} remains legacy in Milestone 6E")
+        reason = record_fallback_reason(record)
+        if reason is not FallbackReason.NONE:
+            raise WorkspaceError(
+                f"Gate {record.card_id} uses unsupported runtime semantics: {reason.value}"
+            )
+    if records[18] != approved_juggernoid_record():
+        raise WorkspaceError("Gate 19 does not match the approved compatibility fixture")
+
+
+def load_milestone_6e_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:
+    records = load_gate_roster_authoring_document(path)
+    validate_milestone_6e_roster(records)
     return records
 
 

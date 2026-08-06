@@ -15,6 +15,7 @@ from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.authoring import (
     load_authoring_document,
     load_milestone_6d_authoring_document,
+    load_milestone_6e_authoring_document,
 )
 from bakugan_ds.gates.loader import (
     ARM9_DECODED_SHA256,
@@ -318,6 +319,7 @@ def _prepare_install(
     readiness_path: Path,
     dry_run: bool,
     milestone_6d: bool = False,
+    milestone_6e: bool = False,
     report_name: str | None = None,
 ) -> _PreparedInstall:
     layout = WorkspaceLayout.from_root(workspace)
@@ -326,11 +328,12 @@ def _prepare_install(
         raise WorkspaceError("Milestone 6C installer supports only b6re_rev0")
     _load_readiness(readiness_path)
 
-    records = (
-        load_milestone_6d_authoring_document(authoring_path)
-        if milestone_6d
-        else load_authoring_document(authoring_path)
-    )
+    if milestone_6e:
+        records = load_milestone_6e_authoring_document(authoring_path)
+    elif milestone_6d:
+        records = load_milestone_6d_authoring_document(authoring_path)
+    else:
+        records = load_authoring_document(authoring_path)
     trailer = build_trailer(records)
     module = build_milestone_6d_module() if milestone_6d else build_milestone_6c_module()
     patches = _generated_install_patches(DEFAULT_PATCH_PATH, module)
@@ -633,6 +636,7 @@ def install_milestone_6e(
         readiness_path=(readiness_path or DEFAULT_READINESS_PATH).expanduser().resolve(),
         dry_run=dry_run,
         milestone_6d=True,
+        milestone_6e=True,
         report_name=MILESTONE_6E_INSTALL_REPORT_NAME,
     )
     layout = WorkspaceLayout.from_root(resolved_workspace)

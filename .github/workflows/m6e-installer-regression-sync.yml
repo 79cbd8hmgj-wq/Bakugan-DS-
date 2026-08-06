@@ -127,6 +127,7 @@ jobs:
           target = Path("tests/integration/test_gate_milestone_6e_build.py")
           test_text = base64.b64decode(encoded).decode("utf-8")
           test_text = test_text.replace("bakugan_ds.compression.blZ", "bakugan_ds.compression.blz")
+          test_text = test_text.replace("decompress_bnz", "decompress_blz")
           target.write_text(test_text, encoding="utf-8")
           PY
       - name: Verify correction

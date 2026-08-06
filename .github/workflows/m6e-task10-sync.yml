@@ -86,7 +86,7 @@ jobs:
               "analysis/gates/milestone-6e-balance-contract.json",
               "config/gates/milestone-6e-system2-v1.json",
               "config/gates/milestone-6e-roster-metadata.json",
-              "tests/unit/test_gate_milestone_6e-power_attribute.py",
+              "tests/unit/test_gate_milestone_6e_power_attribute.py",
               "tests/unit/test_gate_milestone_6e_skill_control.py",
               "tests/unit/test_gate_milestone_6e_comeback.py",
               "tests/unit/test_gate_milestone_6e_risk_chaos.py",

@@ -153,8 +153,12 @@ def build_roster_contract(
     serialized = b"".join(serialize_record(record) for record in records)
     metadata_payload = _metadata_payload(metadata)
     return {
-        "archetype_distribution": _distribution(records),
-        "deferred_state_record_ids": deferred,
+        "archetype_distribution": _normalize_json(
+            _distribution(records), "roster contract archetype_distribution"
+        ),
+        "deferred_state_record_ids": _normalize_json(
+            deferred, "roster contract deferred_state_record_ids"
+        ),
         "format": "bakugan-ds-gate-milestone-6e-roster-contract",
         "format_version": 1,
         "juggernoid_preserved": records[18] == approved_juggernoid_record(),
@@ -165,11 +169,16 @@ def build_roster_contract(
         "profile_id": "b6re_rev0",
         "record_count": len(records),
         "records_sha256": _sha256(serialized),
-        "review_status_counts": {
-            status.value: sum(entry.review_status is status for entry in metadata)
-            for status in ReviewStatus
-        },
-        "unsupported_record_ids": unsupported,
+        "review_status_counts": _normalize_json(
+            {
+                status.value: sum(entry.review_status is status for entry in metadata)
+                for status in ReviewStatus
+            },
+            "roster contract review_status_counts",
+        ),
+        "unsupported_record_ids": _normalize_json(
+            unsupported, "roster contract unsupported_record_ids"
+        ),
     }
 
 
@@ -271,7 +280,9 @@ def build_balance_contract(
             analysis.get("archetype_distribution_warnings"),
             "roster analysis archetype_distribution_warnings",
         ),
-        "dominance_dispositions": dispositions,
+        "dominance_dispositions": _normalize_json(
+            dispositions, "balance contract dominance_dispositions"
+        ),
         "format": "bakugan-ds-gate-milestone-6e-balance-contract",
         "format_version": 1,
         "hard_duplicate_groups": _normalize_json(
@@ -286,15 +297,20 @@ def build_balance_contract(
             analysis.get("identity_conflicts"),
             "roster analysis identity_conflicts",
         ),
-        "out_of_tier_card_ids": _parse_out_of_tier_card_ids(
-            analysis.get("cards")
+        "out_of_tier_card_ids": _normalize_json(
+            _parse_out_of_tier_card_ids(analysis.get("cards")),
+            "balance contract out_of_tier_card_ids",
         ),
-        "potential_dominance_pairs": pairs,
+        "potential_dominance_pairs": _normalize_json(
+            pairs, "balance contract potential_dominance_pairs"
+        ),
         "reference_case_count_per_record": _require_int(
             matrix.get("case_count_per_record"),
             "roster analysis matrix.case_count_per_record",
         ),
-        "unresolved_dominance_pairs": unresolved,
+        "unresolved_dominance_pairs": _normalize_json(
+            unresolved, "balance contract unresolved_dominance_pairs"
+        ),
     }
     if unresolved:
         formatted = ", ".join(

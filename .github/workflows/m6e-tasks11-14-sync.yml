@@ -1,0 +1,67 @@
+name: Milestone 6E Tasks 11-14 sync
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+concurrency:
+  group: milestone-6e-tasks11-14-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: >-
+      github.head_ref == 'milestone-6e-complete-gate-roster-conversion' &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Apply preserved source patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d automation/m6e-tasks11-14.patch.gz.b64 | gzip -d > /tmp/m6e.patch
+          git apply --index /tmp/m6e.patch
+      - name: Verify synchronized work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e '.[dev]'
+          python -m pytest -q \
+            tests/unit/test_gate_milestone_6e_install.py \
+            tests/test_gate_system2_milestone_6e_validation.py \
+            tests/unit/test_gate_roster_contracts.py \
+            tests/unit/test_gate_milestone_6e_runtime_parity.py -k 'weight_vectors'
+          python -m compileall -q src tests tools
+          python -m ruff check \
+            src/bakugan_ds/gates/cli.py \
+            src/bakugan_ds/gates/install.py \
+            tests/unit/test_gate_milestone_6e_install.py \
+            tests/unit/test_gate_milestone_6e_runtime_parity.py \
+            tests/test_gate_system2_milestone_6e_validation.py
+          python -m mypy src/bakugan_ds/gates/cli.py src/bakugan_ds/gates/install.py
+          git diff --check --cached
+      - name: Commit verified source and remove temporary recovery files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/m6e-tasks11-14-sync.yml automation/m6e-tasks11-14.patch.gz.b64
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'feat: add Milestone 6E parity and install contracts'
+          git push origin HEAD:${{ github.head_ref }}

@@ -1,0 +1,160 @@
+name: Milestone 6E installer regression sync
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: >-
+      github.head_ref == 'milestone-6e-complete-gate-roster-conversion' &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Apply installer correction and exact-build test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+
+          authoring = Path("src/bakugan_ds/gates/authoring.py")
+          text = authoring.read_text(encoding="utf-8")
+          text = text.replace(
+              "from bakugan_ds.gates.system2 import GateCalculationContext, calculate_gate_bonus",
+              "from bakugan_ds.gates.system2 import (\n"
+              "    FallbackReason,\n"
+              "    GateCalculationContext,\n"
+              "    calculate_gate_bonus,\n"
+              "    record_fallback_reason,\n"
+              ")",
+          )
+          needle = (
+              "def load_milestone_6d_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:\n"
+              "    records = _load_authoring_records(path)\n"
+              "    validate_milestone_6d_roster(records)\n"
+              "    return records\n\n\n"
+          )
+          replacement = needle + (
+              "def validate_milestone_6e_roster(records: tuple[GateRecordV1, ...]) -> None:\n"
+              "    if len(records) != RECORD_COUNT:\n"
+              "        raise WorkspaceError(\"Milestone 6E roster must contain exactly 103 records\")\n"
+              "    expected_ids = tuple(range(1, RECORD_COUNT + 1))\n"
+              "    if tuple(record.card_id for record in records) != expected_ids:\n"
+              "        raise WorkspaceError(\"Milestone 6E records must contain sorted IDs 1 through 103\")\n"
+              "    for record in records:\n"
+              "        record.validate()\n"
+              "        if record.archetype is GateArchetype.LEGACY:\n"
+              "            raise WorkspaceError(f\"Gate {record.card_id} remains legacy in Milestone 6E\")\n"
+              "        reason = record_fallback_reason(record)\n"
+              "        if reason is not FallbackReason.NONE:\n"
+              "            raise WorkspaceError(\n"
+              "                f\"Gate {record.card_id} uses unsupported runtime semantics: {reason.value}\"\n"
+              "            )\n"
+              "    if records[18] != approved_juggernoid_record():\n"
+              "        raise WorkspaceError(\"Gate 19 does not match the approved compatibility fixture\")\n\n\n"
+              "def load_milestone_6e_authoring_document(path: Path) -> tuple[GateRecordV1, ...]:\n"
+              "    records = load_gate_roster_authoring_document(path)\n"
+              "    validate_milestone_6e_roster(records)\n"
+              "    return records\n\n\n"
+          )
+          if needle not in text:
+              raise SystemExit("Milestone 6D authoring loader anchor missing")
+          text = text.replace(needle, replacement, 1)
+          authoring.write_text(text, encoding="utf-8")
+
+          install = Path("src/bakugan_ds/gates/install.py")
+          text = install.read_text(encoding="utf-8")
+          text = text.replace(
+              "    load_milestone_6d_authoring_document,\n",
+              "    load_milestone_6d_authoring_document,\n"
+              "    load_milestone_6e_authoring_document,\n",
+              1,
+          )
+          text = text.replace(
+              "    milestone_6d: bool = False,\n    report_name: str | None = None,",
+              "    milestone_6d: bool = False,\n"
+              "    milestone_6e: bool = False,\n"
+              "    report_name: str | None = None,",
+              1,
+          )
+          old = (
+              "    records = (\n"
+              "        load_milestone_6d_authoring_document(authoring_path)\n"
+              "        if milestone_6d\n"
+              "        else load_authoring_document(authoring_path)\n"
+              "    )\n"
+          )
+          new = (
+              "    if milestone_6e:\n"
+              "        records = load_milestone_6e_authoring_document(authoring_path)\n"
+              "    elif milestone_6d:\n"
+              "        records = load_milestone_6d_authoring_document(authoring_path)\n"
+              "    else:\n"
+              "        records = load_authoring_document(authoring_path)\n"
+          )
+          if old not in text:
+              raise SystemExit("installer authoring dispatch anchor missing")
+          text = text.replace(old, new, 1)
+          text = text.replace(
+              "        milestone_6d=True,\n"
+              "        report_name=MILESTONE_6E_INSTALL_REPORT_NAME,",
+              "        milestone_6d=True,\n"
+              "        milestone_6e=True,\n"
+              "        report_name=MILESTONE_6E_INSTALL_REPORT_NAME,",
+              1,
+          )
+          install.write_text(text, encoding="utf-8")
+
+          encoded = Path("automation/m6e-installer-fix-test.b64").read_text(encoding="utf-8")
+          target = Path("tests/integration/test_gate_milestone_6e_build.py")
+          target.write_bytes(base64.b64decode(encoded))
+          PY
+      - name: Verify correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e '.[dev]'
+          python -m pytest -q \
+            tests/unit/test_gate_milestone_6e_install.py \
+            tests/unit/test_gate_roster_contracts.py \
+            tests/integration/test_gate_milestone_6e_build.py
+          python -m compileall -q src tests tools
+          python -m ruff check \
+            src/bakugan_ds/gates/authoring.py \
+            src/bakugan_ds/gates/install.py \
+            tests/integration/test_gate_milestone_6e_build.py
+          python -m mypy src/bakugan_ds/gates/authoring.py src/bakugan_ds/gates/install.py
+          git diff --check
+      - name: Commit verified correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add \
+            src/bakugan_ds/gates/authoring.py \
+            src/bakugan_ds/gates/install.py \
+            tests/integration/test_gate_milestone_6e_build.py
+          git rm \
+            .github/workflows/m6e-installer-regression-sync.yml \
+            automation/m6e-installer-fix-test.b64
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'fix: validate complete roster during Milestone 6E install'
+          git push origin HEAD:${{ github.head_ref }}

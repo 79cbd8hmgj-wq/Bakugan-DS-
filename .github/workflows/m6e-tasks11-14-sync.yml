@@ -62,8 +62,17 @@ jobs:
           text = text.replace("import pytest\n\n", "")
           text = text.replace("\n@pytest.mark.slow\n", "\n")
           parity.write_text(text, encoding="utf-8")
+
+          cli = Path("src/bakugan_ds/gates/cli.py")
+          cli.write_text(
+              cli.read_text(encoding="utf-8").rstrip() + "\n",
+              encoding="utf-8",
+          )
           PY
-          git add src/bakugan_ds/gates/install.py tests/unit/test_gate_milestone_6e_runtime_parity.py
+          git add \
+            src/bakugan_ds/gates/cli.py \
+            src/bakugan_ds/gates/install.py \
+            tests/unit/test_gate_milestone_6e_runtime_parity.py
       - name: Verify synchronized work
         shell: bash
         run: |

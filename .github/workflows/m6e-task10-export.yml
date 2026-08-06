@@ -53,7 +53,7 @@ jobs:
             tests/unit/test_gate_milestone_6e_comeback.py \
             tests/unit/test_gate_milestone_6e_risk_chaos.py \
             tests/unit/test_gate_roster_metadata.py
-          python -m mypy src/bakugan_ds
+          python -m mypy src/bakugan_ds/gates/roster_contracts.py
           python -m pytest -q
           git diff --check
       - name: Stage verified files

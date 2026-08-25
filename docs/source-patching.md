@@ -100,7 +100,9 @@ Known game functions or data may be exposed only through explicit `definitions` 
 
 ## Hooks
 
-ARM hooks use ARM `B` or `BL` encoding. Thumb hooks support Thumb-1 unconditional `B` and `BL` within their architectural ranges.
+ARM hooks use ARM `B` or `BL` encoding. Thumb hooks support Thumb-1 unconditional `B` and `BL` within their architectural ranges. This first bridge does not synthesize interworking veneers, so every hook's mode must match the emitted source mode.
+
+LLVM/ELF conventionally marks Thumb function symbols by setting bit 0 of the symbol value. The bridge recognizes that ABI state marker and clears bit 0 only when calculating the architectural Thumb branch address; an ARM hook rejects a Thumb-marked symbol.
 
 Before mutation, every hook must satisfy all of the following:
 
@@ -108,7 +110,7 @@ Before mutation, every hook must satisfy all of the following:
 - its current bytes exactly equal `expected`;
 - its guard length exactly fits the selected branch encoding;
 - its destination symbol exists in the compiled ELF;
-- the destination symbol resolves inside the emitted source image;
+- the destination symbol resolves inside the emitted source image after instruction-state normalization;
 - hook ranges do not overlap each other;
 - hooks do not overlap the emitted payload.
 
@@ -116,7 +118,7 @@ All hook guards are checked before any runtime bytes are changed.
 
 ## Transaction and report
 
-The complete patched runtime image and stored representation are built in memory first. Only after compilation, hash validation, range checks, hook validation, and compression validation succeed is the target replaced.
+The complete patched runtime image and stored representation are built in memory first. The target is validated before and again after external compilation, and its stored bytes are compared again immediately before replacement to reject stale concurrent workspace writes. Only after compilation, hash validation, range checks, hook validation, compression validation, and final target revalidation succeed is the target replaced.
 
 The command writes:
 

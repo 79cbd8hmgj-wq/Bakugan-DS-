@@ -5,6 +5,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from bakugan_ds.disassembly_cli import add_disassembly_parser, run_disassembly_command
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
 from bakugan_ds.gates.cli import add_gate_parser, run_gate_command
 from bakugan_ds.inspection import inspect_rom
@@ -53,6 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
     patch_parser.add_argument("workspace", type=Path)
     patch_parser.add_argument("patch_file", type=Path)
 
+    add_disassembly_parser(subparsers, default_profile=DEFAULT_PROFILE)
     add_gate_parser(subparsers)
     return parser
 
@@ -74,6 +76,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_usage(sys.stderr)
         return 2
     try:
+        if arguments.command == "disasm":
+            return run_disassembly_command(arguments)
         if arguments.command == "gate":
             return run_gate_command(arguments)
         if arguments.command == "inspect":

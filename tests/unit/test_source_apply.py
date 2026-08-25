@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bakugan_ds.compression.blz import decompress_blz, is_blz
+from bakugan_ds.compression.blz import compress_blz, decompress_blz, is_blz, parse_blz_footer
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.source_apply import build_patched_runtime, encode_target_storage
 from bakugan_ds.source_compile import CompiledSource
@@ -102,6 +102,24 @@ def test_build_patched_runtime_rejects_missing_hook_symbol() -> None:
         )
 
 
+def test_build_patched_runtime_rejects_hook_symbol_outside_emitted_image() -> None:
+    hook = SourceHook(
+        hook_id="entry",
+        runtime_address=0x02219040,
+        expected=b"\x00" * 4,
+        symbol="entry",
+        link=True,
+        mode="arm",
+    )
+
+    with pytest.raises(WorkspaceError, match="resolves outside emitted image"):
+        build_patched_runtime(
+            _target(b"\x00" * 0x1100),
+            _manifest(hooks=(hook,)),
+            _compiled(b"\x00" * 4, (("entry", 0x02065BF4),)),
+        )
+
+
 def test_build_patched_runtime_rejects_hook_overlap_with_injected_code() -> None:
     hook = SourceHook(
         hook_id="overlap",
@@ -131,7 +149,7 @@ def test_build_patched_runtime_rejects_overlapping_hooks() -> None:
     )
     second = SourceHook(
         hook_id="second",
-        runtime_address=0x02219042,
+        runtime_address=0x02219040,
         expected=b"\x00" * 4,
         symbol="entry",
         link=True,
@@ -162,9 +180,8 @@ def test_encode_target_storage_keeps_raw_arm_exact_size() -> None:
 
 def test_encode_target_storage_recompresses_blz_to_original_size() -> None:
     decoded = (b"ABCD" * 0x200) + (b"\x00" * 0x1000)
-    from bakugan_ds.compression.blz import compress_blz, parse_blz_footer
-
-    stored = compress_blz(decoded)
+    minimal = compress_blz(decoded)
+    stored = compress_blz(decoded, target_size=len(minimal) + 32)
     footer = parse_blz_footer(stored)
     target = SourceTarget(
         target="arm9",
@@ -184,6 +201,27 @@ def test_encode_target_storage_recompresses_blz_to_original_size() -> None:
     assert len(encoded) == len(stored)
     assert is_blz(encoded)
     assert decompress_blz(encoded) == bytes(patched)
+
+
+def test_encode_target_storage_fails_closed_without_blz_size_slack() -> None:
+    decoded = (b"ABCD" * 0x200) + (b"\x00" * 0x1000)
+    stored = compress_blz(decoded)
+    footer = parse_blz_footer(stored)
+    target = SourceTarget(
+        target="arm9",
+        path=Path("arm9.bin"),
+        runtime_base=0x02000000,
+        runtime_image=decoded,
+        placement_offset=0,
+        storage_encoding="blz",
+        stored_size=len(stored),
+        passthrough_length=len(stored) - footer.compressed_length,
+    )
+    patched = bytearray(decoded)
+    patched[0] ^= 1
+
+    with pytest.raises(WorkspaceError, match="exact stored size"):
+        encode_target_storage(target, bytes(patched))
 
 
 def test_encode_target_storage_rejects_runtime_length_change() -> None:

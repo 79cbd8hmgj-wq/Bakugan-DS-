@@ -287,7 +287,7 @@ def test_resolve_target_rejects_hook_outside_component(tmp_path: Path) -> None:
     payload["hooks"] = [hook]
     manifest = load_source_patch_manifest(_write_manifest(tmp_path, payload))
 
-    with pytest.raises(WorkspaceError, match="hook.*outside"):
+    with pytest.raises(WorkspaceError, match=r"hook.*outside"):
         resolve_source_target(workspace, manifest, _profile())
 
 

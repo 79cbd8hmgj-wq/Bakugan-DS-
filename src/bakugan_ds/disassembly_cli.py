@@ -158,12 +158,15 @@ def _run_diff(arguments: argparse.Namespace) -> int:
 
 
 def run_disassembly_command(arguments: argparse.Namespace) -> int:
-    if arguments.disasm_command == "module-params":
-        return _run_module_params(arguments)
-    if arguments.disasm_command == "overlay-map":
-        return _run_overlay_map(arguments)
-    if arguments.disasm_command == "labels":
-        return _run_labels(arguments)
-    if arguments.disasm_command == "diff":
-        return _run_diff(arguments)
+    try:
+        if arguments.disasm_command == "module-params":
+            return _run_module_params(arguments)
+        if arguments.disasm_command == "overlay-map":
+            return _run_overlay_map(arguments)
+        if arguments.disasm_command == "labels":
+            return _run_labels(arguments)
+        if arguments.disasm_command == "diff":
+            return _run_diff(arguments)
+    except ValueError as exc:
+        raise BakuganDSError(str(exc)) from exc
     raise BakuganDSError("a disasm subcommand is required")

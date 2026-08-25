@@ -10,6 +10,7 @@ from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.profile import RomProfile
 from bakugan_ds.source_compile import CompiledSource, SourceToolchain, compile_source_patch
 from bakugan_ds.source_patch import (
+    SourceHook,
     SourcePatchManifest,
     SourceTarget,
     encode_hook,
@@ -81,6 +82,16 @@ def _ranges_overlap(first_start: int, first_end: int, second_start: int, second_
     return first_start < second_end and second_start < first_end
 
 
+def _canonical_hook_destination(hook: SourceHook, symbol_address: int) -> int:
+    if hook.mode == "thumb":
+        return symbol_address & ~1
+    if symbol_address & 1:
+        raise WorkspaceError(
+            f"hook {hook.hook_id!r} ARM destination symbol {hook.symbol!r} is a Thumb-state symbol"
+        )
+    return symbol_address
+
+
 def build_patched_runtime(
     target: SourceTarget,
     manifest: SourcePatchManifest,
@@ -118,11 +129,12 @@ def build_patched_runtime(
                 f"expected {hook.expected.hex()}, found {actual.hex()}"
             )
         try:
-            destination = compiled.symbol_address(hook.symbol)
+            raw_destination = compiled.symbol_address(hook.symbol)
         except WorkspaceError as exc:
             raise WorkspaceError(
                 f"hook {hook.hook_id!r} references missing symbol {hook.symbol!r}"
             ) from exc
+        destination = _canonical_hook_destination(hook, raw_destination)
         if not emitted_runtime_start <= destination < emitted_runtime_end:
             raise WorkspaceError(
                 f"hook {hook.hook_id!r} symbol {hook.symbol!r} resolves outside emitted image"
@@ -182,14 +194,22 @@ def encode_target_storage(target: SourceTarget, runtime_image: bytes) -> bytes:
 
 def _write_temp(path: Path, data: bytes) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        prefix=f".{path.name}.tmp-",
-        dir=path.parent,
-        delete=False,
-    ) as handle:
-        temporary = Path(handle.name)
-        handle.write(data)
-        handle.flush()
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            prefix=f".{path.name}.tmp-",
+            dir=path.parent,
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            handle.write(data)
+            handle.flush()
+    except Exception:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+        raise
+    if temporary is None:
+        raise WorkspaceError(f"failed to create temporary file for {path}")
     return temporary
 
 
@@ -203,6 +223,12 @@ def _commit_target_and_report(
     target_temp = _write_temp(target_path, stored_data)
     report_temp = _write_temp(report_path, report_data)
     try:
+        try:
+            current_stored = target_path.read_bytes()
+        except OSError as exc:
+            raise WorkspaceError(f"cannot revalidate source patch target {target_path}: {exc}") from exc
+        if current_stored != original_stored:
+            raise WorkspaceError("source patch target changed during build; refusing stale write")
         target_temp.replace(target_path)
         try:
             report_temp.replace(report_path)
@@ -223,15 +249,19 @@ def apply_source_patch(
     toolchain: SourceToolchain | None = None,
 ) -> SourcePatchReport:
     manifest = load_source_patch_manifest(manifest_path)
-    target = resolve_source_target(workspace, manifest, profile)
+    # Validate target/profile/hash before invoking external tools.
+    resolve_source_target(workspace, manifest, profile)
     compiled = compile_source_patch(
         manifest_path,
         manifest,
         toolchain or SourceToolchain(),
     )
+    # Revalidate after external tools have run so a concurrent workspace edit
+    # cannot silently turn this into a stale write.
+    target = resolve_source_target(workspace, manifest, profile)
+    original_stored = target.path.read_bytes()
     patched_runtime, hooks = build_patched_runtime(target, manifest, compiled)
     stored_data = encode_target_storage(target, patched_runtime)
-    original_stored = target.path.read_bytes()
     report = SourcePatchReport(
         format_version=1,
         profile_id=manifest.profile_id,

@@ -259,6 +259,14 @@ def load_source_patch_manifest(path: Path) -> SourcePatchManifest:
     _require_aligned(runtime_address, mode, "runtime_address")
     if runtime_address + max_size > _U32_MAX + 1:
         raise WorkspaceError("runtime_address plus max_size exceeds unsigned 32-bit address space")
+    definitions = _load_definitions(payload.get("definitions"))
+    hooks = _load_hooks(payload.get("hooks"))
+    for hook in hooks:
+        if hook.mode != mode:
+            raise WorkspaceError(
+                f"hook {hook.hook_id!r} mode {hook.mode!r} differs from source patch mode "
+                f"{mode!r}; an interworking veneer is required"
+            )
 
     return SourcePatchManifest(
         format_version=format_version,
@@ -269,8 +277,8 @@ def load_source_patch_manifest(path: Path) -> SourcePatchManifest:
         mode=mode,
         expected_runtime_sha256=expected_runtime_sha256,
         sources=sources,
-        definitions=_load_definitions(payload.get("definitions")),
-        hooks=_load_hooks(payload.get("hooks")),
+        definitions=definitions,
+        hooks=hooks,
     )
 
 

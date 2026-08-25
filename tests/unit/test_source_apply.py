@@ -11,14 +11,18 @@ from bakugan_ds.source_compile import CompiledSource
 from bakugan_ds.source_patch import SourceHook, SourcePatchManifest, SourceTarget
 
 
-def _manifest(*, hooks: tuple[SourceHook, ...] = ()) -> SourcePatchManifest:
+def _manifest(
+    *,
+    hooks: tuple[SourceHook, ...] = (),
+    mode: str = "arm",
+) -> SourcePatchManifest:
     return SourcePatchManifest(
         format_version=1,
         profile_id="b6re_rev0",
         target="overlay:7",
         runtime_address=0x0221A000,
         max_size=0x20,
-        mode="arm",
+        mode=mode,
         expected_runtime_sha256="0" * 64,
         sources=("src/injected.c",),
         definitions=(),
@@ -117,6 +121,44 @@ def test_build_patched_runtime_rejects_hook_symbol_outside_emitted_image() -> No
             _target(b"\x00" * 0x1100),
             _manifest(hooks=(hook,)),
             _compiled(b"\x00" * 4, (("entry", 0x02065BF4),)),
+        )
+
+
+def test_thumb_hook_canonicalizes_elf_thumb_function_symbol_bit() -> None:
+    hook = SourceHook(
+        hook_id="thumb_entry",
+        runtime_address=0x02219040,
+        expected=b"\x00" * 4,
+        symbol="thumb_entry",
+        link=True,
+        mode="thumb",
+    )
+
+    patched, hooks = build_patched_runtime(
+        _target(b"\x00" * 0x1100),
+        _manifest(hooks=(hook,), mode="thumb"),
+        _compiled(b"\x00" * 4, (("thumb_entry", 0x0221A001),)),
+    )
+
+    assert patched[0x40:0x44] != b"\x00" * 4
+    assert hooks[0].destination == 0x0221A000
+
+
+def test_arm_hook_rejects_thumb_marked_elf_symbol() -> None:
+    hook = SourceHook(
+        hook_id="entry",
+        runtime_address=0x02219040,
+        expected=b"\x00" * 4,
+        symbol="entry",
+        link=True,
+        mode="arm",
+    )
+
+    with pytest.raises(WorkspaceError, match="Thumb-state symbol"):
+        build_patched_runtime(
+            _target(b"\x00" * 0x1100),
+            _manifest(hooks=(hook,)),
+            _compiled(b"\x00" * 4, (("entry", 0x0221A001),)),
         )
 
 

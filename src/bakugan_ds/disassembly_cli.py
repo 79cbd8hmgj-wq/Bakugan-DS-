@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 import json
-from pathlib import Path
 import sys
+from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
 from bakugan_ds.disassembly import (
@@ -132,17 +132,21 @@ def _run_labels(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def _disassemble_from_arguments(binary: Path, arguments: argparse.Namespace) -> str:
+    return disassemble_binary(
+        binary,
+        base_address=arguments.vma,
+        start_address=arguments.start,
+        stop_address=arguments.end,
+        thumb=arguments.thumb,
+        processor=arguments.processor,
+        executable=arguments.objdump,
+    )
+
+
 def _run_diff(arguments: argparse.Namespace) -> int:
-    common = {
-        "base_address": arguments.vma,
-        "start_address": arguments.start,
-        "stop_address": arguments.end,
-        "thumb": arguments.thumb,
-        "processor": arguments.processor,
-        "executable": arguments.objdump,
-    }
-    reference = disassemble_binary(arguments.reference, **common)
-    candidate = disassemble_binary(arguments.candidate, **common)
+    reference = _disassemble_from_arguments(arguments.reference, arguments)
+    candidate = _disassemble_from_arguments(arguments.candidate, arguments)
     diff = unified_disassembly_diff(
         reference,
         candidate,

@@ -52,7 +52,7 @@ def _write_manifest(tmp_path: Path, payload: dict[str, object]) -> Path:
     return path
 
 
-def _profile() -> RomProfile:
+def _profile(*, arm9_size: int = 0x1000) -> RomProfile:
     return RomProfile(
         id="b6re_rev0",
         sha256="0" * 64,
@@ -64,7 +64,7 @@ def _profile() -> RomProfile:
         expected=LayoutExpectations(
             arm9_offset=0x4000,
             arm9_ram_address=0x02000000,
-            arm9_size=0x1000,
+            arm9_size=arm9_size,
             arm7_offset=0,
             arm7_ram_address=0x02380000,
             arm7_size=0x200,
@@ -307,7 +307,11 @@ def test_resolve_blz_arm9_exposes_decoded_runtime_image(tmp_path: Path) -> None:
     payload["expected_runtime_sha256"] = sha256_bytes(decoded)
     manifest = load_source_patch_manifest(_write_manifest(tmp_path, payload))
 
-    target = resolve_source_target(workspace, manifest, _profile())
+    target = resolve_source_target(
+        workspace,
+        manifest,
+        _profile(arm9_size=len(stored)),
+    )
 
     assert target.runtime_base == 0x02000000
     assert target.runtime_image == decoded

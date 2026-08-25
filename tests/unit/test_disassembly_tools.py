@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import struct
 
 import pytest
@@ -7,6 +8,7 @@ import pytest
 from bakugan_ds.disassembly import (
     ModuleParams,
     build_objdump_command,
+    disassemble_binary,
     find_module_params,
     overlay_layout_report,
     render_labelled_bytes,
@@ -119,6 +121,28 @@ def test_build_objdump_command_uses_ds_vma_and_thumb_mode() -> None:
         "--stop-address=0x223d000",
         "candidate.bin",
     )
+
+
+def test_disassemble_binary_executes_requested_objdump(tmp_path: Path) -> None:
+    tool = tmp_path / "fake-objdump"
+    tool.write_text(
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        "print(' '.join(sys.argv[1:]))\n",
+        encoding="utf-8",
+    )
+    tool.chmod(0o755)
+    binary = tmp_path / "component.bin"
+    binary.write_bytes(b"\x00\x00\xa0\xe1")
+
+    output = disassemble_binary(
+        binary,
+        base_address=0x02000000,
+        executable=str(tool),
+    )
+
+    assert "--adjust-vma=0x2000000" in output
+    assert str(binary) in output
 
 
 def test_unified_disassembly_diff_is_deterministic() -> None:

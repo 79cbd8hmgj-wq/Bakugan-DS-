@@ -76,7 +76,7 @@ Overlay workspace files are already stored decoded, so overlay runtime addresses
 
 ARM9 and ARM7 use the RAM bases from the selected ROM profile. If a stored ARM component is BLZ compressed, the source-patch bridge decodes it before translating runtime addresses. Runtime addresses are never treated as offsets into compressed bytes.
 
-For BLZ targets the mutated runtime image is recompressed with the original passthrough geometry and the **exact original stored size**. If that exact-size encoding cannot be produced safely, the patch fails closed.
+BLZ targets are recompressed to the **exact original stored size** and must pass the repository's in-place decoder safety check. The exact B6RE ARM9 uses the already-proven `0x8000` re-encode passthrough geometry from the ARM9 BLZ regression suite; this is intentionally different from the reference stream's `0x4000` passthrough because the deterministic encoder otherwise produces too much size slack for the BLZ footer to represent. Other BLZ targets retain their observed passthrough geometry. If the selected geometry cannot produce an exact-size safe stream, the patch fails closed.
 
 ## Compilation model
 
@@ -133,7 +133,7 @@ The report records:
 - normalized compiler/linker/nm commands;
 - original and final runtime hashes;
 - original and final stored hashes;
-- storage encoding, stored size, and BLZ passthrough length when applicable;
+- storage encoding, stored size, and BLZ re-encode passthrough length when applicable;
 - each hook's address, symbol, destination, expected bytes, and emitted bytes.
 
 If final report publication fails after the target replacement, the implementation restores the original target bytes before surfacing the error.

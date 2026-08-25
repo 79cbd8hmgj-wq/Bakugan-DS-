@@ -71,6 +71,29 @@ def test_disasm_labels_writes_labelled_byte_file(tmp_path: Path) -> None:
     assert "_02000004:\n" in text
 
 
+def test_disasm_labels_reports_invalid_address_as_domain_error(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    binary = tmp_path / "component.bin"
+    offsets = tmp_path / "labels.txt"
+    binary.write_bytes(bytes(range(8)))
+    offsets.write_text("0x01FFFFFF\n", encoding="utf-8")
+
+    result = cli.main(
+        [
+            "disasm",
+            "labels",
+            str(binary),
+            str(offsets),
+            "--vma",
+            "0x02000000",
+        ]
+    )
+
+    assert result == 4
+    assert "outside component" in capsys.readouterr().err
+
+
 def test_disasm_overlay_map_dispatches(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

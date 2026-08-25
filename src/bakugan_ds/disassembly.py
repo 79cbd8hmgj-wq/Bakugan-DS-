@@ -4,8 +4,10 @@ from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
 import struct
+import subprocess
 from typing import Iterable, Sequence
 
+from bakugan_ds.errors import BakuganDSError
 from bakugan_ds.nds.overlays import OverlayEntry
 
 MODULE_PARAMS_MAGIC = 0xDEC00621
@@ -180,6 +182,32 @@ def build_objdump_command(
         command.append(f"--stop-address=0x{stop_address:x}")
     command.append(str(binary))
     return tuple(command)
+
+
+def disassemble_binary(
+    binary: str | Path,
+    *,
+    base_address: int,
+    start_address: int | None = None,
+    stop_address: int | None = None,
+    thumb: bool = False,
+    processor: str = "armv5te",
+    executable: str = "arm-none-eabi-objdump",
+) -> str:
+    command = build_objdump_command(
+        binary,
+        base_address=base_address,
+        start_address=start_address,
+        stop_address=stop_address,
+        thumb=thumb,
+        processor=processor,
+        executable=executable,
+    )
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip() or "unknown objdump error"
+        raise BakuganDSError(f"objdump failed with exit code {completed.returncode}: {detail}")
+    return completed.stdout
 
 
 def unified_disassembly_diff(

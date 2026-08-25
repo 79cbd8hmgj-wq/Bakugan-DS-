@@ -203,7 +203,10 @@ def compile_source_patch(
             command = build_compile_command(toolchain, source, output, mode=manifest.mode)
             runner(command)
             if not output.is_file():
-                raise WorkspaceError(f"compiler did not produce object file for {manifest.sources[index]}")
+                source_name = manifest.sources[index]
+                raise WorkspaceError(
+                    f"compiler did not produce object file for {source_name}"
+                )
             commands.append(
                 _normalized_command(command, manifest_dir=manifest_dir, build_dir=build_dir)
             )

@@ -7,15 +7,15 @@ from pathlib import Path
 import pytest
 
 from bakugan_ds.errors import WorkspaceError
-from bakugan_ds.source_patch import (
+from bakugan_ds.source_compile import (
     SourceToolchain,
     build_compile_command,
     build_link_command,
     build_linker_script,
     compile_source_patch,
-    load_source_patch_manifest,
     parse_nm_symbols,
 )
+from bakugan_ds.source_patch import load_source_patch_manifest
 
 
 def _manifest_payload() -> dict[str, object]:
@@ -162,9 +162,14 @@ def test_compile_source_patch_runs_tools_without_shell_and_returns_image(
             return "0221a000 T entry\n02065bf4 A known_helper\n"
         raise AssertionError(command)
 
-    monkeypatch.setattr("bakugan_ds.source_patch._run_command", fake_run)
+    monkeypatch.setattr("bakugan_ds.source_compile.run_command", fake_run)
 
-    result = compile_source_patch(manifest_path, manifest, SourceToolchain())
+    result = compile_source_patch(
+        manifest_path,
+        manifest,
+        SourceToolchain(),
+        runner=fake_run,
+    )
 
     assert result.image == bytes.fromhex("0100a0e3")
     assert result.symbols == (
@@ -187,7 +192,6 @@ def test_compile_source_patch_rejects_missing_source(tmp_path: Path) -> None:
 
 
 def test_compile_source_patch_rejects_oversized_binary(
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     payload = _manifest_payload()
@@ -208,7 +212,10 @@ def test_compile_source_patch_rejects_oversized_binary(
             return "0221a000 T entry\n"
         return ""
 
-    monkeypatch.setattr("bakugan_ds.source_patch._run_command", fake_run)
-
     with pytest.raises(WorkspaceError, match="exceeds max_size"):
-        compile_source_patch(manifest_path, manifest, SourceToolchain())
+        compile_source_patch(
+            manifest_path,
+            manifest,
+            SourceToolchain(),
+            runner=fake_run,
+        )

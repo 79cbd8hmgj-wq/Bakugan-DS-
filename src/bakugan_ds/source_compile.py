@@ -12,11 +12,20 @@ from bakugan_ds.workspace.manifest import sha256_bytes
 
 
 class SourcePatchLike(Protocol):
-    runtime_address: int
-    max_size: int
-    mode: str
-    sources: tuple[str, ...]
-    definitions: tuple[tuple[str, int], ...]
+    @property
+    def runtime_address(self) -> int: ...
+
+    @property
+    def max_size(self) -> int: ...
+
+    @property
+    def mode(self) -> str: ...
+
+    @property
+    def sources(self) -> tuple[str, ...]: ...
+
+    @property
+    def definitions(self) -> tuple[tuple[str, int], ...]: ...
 
 
 @dataclass(frozen=True)

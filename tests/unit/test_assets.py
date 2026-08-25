@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from bakugan_ds.assets import AssetInventory, detect_asset
+
 from bakugan_ds.compression.lz10 import compress_lz10
 
 
@@ -17,7 +18,7 @@ def test_detects_signature_confirmed_nsbmd() -> None:
     assert record.extension_signature_match is True
 
 
-def test_detects_lz10_wrapped_nsbtX() -> None:
+def test_detects_lz10_wrapped_nsbtx() -> None:
     record = detect_asset(
         8,
         "effect/example.nsbtx",

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.source_patch import load_source_patch_manifest
+from bakugan_ds.errors import WorkspaceError
 
 
 TARGET_HASH = hashlib.sha256(b"target").hexdigest()

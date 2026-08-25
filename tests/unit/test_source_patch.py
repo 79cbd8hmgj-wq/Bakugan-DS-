@@ -237,6 +237,17 @@ def test_thumb_manifest_requires_halfword_alignment(tmp_path: Path) -> None:
         load_source_patch_manifest(_write_manifest(tmp_path, payload))
 
 
+def test_manifest_rejects_cross_state_hook_without_veneer(tmp_path: Path) -> None:
+    payload = _manifest_payload()
+    payload["mode"] = "thumb"
+    hook = dict(payload["hooks"][0])  # type: ignore[index]
+    hook["mode"] = "arm"
+    payload["hooks"] = [hook]
+
+    with pytest.raises(WorkspaceError, match="interworking veneer"):
+        load_source_patch_manifest(_write_manifest(tmp_path, payload))
+
+
 def test_resolve_overlay_target_maps_runtime_image_and_offsets(tmp_path: Path) -> None:
     overlay_data = bytes(index & 0xFF for index in range(0x3000))
     workspace = _write_workspace(tmp_path, overlay_data=overlay_data)

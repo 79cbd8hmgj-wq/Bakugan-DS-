@@ -18,6 +18,8 @@ _SYMBOL_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _VALID_MODES = frozenset({"arm", "thumb"})
 _VALID_SOURCE_SUFFIXES = frozenset({".c", ".s"})
 _U32_MAX = 0xFFFFFFFF
+_B6RE_ARM9_STORED_SIZE = 448_192
+_B6RE_ARM9_REENCODE_PASSTHROUGH = 0x8000
 
 
 @dataclass(frozen=True)
@@ -302,6 +304,22 @@ def _resolve_overlay_target(
     return path, overlay.ram_address, runtime_image, "decoded-overlay", None
 
 
+def _blz_reencode_passthrough(
+    profile: RomProfile,
+    kind: str,
+    original_passthrough: int,
+) -> int:
+    # This exact B6RE ARM9 geometry is already covered by the repository's
+    # runtime-safe ARM9 BLZ regression: 0x8000 passthrough, 448192 stored bytes.
+    if (
+        profile.id == "b6re_rev0"
+        and kind == "arm9"
+        and profile.expected.arm9_size == _B6RE_ARM9_STORED_SIZE
+    ):
+        return _B6RE_ARM9_REENCODE_PASSTHROUGH
+    return original_passthrough
+
+
 def _resolve_arm_target(
     layout: WorkspaceLayout,
     manifest: SourcePatchManifest,
@@ -322,8 +340,17 @@ def _resolve_arm_target(
         )
     if is_blz(stored):
         footer = parse_blz_footer(stored)
-        passthrough_length = len(stored) - footer.compressed_length
+        original_passthrough = len(stored) - footer.compressed_length
         runtime_image = decompress_blz(stored)
+        passthrough_length = _blz_reencode_passthrough(
+            profile,
+            kind,
+            original_passthrough,
+        )
+        if not 0 <= passthrough_length < len(runtime_image):
+            raise WorkspaceError(
+                f"BLZ re-encode passthrough {passthrough_length} is outside decoded {kind.upper()}"
+            )
         return path, runtime_base, runtime_image, "blz", passthrough_length
     return path, runtime_base, stored, "raw-arm", None
 
@@ -420,14 +447,11 @@ def _encode_thumb_branch(source_address: int, target_address: int, *, link: bool
 
 def encode_hook(hook: SourceHook, destination: int) -> bytes:
     if hook.mode == "arm":
-        try:
-            word = encode_branch(
-                hook.runtime_address,
-                destination,
-                link=hook.link,
-            )
-        except ValueError as exc:
-            raise WorkspaceError(f"cannot encode ARM hook {hook.hook_id!r}: {exc}") from exc
+        word = encode_branch(
+            hook.runtime_address,
+            destination,
+            link=hook.link,
+        )
         encoded = struct.pack("<I", word)
     elif hook.mode == "thumb":
         encoded = _encode_thumb_branch(

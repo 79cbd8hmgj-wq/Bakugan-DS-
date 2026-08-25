@@ -38,7 +38,10 @@ class SourcePatchReport:
     manifest_file: str
     runtime_address: int
     compiled_size: int
+    compiled_sha256: str
     target_storage_encoding: str
+    target_stored_size: int
+    passthrough_length: int | None
     before_runtime_sha256: str
     after_runtime_sha256: str
     before_stored_sha256: str
@@ -55,7 +58,10 @@ class SourcePatchReport:
             "manifest_file": self.manifest_file,
             "runtime_address": self.runtime_address,
             "compiled_size": self.compiled_size,
+            "compiled_sha256": self.compiled_sha256,
             "target_storage_encoding": self.target_storage_encoding,
+            "target_stored_size": self.target_stored_size,
+            "passthrough_length": self.passthrough_length,
             "before_runtime_sha256": self.before_runtime_sha256,
             "after_runtime_sha256": self.after_runtime_sha256,
             "before_stored_sha256": self.before_stored_sha256,
@@ -88,6 +94,8 @@ def build_patched_runtime(
     placement_end = placement_start + len(compiled.image)
     if placement_start < 0 or placement_end > target.runtime_size:
         raise WorkspaceError("compiled source patch placement exceeds runtime image")
+    emitted_runtime_start = manifest.runtime_address
+    emitted_runtime_end = emitted_runtime_start + len(compiled.image)
 
     hook_ranges: list[tuple[int, int, str]] = []
     prepared_hooks: list[tuple[int, bytes, AppliedSourceHook]] = []
@@ -115,6 +123,10 @@ def build_patched_runtime(
             raise WorkspaceError(
                 f"hook {hook.hook_id!r} references missing symbol {hook.symbol!r}"
             ) from exc
+        if not emitted_runtime_start <= destination < emitted_runtime_end:
+            raise WorkspaceError(
+                f"hook {hook.hook_id!r} symbol {hook.symbol!r} resolves outside emitted image"
+            )
         encoded = encode_hook(hook, destination)
         hook_ranges.append((hook_start, hook_end, hook.hook_id))
         prepared_hooks.append(
@@ -142,7 +154,8 @@ def build_patched_runtime(
 def encode_target_storage(target: SourceTarget, runtime_image: bytes) -> bytes:
     if len(runtime_image) != target.runtime_size:
         raise WorkspaceError(
-            f"patched runtime size changed: expected {target.runtime_size}, got {len(runtime_image)}"
+            f"patched runtime size changed: expected {target.runtime_size}, "
+            f"got {len(runtime_image)}"
         )
     if target.storage_encoding in {"decoded-overlay", "raw-arm"}:
         if len(runtime_image) != target.stored_size:
@@ -161,21 +174,22 @@ def encode_target_storage(target: SourceTarget, runtime_image: bytes) -> bytes:
                 target_size=target.stored_size,
             )
         except (ValueError, AssertionError) as exc:
-            raise WorkspaceError(f"cannot re-encode BLZ target at exact stored size: {exc}") from exc
+            raise WorkspaceError(
+                f"cannot re-encode BLZ target at exact stored size: {exc}"
+            ) from exc
     raise WorkspaceError(f"unsupported source target storage encoding: {target.storage_encoding}")
 
 
 def _write_temp(path: Path, data: bytes) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    handle = tempfile.NamedTemporaryFile(prefix=f".{path.name}.tmp-", dir=path.parent, delete=False)
-    temporary = Path(handle.name)
-    try:
-        with handle:
-            handle.write(data)
-            handle.flush()
-    except Exception:
-        temporary.unlink(missing_ok=True)
-        raise
+    with tempfile.NamedTemporaryFile(
+        prefix=f".{path.name}.tmp-",
+        dir=path.parent,
+        delete=False,
+    ) as handle:
+        temporary = Path(handle.name)
+        handle.write(data)
+        handle.flush()
     return temporary
 
 
@@ -225,7 +239,10 @@ def apply_source_patch(
         manifest_file=manifest_path.name,
         runtime_address=manifest.runtime_address,
         compiled_size=len(compiled.image),
+        compiled_sha256=sha256_bytes(compiled.image),
         target_storage_encoding=target.storage_encoding,
+        target_stored_size=target.stored_size,
+        passthrough_length=target.passthrough_length,
         before_runtime_sha256=sha256_bytes(target.runtime_image),
         after_runtime_sha256=sha256_bytes(patched_runtime),
         before_stored_sha256=sha256_bytes(original_stored),

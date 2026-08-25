@@ -12,6 +12,7 @@ from bakugan_ds.gates.cli import add_gate_parser, run_gate_command
 from bakugan_ds.inspection import inspect_rom
 from bakugan_ds.patches.apply import apply_patch_set
 from bakugan_ds.profile import load_profile
+from bakugan_ds.source_patch_cli import add_source_patch_parser, run_source_patch_command
 from bakugan_ds.workspace.extract import ExtractionOptions, extract_workspace
 from bakugan_ds.workspace.rebuild import RebuildOptions, rebuild_rom
 
@@ -57,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_assets_parser(subparsers, default_profile=DEFAULT_PROFILE)
     add_disassembly_parser(subparsers, default_profile=DEFAULT_PROFILE)
+    add_source_patch_parser(subparsers, default_profile=DEFAULT_PROFILE)
     add_gate_parser(subparsers)
     return parser
 
@@ -82,6 +84,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return run_assets_command(arguments)
         if arguments.command == "disasm":
             return run_disassembly_command(arguments)
+        if arguments.command == "source-patch":
+            return run_source_patch_command(arguments)
         if arguments.command == "gate":
             return run_gate_command(arguments)
         if arguments.command == "inspect":

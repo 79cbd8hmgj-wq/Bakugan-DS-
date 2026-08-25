@@ -5,7 +5,11 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from bakugan_ds.compression.blz import decompress_blz, is_blz, parse_blz_footer
 from bakugan_ds.errors import WorkspaceError
+from bakugan_ds.profile import RomProfile
+from bakugan_ds.workspace.manifest import load_workspace_manifest, sha256_bytes
+from bakugan_ds.workspace.model import WorkspaceLayout
 from bakugan_ds.workspace.paths import safe_relative_path
 
 _SYMBOL_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -36,6 +40,22 @@ class SourcePatchManifest:
     sources: tuple[str, ...]
     definitions: tuple[tuple[str, int], ...]
     hooks: tuple[SourceHook, ...]
+
+
+@dataclass(frozen=True)
+class SourceTarget:
+    target: str
+    path: Path
+    runtime_base: int
+    runtime_image: bytes
+    placement_offset: int
+    storage_encoding: str
+    stored_size: int
+    passthrough_length: int | None
+
+    @property
+    def runtime_size(self) -> int:
+        return len(self.runtime_image)
 
 
 def _require_object(value: object, label: str) -> dict[str, object]:
@@ -245,3 +265,127 @@ def load_source_patch_manifest(path: Path) -> SourcePatchManifest:
         definitions=_load_definitions(payload.get("definitions")),
         hooks=_load_hooks(payload.get("hooks")),
     )
+
+
+def _read_bytes(path: Path, label: str) -> bytes:
+    try:
+        return path.read_bytes()
+    except OSError as exc:
+        raise WorkspaceError(f"cannot read {label}: {path}") from exc
+
+
+def _resolve_overlay_target(
+    layout: WorkspaceLayout,
+    workspace_manifest_path: Path,
+    manifest: SourcePatchManifest,
+) -> tuple[Path, int, bytes, str, int | None]:
+    workspace_manifest = load_workspace_manifest(workspace_manifest_path)
+    overlay_id = int(manifest.target.split(":", 1)[1])
+    overlay = next(
+        (entry for entry in workspace_manifest.overlays if entry.overlay_id == overlay_id),
+        None,
+    )
+    if overlay is None:
+        raise WorkspaceError(f"workspace does not contain overlay {overlay_id}")
+    path = layout.modified_overlays / f"overlay_{overlay_id:03d}.bin"
+    runtime_image = _read_bytes(path, f"modified overlay {overlay_id}")
+    if len(runtime_image) != overlay.decoded_size:
+        raise WorkspaceError(
+            f"modified overlay {overlay_id} size mismatch: "
+            f"expected {overlay.decoded_size}, got {len(runtime_image)}"
+        )
+    return path, overlay.ram_address, runtime_image, "decoded-overlay", None
+
+
+def _resolve_arm_target(
+    layout: WorkspaceLayout,
+    manifest: SourcePatchManifest,
+    profile: RomProfile,
+) -> tuple[Path, int, bytes, str, int | None]:
+    is_arm9 = manifest.target == "arm9"
+    kind = "arm9" if is_arm9 else "arm7"
+    path = layout.modified / f"{kind}.bin"
+    stored = _read_bytes(path, f"modified {kind.upper()}")
+    expected_size = profile.expected.arm9_size if is_arm9 else profile.expected.arm7_size
+    runtime_base = (
+        profile.expected.arm9_ram_address if is_arm9 else profile.expected.arm7_ram_address
+    )
+    if len(stored) != expected_size:
+        raise WorkspaceError(
+            f"modified {kind.upper()} stored size mismatch: expected {expected_size}, got {len(stored)}"
+        )
+    if is_blz(stored):
+        footer = parse_blz_footer(stored)
+        passthrough_length = len(stored) - footer.compressed_length
+        runtime_image = decompress_blz(stored)
+        return path, runtime_base, runtime_image, "blz", passthrough_length
+    return path, runtime_base, stored, "raw-arm", None
+
+
+def _validate_runtime_ranges(target: SourceTarget, manifest: SourcePatchManifest) -> None:
+    runtime_end = target.runtime_base + target.runtime_size
+    placement_end = manifest.runtime_address + manifest.max_size
+    if manifest.runtime_address < target.runtime_base or placement_end > runtime_end:
+        raise WorkspaceError(
+            f"source patch placement range 0x{manifest.runtime_address:08X}-"
+            f"0x{placement_end:08X} is outside {manifest.target} runtime image "
+            f"0x{target.runtime_base:08X}-0x{runtime_end:08X}"
+        )
+    for hook in manifest.hooks:
+        hook_end = hook.runtime_address + len(hook.expected)
+        if hook.runtime_address < target.runtime_base or hook_end > runtime_end:
+            raise WorkspaceError(
+                f"hook {hook.hook_id!r} is outside {manifest.target} runtime image"
+            )
+
+
+def resolve_source_target(
+    workspace: Path,
+    manifest: SourcePatchManifest,
+    profile: RomProfile,
+) -> SourceTarget:
+    layout = WorkspaceLayout.from_root(workspace)
+    workspace_manifest_path = layout.manifests / "workspace.json"
+    workspace_manifest = load_workspace_manifest(workspace_manifest_path)
+    if manifest.profile_id != profile.id:
+        raise WorkspaceError(
+            f"source patch profile mismatch: manifest {manifest.profile_id!r}, profile {profile.id!r}"
+        )
+    if workspace_manifest.profile_id != profile.id:
+        raise WorkspaceError(
+            f"workspace profile mismatch: workspace {workspace_manifest.profile_id!r}, "
+            f"profile {profile.id!r}"
+        )
+
+    if manifest.target.startswith("overlay:"):
+        path, runtime_base, runtime_image, encoding, passthrough_length = _resolve_overlay_target(
+            layout,
+            workspace_manifest_path,
+            manifest,
+        )
+    else:
+        path, runtime_base, runtime_image, encoding, passthrough_length = _resolve_arm_target(
+            layout,
+            manifest,
+            profile,
+        )
+
+    runtime_hash = sha256_bytes(runtime_image)
+    if runtime_hash != manifest.expected_runtime_sha256:
+        raise WorkspaceError(
+            f"{manifest.target} runtime SHA-256 mismatch: "
+            f"expected {manifest.expected_runtime_sha256}, got {runtime_hash}"
+        )
+
+    target = SourceTarget(
+        target=manifest.target,
+        path=path,
+        runtime_base=runtime_base,
+        runtime_image=runtime_image,
+        placement_offset=manifest.runtime_address - runtime_base,
+        storage_encoding=encoding,
+        stored_size=path.stat().st_size,
+        passthrough_length=passthrough_length,
+    )
+    _validate_runtime_ranges(target, manifest)
+    return target

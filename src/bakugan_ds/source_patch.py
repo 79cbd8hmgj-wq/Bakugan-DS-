@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import re
+import struct
 from dataclasses import dataclass
 from pathlib import Path
 
 from bakugan_ds.compression.blz import decompress_blz, is_blz, parse_blz_footer
 from bakugan_ds.errors import WorkspaceError
+from bakugan_ds.gates.arm32 import encode_branch
 from bakugan_ds.profile import RomProfile
 from bakugan_ds.workspace.manifest import load_workspace_manifest, sha256_bytes
 from bakugan_ds.workspace.model import WorkspaceLayout
@@ -389,3 +391,51 @@ def resolve_source_target(
     )
     _validate_runtime_ranges(target, manifest)
     return target
+
+
+def _encode_thumb_branch(source_address: int, target_address: int, *, link: bool) -> bytes:
+    if source_address % 2 or target_address % 2:
+        raise WorkspaceError("Thumb branch source and target must be halfword aligned")
+    displacement = target_address - (source_address + 4)
+    if displacement % 2:
+        raise WorkspaceError("Thumb branch displacement must be halfword aligned")
+
+    if link:
+        if not -4_194_304 <= displacement <= 4_194_302:
+            raise WorkspaceError("Thumb BL target is outside signed 23-bit branch range")
+        high = 0xF000 | ((displacement >> 12) & 0x7FF)
+        low = 0xF800 | ((displacement >> 1) & 0x7FF)
+        return struct.pack("<HH", high, low)
+
+    if not -2_048 <= displacement <= 2_046:
+        raise WorkspaceError("Thumb B target is outside signed 12-bit branch range")
+    instruction = 0xE000 | ((displacement >> 1) & 0x7FF)
+    return struct.pack("<H", instruction)
+
+
+def encode_hook(hook: SourceHook, destination: int) -> bytes:
+    if hook.mode == "arm":
+        try:
+            word = encode_branch(
+                hook.runtime_address,
+                destination,
+                link=hook.link,
+            )
+        except ValueError as exc:
+            raise WorkspaceError(f"cannot encode ARM hook {hook.hook_id!r}: {exc}") from exc
+        encoded = struct.pack("<I", word)
+    elif hook.mode == "thumb":
+        encoded = _encode_thumb_branch(
+            hook.runtime_address,
+            destination,
+            link=hook.link,
+        )
+    else:
+        raise WorkspaceError(f"hook {hook.hook_id!r} has unsupported mode: {hook.mode!r}")
+
+    if len(encoded) != len(hook.expected):
+        raise WorkspaceError(
+            f"hook {hook.hook_id!r} guard length {len(hook.expected)} cannot hold "
+            f"{len(encoded)}-byte {hook.mode.upper()} branch encoding"
+        )
+    return encoded

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 
 from bakugan_ds.assets import AssetInventory, detect_asset
-
 from bakugan_ds.compression.lz10 import compress_lz10
 
 

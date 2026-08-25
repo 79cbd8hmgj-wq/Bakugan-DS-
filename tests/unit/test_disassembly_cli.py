@@ -69,3 +69,34 @@ def test_disasm_labels_writes_labelled_byte_file(tmp_path: Path) -> None:
     text = output.read_text(encoding="utf-8")
     assert text.startswith("_02000000:\n")
     assert "_02000004:\n" in text
+
+
+def test_disasm_overlay_map_dispatches(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls = []
+    monkeypatch.setattr(cli, "run_disassembly_command", lambda args: calls.append(args) or 0)
+
+    result = cli.main(["disasm", "overlay-map", str(tmp_path / "game.nds")])
+
+    assert result == 0
+    assert calls[0].disasm_command == "overlay-map"
+
+
+def test_disasm_diff_dispatches(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls = []
+    monkeypatch.setattr(cli, "run_disassembly_command", lambda args: calls.append(args) or 0)
+
+    result = cli.main(
+        [
+            "disasm",
+            "diff",
+            str(tmp_path / "original.bin"),
+            str(tmp_path / "rebuilt.bin"),
+            "--vma",
+            "0x02219440",
+        ]
+    )
+
+    assert result == 0
+    assert calls[0].disasm_command == "diff"

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from difflib import unified_diff
-from pathlib import Path
 import struct
 import subprocess
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from difflib import unified_diff
+from itertools import pairwise
+from pathlib import Path
 
 from bakugan_ds.errors import BakuganDSError
 from bakugan_ds.nds.overlays import OverlayEntry
@@ -148,7 +149,7 @@ def render_labelled_bytes(
 
     boundaries = sorted({base_address, *requested, end_address})
     lines: list[str] = []
-    for start, end in zip(boundaries[:-1], boundaries[1:]):
+    for start, end in pairwise(boundaries):
         lines.append(f"_{start:08X}:")
         start_offset = start - base_address
         end_offset = end - base_address

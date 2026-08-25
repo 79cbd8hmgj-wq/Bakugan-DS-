@@ -167,7 +167,10 @@ def _load_sources(value: object) -> tuple[str, ...]:
             raise WorkspaceError(f"duplicate source path: {normalized}")
         suffix = Path(normalized).suffix.lower()
         if suffix not in _VALID_SOURCE_SUFFIXES:
-            raise WorkspaceError(f"unsupported source suffix for {normalized}: {suffix or '<none>'}")
+            display_suffix = suffix or "<none>"
+            raise WorkspaceError(
+                f"unsupported source suffix for {normalized}: {display_suffix}"
+            )
         seen.add(normalized)
         sources.append(normalized)
     return tuple(sources)
@@ -314,7 +317,8 @@ def _resolve_arm_target(
     )
     if len(stored) != expected_size:
         raise WorkspaceError(
-            f"modified {kind.upper()} stored size mismatch: expected {expected_size}, got {len(stored)}"
+            f"modified {kind.upper()} stored size mismatch: "
+            f"expected {expected_size}, got {len(stored)}"
         )
     if is_blz(stored):
         footer = parse_blz_footer(stored)
@@ -351,7 +355,8 @@ def resolve_source_target(
     workspace_manifest = load_workspace_manifest(workspace_manifest_path)
     if manifest.profile_id != profile.id:
         raise WorkspaceError(
-            f"source patch profile mismatch: manifest {manifest.profile_id!r}, profile {profile.id!r}"
+            "source patch profile mismatch: "
+            f"manifest {manifest.profile_id!r}, profile {profile.id!r}"
         )
     if workspace_manifest.profile_id != profile.id:
         raise WorkspaceError(

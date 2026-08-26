@@ -1,8 +1,7 @@
 from pathlib import Path
 
+from nds_disassembly_toolkit.patches.apply import AppliedPatch, PatchApplicationReport
 from nds_disassembly_toolkit.patches.apply import (
-    AppliedPatch,
-    PatchApplicationReport,
     apply_patch_set as _toolkit_apply_patch_set,
 )
 from nds_disassembly_toolkit.workspace.manifest import load_workspace_manifest

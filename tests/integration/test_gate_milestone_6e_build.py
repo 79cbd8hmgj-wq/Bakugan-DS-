@@ -26,7 +26,7 @@ from bakugan_ds.workspace.rebuild import RebuildOptions, rebuild_rom
 AUTHORING = Path("config/gates/milestone-6e-system2-v1.json")
 MILESTONE_6D_AUTHORING = Path("config/gates/milestone-6d-system2-v1.json")
 CORE_PATCH = Path("patches/core-g-compression-400.json")
-SOURCE_ROM_SHA256 = "7b8f0ac330d3bff7cf2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
+SOURCE_ROM_SHA256 = "7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b"
 REBUILT_ROM_SHA256 = "fbddc21f08dc26d71ac540e57c2dfef0013fc0e5093ebc19cbed151ff52a68aa"
 BUILD_REPORT_SHA256 = "47f4f5e1078849f44c79ad2c6a7afa72db32a83615a2c7333c6d0f33c96a927f"
 MODULE_SHA256 = "8fa90c244d3710479e94903e099f9dbbe71b5ce8d86c52603383d2e4f42e7a1c"

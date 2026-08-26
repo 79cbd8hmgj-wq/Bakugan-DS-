@@ -95,6 +95,8 @@ def _write_workspace(
     layout = WorkspaceLayout.from_root(root)
     for directory in layout.all_directories():
         directory.mkdir(parents=True, exist_ok=True)
+    (layout.original / "arm9.bin").write_bytes(arm9_data)
+    (layout.original / "arm7.bin").write_bytes(arm7_data)
     (layout.modified / "arm9.bin").write_bytes(arm9_data)
     (layout.modified / "arm7.bin").write_bytes(arm7_data)
     (layout.modified_overlays / "overlay_007.bin").write_bytes(overlay_data)
@@ -138,6 +140,7 @@ def test_load_source_patch_manifest_normalizes_valid_payload(tmp_path: Path) -> 
     assert manifest.definitions == (("known_helper", 0x02065BF4),)
     assert manifest.hooks[0].expected == bytes.fromhex("000000ea")
     assert manifest.hooks[0].link is True
+    assert manifest.blz_passthrough_length is None
 
 
 @pytest.mark.parametrize(
@@ -248,6 +251,15 @@ def test_manifest_rejects_cross_state_hook_without_veneer(tmp_path: Path) -> Non
         load_source_patch_manifest(_write_manifest(tmp_path, payload))
 
 
+def test_b6re_arm9_manifest_requires_explicit_passthrough(tmp_path: Path) -> None:
+    payload = _manifest_payload()
+    payload["target"] = "arm9"
+    payload["hooks"] = []
+
+    with pytest.raises(WorkspaceError, match="blz_passthrough_length=32768"):
+        load_source_patch_manifest(_write_manifest(tmp_path, payload))
+
+
 def test_resolve_overlay_target_maps_runtime_image_and_offsets(tmp_path: Path) -> None:
     overlay_data = bytes(index & 0xFF for index in range(0x3000))
     workspace = _write_workspace(tmp_path, overlay_data=overlay_data)
@@ -316,6 +328,7 @@ def test_resolve_blz_arm9_exposes_decoded_runtime_image(tmp_path: Path) -> None:
     payload["max_size"] = 0x80
     payload["hooks"] = []
     payload["expected_runtime_sha256"] = sha256_bytes(decoded)
+    payload["blz_passthrough_length"] = 0x8000
     manifest = load_source_patch_manifest(_write_manifest(tmp_path, payload))
 
     target = resolve_source_target(
@@ -328,5 +341,5 @@ def test_resolve_blz_arm9_exposes_decoded_runtime_image(tmp_path: Path) -> None:
     assert target.runtime_image == decoded
     assert target.placement_offset == 0x100
     assert target.storage_encoding == "blz"
-    assert target.passthrough_length is not None
+    assert target.passthrough_length == 0x8000
     assert target.stored_size == len(stored)

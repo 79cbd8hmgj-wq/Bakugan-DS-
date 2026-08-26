@@ -131,6 +131,13 @@ def make_workspace(tmp_path: Path) -> tuple[Path, Path, RomInspection]:
     return source, root, inspection
 
 
+def patch_inspection(monkeypatch: pytest.MonkeyPatch, inspection: RomInspection) -> None:
+    monkeypatch.setattr(
+        "nds_disassembly_toolkit.workspace.validate.inspect_rom",
+        lambda path, profile, require_supported: inspection,
+    )
+
+
 def test_load_workspace_manifest_round_trips(tmp_path: Path) -> None:
     source, root, _ = make_workspace(tmp_path)
     del source
@@ -146,10 +153,7 @@ def test_validate_workspace_detects_modified_components(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     (root / "modified/nitrofs/Game/a.bin").write_bytes(b"EDIT")
 
     result = validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
@@ -162,10 +166,7 @@ def test_validate_workspace_rejects_wrong_source_rom(
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
     source.write_bytes(b"different")
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
 
     with pytest.raises(WorkspaceError, match="source ROM"):
         validate_workspace(source, load_profile(Path("config/b6re_rev0.json")), root)
@@ -175,10 +176,7 @@ def test_validate_workspace_rejects_tampered_original(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     (root / "original/decoded/nitrofs/Game/a.bin").write_bytes(b"TAMPER")
 
     with pytest.raises(WorkspaceError, match="original decoded"):
@@ -189,10 +187,7 @@ def test_validate_workspace_rejects_missing_modified_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     (root / "modified/nitrofs/Game/a.bin").unlink()
 
     with pytest.raises(WorkspaceError, match="missing modified"):
@@ -214,10 +209,7 @@ def test_validate_workspace_rejects_extra_modified_mapping(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     (root / "modified/nitrofs/extra.bin").write_bytes(b"extra")
 
     with pytest.raises(WorkspaceError, match="unmanifested"):
@@ -235,10 +227,7 @@ def test_validate_workspace_accepts_declared_raw_and_overlay_overrides(
     )
 
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     layout = WorkspaceLayout.from_root(root)
     raw_original = (layout.original_raw_nitrofs / "Game/a.bin").read_bytes()
     raw_replacement = raw_original + b"TAIL"
@@ -285,10 +274,7 @@ def test_validate_workspace_rejects_raw_override_with_stale_original_hash(
     )
 
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     layout = WorkspaceLayout.from_root(root)
     replacement = b"RAW-TAIL"
     path = layout.modified_raw_nitrofs / "Game/a.bin"
@@ -330,10 +316,7 @@ def test_validate_workspace_rejects_simultaneous_decoded_and_raw_override(
     )
 
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     layout = WorkspaceLayout.from_root(root)
     original = (layout.original_raw_nitrofs / "Game/a.bin").read_bytes()
     replacement = original + b"TAIL"
@@ -368,10 +351,7 @@ def test_validate_workspace_rejects_undeclared_overlay_growth(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     layout = WorkspaceLayout.from_root(root)
     path = layout.modified_overlays / "overlay_000.bin"
     path.write_bytes(path.read_bytes() + b"GROW")
@@ -384,10 +364,7 @@ def test_validate_workspace_rejects_unmanifested_raw_override_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source, root, inspection = make_workspace(tmp_path)
-    monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
-        lambda path, profile, require_supported: inspection,
-    )
+    patch_inspection(monkeypatch, inspection)
     layout = WorkspaceLayout.from_root(root)
     extra = layout.modified_raw_nitrofs / "extra.bin"
     extra.parent.mkdir(parents=True, exist_ok=True)

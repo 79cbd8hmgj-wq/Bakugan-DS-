@@ -183,6 +183,11 @@ def inventory_assets(
     *,
     include_unknown: bool = False,
 ) -> AssetInventory:
+    profile_id = inspection.profile_id
+    supported = inspection.supported
+    if profile_id is None or supported is None:
+        raise ValueError("Bakugan asset inventory requires a profiled ROM inspection")
+
     path_by_id = inspection.fnt.file_by_id()
     fat_by_id = {entry.file_id: entry for entry in inspection.fat}
     records = tuple(
@@ -194,8 +199,8 @@ def inventory_assets(
         for file_id in sorted(path_by_id)
     )
     return AssetInventory.from_records(
-        profile_id=inspection.profile_id,
-        supported=inspection.supported,
+        profile_id=profile_id,
+        supported=supported,
         scanned_files=len(path_by_id),
         records=records,
         include_unknown=include_unknown,

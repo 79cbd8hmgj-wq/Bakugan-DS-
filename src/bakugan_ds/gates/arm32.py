@@ -1,6 +1,5 @@
 from nds_disassembly_toolkit.arm32 import (
     ArmItem,
-    ArmProgram as ToolkitArmProgram,
     ArmRelocation,
     BuiltArmProgram,
     Condition,
@@ -26,6 +25,9 @@ from nds_disassembly_toolkit.arm32 import (
     literal,
     load_literal,
     word,
+)
+from nds_disassembly_toolkit.arm32 import (
+    ArmProgram as ToolkitArmProgram,
 )
 
 from bakugan_ds.errors import WorkspaceError

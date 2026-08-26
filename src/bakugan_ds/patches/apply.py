@@ -85,10 +85,13 @@ def _atomic_write(path: Path, data: bytes) -> None:
 def apply_patch_set(workspace: Path, patch_path: Path) -> PatchApplicationReport:
     layout = WorkspaceLayout.from_root(workspace)
     manifest = load_workspace_manifest(layout.manifests / "workspace.json")
+    profile_id = manifest.profile_id
+    if profile_id is None:
+        raise WorkspaceError("Bakugan workspace manifest is missing profile_id")
     patch_set = load_patch_set(patch_path)
-    if patch_set.profile_id != manifest.profile_id:
+    if patch_set.profile_id != profile_id:
         raise WorkspaceError(
-            f"patch profile mismatch: expected {manifest.profile_id}, got {patch_set.profile_id}"
+            f"patch profile mismatch: expected {profile_id}, got {patch_set.profile_id}"
         )
 
     buffers: dict[Path, bytearray] = {}
@@ -132,7 +135,7 @@ def apply_patch_set(workspace: Path, patch_path: Path) -> PatchApplicationReport
 
     report = PatchApplicationReport(
         format_version=1,
-        profile_id=manifest.profile_id,
+        profile_id=profile_id,
         patch_file=patch_path.name,
         applied=tuple(applied),
     )

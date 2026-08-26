@@ -94,11 +94,11 @@ def make_workspace(
 ) -> tuple[Path, Path, RomInspection]:
     source, inspection = make_rom(tmp_path)
     monkeypatch.setattr(
-        "bakugan_ds.workspace.extract.inspect_rom",
+        "nds_disassembly_toolkit.workspace.extract.inspect_rom",
         lambda path, profile, require_supported: inspection,
     )
     monkeypatch.setattr(
-        "bakugan_ds.workspace.validate.inspect_rom",
+        "nds_disassembly_toolkit.workspace.validate.inspect_rom",
         lambda path, profile, require_supported: inspection,
     )
     workspace = tmp_path / "workspace"

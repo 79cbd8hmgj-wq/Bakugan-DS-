@@ -81,7 +81,7 @@ def make_fixture(tmp_path: Path, *, unsafe_path: bool = False) -> tuple[Path, Ro
 
 def patch_inspection(monkeypatch: pytest.MonkeyPatch, inspection: RomInspection) -> None:
     monkeypatch.setattr(
-        "bakugan_ds.workspace.extract.inspect_rom",
+        "nds_disassembly_toolkit.workspace.extract.inspect_rom",
         lambda rom_path, profile, require_supported: inspection,
     )
 
@@ -157,7 +157,7 @@ def test_extract_workspace_removes_staging_directory_after_failure(
     rom_path, inspection = make_fixture(tmp_path)
     patch_inspection(monkeypatch, inspection)
     monkeypatch.setattr(
-        "bakugan_ds.workspace.extract.decompress_lz10",
+        "nds_disassembly_toolkit.workspace.extract.decompress_lz10",
         lambda data: (_ for _ in ()).throw(RomFormatError("broken LZ10")),
     )
     workspace = tmp_path / "workspace"

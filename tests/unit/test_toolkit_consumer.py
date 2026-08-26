@@ -1,10 +1,3 @@
-from bakugan_ds import errors as bakugan_errors
-from bakugan_ds.compression import blz as bakugan_blz
-from bakugan_ds.compression import lz10 as bakugan_lz10
-from bakugan_ds.nds import fat as bakugan_fat
-from bakugan_ds.nds import fnt as bakugan_fnt
-from bakugan_ds.nds import header as bakugan_header
-from bakugan_ds.nds import overlays as bakugan_overlays
 from nds_disassembly_toolkit import errors as toolkit_errors
 from nds_disassembly_toolkit.compression import blz as toolkit_blz
 from nds_disassembly_toolkit.compression import lz10 as toolkit_lz10
@@ -12,6 +5,14 @@ from nds_disassembly_toolkit.nds import fat as toolkit_fat
 from nds_disassembly_toolkit.nds import fnt as toolkit_fnt
 from nds_disassembly_toolkit.nds import header as toolkit_header
 from nds_disassembly_toolkit.nds import overlays as toolkit_overlays
+
+from bakugan_ds import errors as bakugan_errors
+from bakugan_ds.compression import blz as bakugan_blz
+from bakugan_ds.compression import lz10 as bakugan_lz10
+from bakugan_ds.nds import fat as bakugan_fat
+from bakugan_ds.nds import fnt as bakugan_fnt
+from bakugan_ds.nds import header as bakugan_header
+from bakugan_ds.nds import overlays as bakugan_overlays
 
 
 def test_generic_error_hierarchy_is_owned_by_toolkit() -> None:

@@ -54,6 +54,14 @@ Example:
 
 Source paths are relative to the manifest directory. Absolute paths, path traversal, duplicate paths, and unsupported suffixes are rejected. The first bridge accepts `.c` and `.s` sources.
 
+For the exact B6RE ARM9 target, the manifest must also declare the verified BLZ re-encode geometry explicitly:
+
+```json
+"blz_passthrough_length": 32768
+```
+
+Bakugan requires that exact value for `profile_id: "b6re_rev0"` with `target: "arm9"`. The generic toolkit supports other passthrough values for other ARM binaries; overlay targets cannot declare a BLZ passthrough override.
+
 ## Required evidence
 
 A manifest must identify:
@@ -66,7 +74,8 @@ A manifest must identify:
 - the SHA-256 of the complete decoded runtime target before mutation;
 - every source path;
 - every externally known symbol address;
-- every hook address, expected bytes, destination symbol, branch type, and hook instruction mode.
+- every hook address, expected bytes, destination symbol, branch type, and hook instruction mode;
+- the explicit `blz_passthrough_length` when targeting the exact B6RE ARM9.
 
 The runtime-image SHA guard means a source patch cannot silently apply to a different binary state.
 
@@ -74,9 +83,9 @@ The runtime-image SHA guard means a source patch cannot silently apply to a diff
 
 Overlay workspace files are already stored decoded, so overlay runtime addresses map directly through the overlay RAM address recorded in `manifests/workspace.json`.
 
-ARM9 and ARM7 use the RAM bases from the selected ROM profile. If a stored ARM component is BLZ compressed, the source-patch bridge decodes it before translating runtime addresses. Runtime addresses are never treated as offsets into compressed bytes.
+ARM9 and ARM7 use the RAM bases recorded in the workspace manifest, with the selected ROM profile available as a compatibility fallback for older workspaces. If a stored ARM component is BLZ compressed, the source-patch bridge decodes it before translating runtime addresses. Runtime addresses are never treated as offsets into compressed bytes.
 
-BLZ targets are recompressed to the **exact original stored size** and must pass the repository's in-place decoder safety check. The exact B6RE ARM9 uses the already-proven `0x8000` re-encode passthrough geometry from the ARM9 BLZ regression suite; this is intentionally different from the reference stream's `0x4000` passthrough because the deterministic encoder otherwise produces too much size slack for the BLZ footer to represent. Other BLZ targets retain their observed passthrough geometry. If the selected geometry cannot produce an exact-size safe stream, the patch fails closed.
+BLZ targets are recompressed to the **exact original stored size** and must pass the toolkit's in-place decoder safety check. The exact B6RE ARM9 uses the already-proven `0x8000` (`32768`) re-encode passthrough geometry from the ARM9 BLZ regression suite; that geometry is now explicit manifest data instead of a hidden Bakugan source-code fallback. It is intentionally different from the reference stream's `0x4000` passthrough because the deterministic encoder otherwise produces too much size slack for the BLZ footer to represent. Other BLZ ARM targets may omit the field to retain their observed passthrough geometry. If the selected geometry cannot produce an exact-size safe stream, the patch fails closed.
 
 ## Compilation model
 

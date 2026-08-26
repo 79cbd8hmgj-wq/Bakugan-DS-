@@ -1,8 +1,7 @@
 from pathlib import Path
 
+from nds_disassembly_toolkit.patches.model import BinaryPatch, PatchSet
 from nds_disassembly_toolkit.patches.model import (
-    BinaryPatch,
-    PatchSet,
     load_patch_set as _toolkit_load_patch_set,
 )
 

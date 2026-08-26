@@ -1,10 +1,7 @@
 from pathlib import Path
 
-from nds_disassembly_toolkit.inspection import (
-    LayoutMismatch,
-    RomInspection,
-    inspect_rom as _toolkit_inspect_rom,
-)
+from nds_disassembly_toolkit.inspection import LayoutMismatch, RomInspection
+from nds_disassembly_toolkit.inspection import inspect_rom as _toolkit_inspect_rom
 
 from bakugan_ds.profile import RomProfile
 

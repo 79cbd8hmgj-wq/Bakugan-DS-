@@ -2,14 +2,12 @@ import json
 from pathlib import Path
 
 import pytest
+from nds_disassembly_toolkit.patches.apply import AppliedPatch as ToolkitAppliedPatch
 from nds_disassembly_toolkit.patches.apply import (
-    AppliedPatch as ToolkitAppliedPatch,
     PatchApplicationReport as ToolkitPatchApplicationReport,
 )
-from nds_disassembly_toolkit.patches.model import (
-    BinaryPatch as ToolkitBinaryPatch,
-    PatchSet as ToolkitPatchSet,
-)
+from nds_disassembly_toolkit.patches.model import BinaryPatch as ToolkitBinaryPatch
+from nds_disassembly_toolkit.patches.model import PatchSet as ToolkitPatchSet
 
 from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.patches.apply import AppliedPatch, PatchApplicationReport

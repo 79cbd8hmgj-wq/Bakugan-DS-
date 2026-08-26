@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 import hashlib
-import json
-from pathlib import Path
+from dataclasses import asdict
 from typing import Any
+
+from nds_disassembly_toolkit.analysis.report import write_report
 
 from bakugan_ds.analysis.arm import function_address_for_reference
 from bakugan_ds.analysis.model import Component, SymbolCandidate
@@ -102,8 +102,4 @@ def analyze_components(
     }
 
 
-def write_report(path: Path, report: dict[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(path)
+__all__ = ["DEFAULT_KEYWORDS", "analyze_components", "write_report"]

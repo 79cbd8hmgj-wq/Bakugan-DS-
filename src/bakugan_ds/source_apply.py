@@ -226,7 +226,9 @@ def _commit_target_and_report(
         try:
             current_stored = target_path.read_bytes()
         except OSError as exc:
-            raise WorkspaceError(f"cannot revalidate source patch target {target_path}: {exc}") from exc
+            raise WorkspaceError(
+                f"cannot revalidate source patch target {target_path}: {exc}"
+            ) from exc
         if current_stored != original_stored:
             raise WorkspaceError("source patch target changed during build; refusing stale write")
         target_temp.replace(target_path)

@@ -315,7 +315,7 @@ def test_resolve_target_rejects_hook_outside_component(tmp_path: Path) -> None:
 
 
 def test_resolve_blz_arm9_exposes_decoded_runtime_image(tmp_path: Path) -> None:
-    decoded = (b"ARM9" * 0x800) + (b"\x00" * 0x1000)
+    decoded = (b"ARM9" * 0x3000) + (b"\x00" * 0x1000)
     stored = compress_blz(decoded)
     workspace = _write_workspace(
         tmp_path,

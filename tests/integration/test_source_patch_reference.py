@@ -18,6 +18,7 @@ def _manifest(
     runtime_address: int,
     max_size: int,
     runtime_image: bytes,
+    blz_passthrough_length: int | None = None,
 ) -> SourcePatchManifest:
     return SourcePatchManifest(
         format_version=1,
@@ -30,6 +31,7 @@ def _manifest(
         sources=("src/injected.c",),
         definitions=(),
         hooks=(),
+        blz_passthrough_length=blz_passthrough_length,
     )
 
 
@@ -76,13 +78,14 @@ def test_exact_b6re_arm9_blz_mapping_and_exact_size_reencode(
         runtime_address=reference_profile.expected.arm9_ram_address,
         max_size=0x20,
         runtime_image=runtime_image,
+        blz_passthrough_length=0x8000,
     )
     target = resolve_source_target(workspace, manifest, reference_profile)
 
     assert target.runtime_base == 0x02000000
     assert target.storage_encoding == "blz"
     assert target.stored_size == len(stored)
-    assert target.passthrough_length is not None
+    assert target.passthrough_length == 0x8000
     encoded = encode_target_storage(target, runtime_image)
     assert len(encoded) == len(stored)
     assert decompress_blz(encoded) == runtime_image

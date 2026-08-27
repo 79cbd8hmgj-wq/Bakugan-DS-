@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Bakugan DS contributors" }]
 dependencies = [
-  "nds-disassembly-toolkit @ git+https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit.git@cc3417b7aa55b3ee386206160f2c4b199d09ffc8",
+  "nds-disassembly-toolkit @ git+https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit.git@f60bb6e1a6eca5a2e4f020419c8718b7029bdcde",
 ]
 
 [project.optional-dependencies]

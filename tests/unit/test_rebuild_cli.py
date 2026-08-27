@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from nds_disassembly_toolkit import cli as toolkit_cli
 
 from bakugan_ds import cli
 from bakugan_ds.errors import WorkspaceError
@@ -32,8 +33,12 @@ def test_rebuild_cli_prints_success_summary(
 ) -> None:
     output = tmp_path / "out.nds"
     report = SimpleNamespace(changes=(1, 2), output_sha256="a" * 64, exact_copy=False)
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
-    monkeypatch.setattr(cli, "rebuild_rom", lambda rom, profile, workspace, options: report)
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(
+        toolkit_cli,
+        "rebuild_rom",
+        lambda rom, workspace, options, *, profile, require_supported: report,
+    )
 
     result = cli.main(["rebuild", "game.nds", str(tmp_path / "work"), str(output)])
 
@@ -49,11 +54,11 @@ def test_rebuild_cli_reports_workspace_error(
     capsys: pytest.CaptureFixture[str],
     tmp_path: Path,
 ) -> None:
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
     monkeypatch.setattr(
-        cli,
+        toolkit_cli,
         "rebuild_rom",
-        lambda rom, profile, workspace, options: (_ for _ in ()).throw(
+        lambda rom, workspace, options, *, profile, require_supported: (_ for _ in ()).throw(
             WorkspaceError("output already exists")
         ),
     )

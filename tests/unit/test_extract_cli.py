@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from nds_disassembly_toolkit import cli as toolkit_cli
 
 from bakugan_ds import cli
 from bakugan_ds.errors import WorkspaceError
@@ -27,8 +28,12 @@ def test_extract_cli_prints_success_summary(
     rom_path.write_bytes(b"x")
     workspace = tmp_path / "workspace"
     manifest = SimpleNamespace(files=(1, 2), overlays=(1,))
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
-    monkeypatch.setattr(cli, "extract_workspace", lambda rom, profile, options: manifest)
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(
+        toolkit_cli,
+        "extract_workspace",
+        lambda rom, options, *, profile, require_supported: manifest,
+    )
 
     result = cli.main(["extract", str(rom_path), str(workspace)])
 
@@ -47,11 +52,11 @@ def test_extract_cli_reports_existing_workspace(
 ) -> None:
     rom_path = tmp_path / "game.nds"
     rom_path.write_bytes(b"x")
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
     monkeypatch.setattr(
-        cli,
+        toolkit_cli,
         "extract_workspace",
-        lambda rom, profile, options: (_ for _ in ()).throw(
+        lambda rom, options, *, profile, require_supported: (_ for _ in ()).throw(
             WorkspaceError("workspace already exists")
         ),
     )
@@ -69,11 +74,13 @@ def test_extract_cli_reports_filesystem_error(
 ) -> None:
     rom_path = tmp_path / "game.nds"
     rom_path.write_bytes(b"x")
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
     monkeypatch.setattr(
-        cli,
+        toolkit_cli,
         "extract_workspace",
-        lambda rom, profile, options: (_ for _ in ()).throw(OSError("disk full")),
+        lambda rom, options, *, profile, require_supported: (_ for _ in ()).throw(
+            OSError("disk full")
+        ),
     )
 
     result = cli.main(["extract", str(rom_path), str(tmp_path / "workspace")])

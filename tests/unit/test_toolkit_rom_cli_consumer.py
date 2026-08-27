@@ -34,3 +34,13 @@ def test_bakugan_rom_parser_keeps_strict_policy(tmp_path: Path) -> None:
         parser.parse_args(
             ["extract", "game.nds", str(tmp_path / "work"), "--allow-unsupported"]
         )
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "rebuild",
+                "game.nds",
+                str(tmp_path / "work"),
+                str(tmp_path / "out.nds"),
+                "--allow-unsupported",
+            ]
+        )

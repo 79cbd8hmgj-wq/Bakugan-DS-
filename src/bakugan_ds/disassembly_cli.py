@@ -5,8 +5,8 @@ from typing import Any
 
 from nds_disassembly_toolkit.disassembly_cli import (
     add_disassembly_parser as _add_disassembly_parser,
-    run_disassembly_command,
 )
+from nds_disassembly_toolkit.disassembly_cli import run_disassembly_command
 
 
 def add_disassembly_parser(subparsers: Any, *, default_profile: Path) -> None:

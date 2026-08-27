@@ -3,6 +3,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from nds_disassembly_toolkit.source_patch_cli import (
+    add_source_patch_parser as _add_source_patch_parser,
+)
+
 from bakugan_ds.errors import BakuganDSError
 from bakugan_ds.profile import load_profile
 from bakugan_ds.source_apply import apply_source_patch
@@ -14,21 +18,7 @@ def add_source_patch_parser(
     *,
     default_profile: Path,
 ) -> None:
-    source_parser = subparsers.add_parser(
-        "source-patch",
-        help="compile and apply guarded ARM source patches to a workspace",
-    )
-    source_subparsers = source_parser.add_subparsers(dest="source_patch_command")
-    build_parser = source_subparsers.add_parser(
-        "build",
-        help="compile source and apply it to an extracted workspace",
-    )
-    build_parser.add_argument("workspace", type=Path)
-    build_parser.add_argument("manifest", type=Path)
-    build_parser.add_argument("--profile", type=Path, default=default_profile)
-    build_parser.add_argument("--clang", default="clang")
-    build_parser.add_argument("--ld", default="ld.lld")
-    build_parser.add_argument("--nm", default="nm")
+    _add_source_patch_parser(subparsers, default_profile=default_profile)
 
 
 def run_source_patch_command(arguments: argparse.Namespace) -> int:

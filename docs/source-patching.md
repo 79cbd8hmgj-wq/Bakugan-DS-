@@ -1,162 +1,82 @@
-# Guarded ARM Source Patching
+# B6RE Source-Patch Addendum
 
-The source-patch bridge compiles small, explicitly approved ARMv5TE C/assembly payloads into an existing Bakugan DS runtime allocation and applies guarded branch hooks inside an extracted workspace.
+Generic ARMv5TE compilation, manifest validation, runtime addressing, branch encoding, guard checks, rollback, BLZ handling, and reporting are documented by the standalone [NDS Disassembly Toolkit source-patching guide](https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit/blob/main/docs/source-patching.md).
 
-It does **not** discover free space, grow overlays, download a compiler, guess symbols, or build a ROM directly. `bakugan-ds rebuild` remains the authoritative ROM builder.
+This document records only the Bakugan-specific policy and verified B6RE geometry layered on that toolkit bridge.
 
-## Command
+## Bakugan command
 
 ```text
 bakugan-ds source-patch build WORKSPACE MANIFEST \
   [--profile PROFILE] [--clang PATH] [--ld PATH] [--nm PATH]
 ```
 
-Defaults:
+Bakugan defaults `--profile` to:
 
 ```text
---profile config/b6re_rev0.json
---clang clang
---ld ld.lld
---nm nm
+config/b6re_rev0.json
 ```
 
-The tools are invoked as argument arrays. No shell is used.
+The compiler/linker/nm execution and source-patch application are toolkit-owned. Bakugan validates its additional manifest policy before delegation.
 
-## Manifest
+## B6RE profile binding
 
-Example:
+Bakugan source-patch manifests are expected to identify the exact supported workspace/profile rather than operating as generic unbound manifests.
+
+Current profile ID:
 
 ```json
-{
-  "format_version": 1,
-  "profile_id": "b6re_rev0",
-  "target": "overlay:7",
-  "runtime_address": 35758080,
-  "max_size": 256,
-  "mode": "arm",
-  "expected_runtime_sha256": "64-character decoded-runtime SHA-256",
-  "sources": ["src/injected.c"],
-  "definitions": {
-    "gate_lookup": 33971252
-  },
-  "hooks": [
-    {
-      "id": "call_injected",
-      "runtime_address": 35899368,
-      "expected": "000000ea",
-      "symbol": "injected_entry",
-      "link": true,
-      "mode": "arm"
-    }
-  ]
-}
+"profile_id": "b6re_rev0"
 ```
 
-Source paths are relative to the manifest directory. Absolute paths, path traversal, duplicate paths, and unsupported suffixes are rejected. The first bridge accepts `.c` and `.s` sources.
+The manifest's profile binding, workspace identity, runtime target hash, placement, hook bytes, and symbol addresses together form the fail-closed evidence boundary for a source modification.
 
-For the exact B6RE ARM9 target, the manifest must also declare the verified BLZ re-encode geometry explicitly:
+## B6RE ARM9 BLZ geometry
+
+For the exact B6RE ARM9 target, Bakugan requires the source-patch manifest to declare:
 
 ```json
 "blz_passthrough_length": 32768
 ```
 
-Bakugan requires that exact value for `profile_id: "b6re_rev0"` with `target: "arm9"`. The generic toolkit supports other passthrough values for other ARM binaries; overlay targets cannot declare a BLZ passthrough override.
+That is `0x8000` bytes.
 
-## Required evidence
+This is a Bakugan policy rule, not a generic toolkit default. The toolkit supports other validated passthrough lengths for other BLZ ARM targets and can retain observed geometry when no override is supplied.
 
-A manifest must identify:
+The B6RE value differs from the reference stream's `0x4000` passthrough because the deterministic re-encoder otherwise produces storage slack that the BLZ footer cannot represent while preserving the exact stored size. The `0x8000` geometry is the proven safe B6RE re-encode configuration used by the regression suite.
 
-- the exact ROM profile;
-- one target: `arm9`, `arm7`, or `overlay:N`;
-- an already approved runtime placement;
-- the maximum byte budget at that placement;
-- ARM or Thumb output mode;
-- the SHA-256 of the complete decoded runtime target before mutation;
-- every source path;
-- every externally known symbol address;
-- every hook address, expected bytes, destination symbol, branch type, and hook instruction mode;
-- the explicit `blz_passthrough_length` when targeting the exact B6RE ARM9.
+Bakugan rejects a `b6re_rev0` ARM9 source-patch manifest that omits this value or declares a different one.
 
-The runtime-image SHA guard means a source patch cannot silently apply to a different binary state.
+## Placement and hook evidence
 
-## Runtime addressing
+The toolkit deliberately does not discover code caves or decide where Bakugan gameplay code may be inserted. Every committed Bakugan source-patch manifest must therefore be backed by game-specific evidence for:
 
-Overlay workspace files are already stored decoded, so overlay runtime addresses map directly through the overlay RAM address recorded in `manifests/workspace.json`.
+- the exact target component;
+- approved runtime placement and byte budget;
+- complete decoded-runtime SHA-256 guard;
+- known external symbol addresses;
+- hook addresses and expected instruction bytes;
+- ARM/Thumb mode;
+- the semantic reason the placement and hook are valid for B6RE.
 
-ARM9 and ARM7 use the RAM bases recorded in the workspace manifest, with the selected ROM profile available as a compatibility fallback for older workspaces. If a stored ARM component is BLZ compressed, the source-patch bridge decodes it before translating runtime addresses. Runtime addresses are never treated as offsets into compressed bytes.
+Those addresses and hashes belong in Bakugan manifests/evidence, not in the generic toolkit.
 
-BLZ targets are recompressed to the **exact original stored size** and must pass the toolkit's in-place decoder safety check. The exact B6RE ARM9 uses the already-proven `0x8000` (`32768`) re-encode passthrough geometry from the ARM9 BLZ regression suite; that geometry is now explicit manifest data instead of a hidden Bakugan source-code fallback. It is intentionally different from the reference stream's `0x4000` passthrough because the deterministic encoder otherwise produces too much size slack for the BLZ footer to represent. Other BLZ ARM targets may omit the field to retain their observed passthrough geometry. If the selected geometry cannot produce an exact-size safe stream, the patch fails closed.
+## Rebuild boundary
 
-## Compilation model
-
-C/assembly is compiled for Nintendo DS ARM9-compatible ARMv5TE:
-
-```text
-clang --target=arm-none-eabi -mcpu=arm946e-s -marm|-mthumb \
-  -ffreestanding -fno-builtin -fno-stack-protector \
-  -fno-unwind-tables -fno-asynchronous-unwind-tables
-```
-
-The generated linker script:
-
-- starts exactly at `runtime_address`;
-- keeps `.text*`, `.rodata*`, and `.data*`;
-- rejects nonzero `.bss`;
-- discards unwind/comment/note metadata;
-- asserts that the emitted image remains inside `max_size`.
-
-Known game functions or data may be exposed only through explicit `definitions` addresses. These addresses are not inferred by the compiler bridge.
-
-## Hooks
-
-ARM hooks use ARM `B` or `BL` encoding. Thumb hooks support Thumb-1 unconditional `B` and `BL` within their architectural ranges. This first bridge does not synthesize interworking veneers, so every hook's mode must match the emitted source mode.
-
-LLVM/ELF conventionally marks Thumb function symbols by setting bit 0 of the symbol value. The bridge recognizes that ABI state marker and clears bit 0 only when calculating the architectural Thumb branch address; an ARM hook rejects a Thumb-marked symbol.
-
-Before mutation, every hook must satisfy all of the following:
-
-- the hook lies inside the selected runtime component;
-- its current bytes exactly equal `expected`;
-- its guard length exactly fits the selected branch encoding;
-- its destination symbol exists in the compiled ELF;
-- the destination symbol resolves inside the emitted source image after instruction-state normalization;
-- hook ranges do not overlap each other;
-- hooks do not overlap the emitted payload.
-
-All hook guards are checked before any runtime bytes are changed.
-
-## Transaction and report
-
-The complete patched runtime image and stored representation are built in memory first. The target is validated before and again after external compilation, and its stored bytes are compared again immediately before replacement to reject stale concurrent workspace writes. Only after compilation, hash validation, range checks, hook validation, compression validation, and final target revalidation succeed is the target replaced.
-
-The command writes:
+A successful source patch mutates the extracted workspace and writes its report under:
 
 ```text
 WORKSPACE/manifests/source-patch-<manifest-stem>.json
 ```
 
-The report records:
-
-- profile and target;
-- runtime placement;
-- compiled size and SHA-256;
-- source SHA-256 values;
-- normalized compiler/linker/nm commands;
-- original and final runtime hashes;
-- original and final stored hashes;
-- storage encoding, stored size, and BLZ re-encode passthrough length when applicable;
-- each hook's address, symbol, destination, expected bytes, and emitted bytes.
-
-If final report publication fails after the target replacement, the implementation restores the original target bytes before surfacing the error.
-
-## Boundaries
-
-This bridge deliberately does not provide automatic code-cave discovery or overlay expansion. A placement is valid only when prior reverse-engineering evidence has established that the range is safe for the intended target build.
-
-The source-patch manifest is therefore an implementation artifact for already proven addresses, not a substitute for static/runtime reverse engineering.
-
-After applying a source patch, rebuild through the normal exact-profile workflow:
+The final ROM must still be produced through Bakugan's strict-profile rebuild path:
 
 ```text
 bakugan-ds rebuild REFERENCE.nds WORKSPACE output.nds
 ```
+
+No source-patch command is allowed to weaken Bakugan's exact-ROM rebuild policy.
+
+## Ownership boundary
+
+`bakugan_ds.source_apply`, `bakugan_ds.source_compile`, and `bakugan_ds.source_patch` may preserve compatibility names or B6RE policy adapters, but compilation, target resolution, branch encoding, BLZ storage mechanics, stale-write protection, rollback, and report generation remain toolkit-owned.

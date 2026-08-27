@@ -1,71 +1,68 @@
-# Rebuilding and Guarded Patching
+# B6RE Rebuild and Binary-Patch Addendum
 
-## Exact-copy builds
+Generic workspace rebuilding and guarded binary patching are owned by the standalone toolkit:
 
-`bakugan-ds rebuild` validates the source ROM and the complete extracted
-workspace before creating an output. When every file in `modified` still
-matches its decoded reference hash, the source ROM is copied exactly. The
-output SHA-256 therefore remains:
+- [Workspace extraction and rebuild](https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit/blob/main/docs/workspace-and-rebuild.md)
+- [Guarded binary patching](https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit/blob/main/docs/binary-patching.md)
 
-`7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b`
+This document records the stricter Bakugan/B6RE policy and exact reference evidence.
 
-The output report is written beside the ROM as `<output>.build.json`.
+## Strict rebuild policy
 
-## Changed builds
+`bakugan-ds rebuild` automatically uses the exact `b6re_rev0` profile. There is no `--allow-unsupported` path for rebuilds.
 
-The original ROM remains the template for headers, tables, executable regions,
-and all data outside FAT-backed payloads. Changed builds:
-
-1. validate all immutable original files and workspace mappings;
-2. reuse exact compressed bytes for unchanged payloads;
-3. deterministically LZ10-compress changed resources that were originally LZ10;
-4. store changed overlays uncompressed at exactly their declared `ram_size`;
-5. clear the changed overlay's compression flag and compressed-size metadata;
-6. repack FAT payloads in original physical order with `0x200` alignment;
-7. update every FAT start/end pair;
-8. preserve the original 128 MB ROM size;
-9. reparse the result before atomically installing it.
-
-ARM9 and ARM7 edits are permitted only when their sizes remain unchanged.
-
-## Overlay fallback
-
-The project currently decodes BLZ but does not encode BLZ. An edited overlay is
-therefore stored uncompressed. Nintendo DS overlay metadata supports this: the
-FAT range becomes the full decoded executable size, while the reserved overlay
-word is cleared so the loader does not attempt backward decompression.
-
-For overlay 7, an edited build must have:
-
-- payload size: `467360` bytes;
-- overlay flag: `0`;
-- compressed-size field: `0`;
-- load address unchanged at `0x02219440`.
-
-## Guarded patch schema
-
-```json
-{
-  "format_version": 1,
-  "profile_id": "b6re_rev0",
-  "patches": [
-    {
-      "id": "example",
-      "type": "binary_replace",
-      "target": "overlay:7",
-      "offset": 4096,
-      "expected": "00112233",
-      "replacement": "44556677",
-      "rationale": "Documented behavior change"
-    }
-  ]
-}
+```bash
+bakugan-ds rebuild "/path/to/Bakugan - Battle Brawlers.nds" \
+  work/bakugan \
+  output/Bakugan-modded.nds
 ```
 
-Supported targets are `arm9`, `arm7`, `overlay:<id>`, and
-`nitrofs:<original FNT path>`. Expected and replacement byte strings must be
-valid hexadecimal and exactly the same length. All guards are evaluated in
-memory before any modified target is written. Stale expected bytes fail closed.
+A workspace with no edits must rebuild to a byte-identical copy of the supported ROM:
 
-Patch application reports are written under `workspace/manifests` using the
-patch filename, for example `patch-example.json`.
+```text
+SHA-256: 7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b
+```
+
+The build report is written as `<output>.build.json`.
+
+## B6RE changed-overlay evidence
+
+The generic rebuilder stores a changed overlay as its decoded/uncompressed payload unless an explicit validated overlay-layout override supplies replacement metadata.
+
+For B6RE overlay 7, the established reference geometry is:
+
+```text
+load address: 0x02219440
+RAM payload size: 467360 bytes
+```
+
+Without an explicit alternate approved layout, an edited overlay 7 build must therefore retain that decoded payload size and clear compression metadata so the Nintendo DS loader does not attempt BLZ decompression.
+
+Any future overlay expansion or layout replacement must be backed by separate B6RE evidence and an explicit validated override; it is not inferred by the generic rebuilder.
+
+## Bakugan binary-patch policy
+
+Bakugan patch files use the toolkit's guarded fixed-length binary replacement schema, but Bakugan adds two policy requirements before delegating application:
+
+1. the patch set must contain a nonempty `profile_id`;
+2. the patch profile must exactly match the workspace manifest profile.
+
+For current committed Bakugan patches that profile is:
+
+```json
+"profile_id": "b6re_rev0"
+```
+
+A stale expected byte guard, profile mismatch, invalid target, or other patch-domain failure is surfaced through Bakugan's top-level CLI as a write failure rather than being relaxed.
+
+Patch reports remain under:
+
+```text
+WORKSPACE/manifests/patch-<patch-file-stem>.json
+```
+
+## Ownership boundary
+
+The toolkit owns target resolution, guard validation, fixed-length mutation, reporting, workspace validation, deterministic rebuild, FAT repacking, and compression mechanics.
+
+Bakugan owns the exact B6RE profile, patch documents, expected bytes, rationale, B6RE overlay/layout evidence, and the decision that unsupported ROMs are never accepted for write workflows.

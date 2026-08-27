@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
+from nds_disassembly_toolkit import cli as toolkit_cli
 
 from bakugan_ds import cli
-from nds_disassembly_toolkit import cli as toolkit_cli
 
 
 def test_rom_cli_runner_is_toolkit_owned() -> None:

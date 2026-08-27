@@ -1,8 +1,10 @@
-# Nitro Asset Inventory
+# B6RE Nitro Asset Inventory Addendum
 
-The asset inventory is a read-only companion to the ROM inspection and disassembly workflows. It identifies standard Nintendo Nitro asset formats after applying the repository's existing strict LZ10 decoder.
+Generic NitroFS asset detection, LZ10 decoding, signature/extension evidence, localized suffix handling, and JSON report structure are documented by the standalone [NDS Disassembly Toolkit asset guide](https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit/blob/main/docs/assets.md).
 
-## Command
+This document records the Bakugan-specific policy and exact B6RE regression evidence.
+
+## Bakugan command
 
 ```bash
 bakugan-ds assets inventory \
@@ -10,53 +12,11 @@ bakugan-ds assets inventory \
   --output build/assets.json
 ```
 
-Use `--include-unknown` when the detailed JSON should also contain files whose format is not recognized by this scanner. Unknown files are always counted even when they are omitted from the detailed list.
+Bakugan supplies its B6RE profile automatically. The command is read-only; its unsupported-ROM option follows the same explicit read-only policy as inspection and does not make an unsupported ROM safe for patching or rebuilding.
 
-`--allow-unsupported` has the same read-only meaning as the inspection command: it permits structural analysis of a ROM that does not match the selected exact profile. It does not make that ROM safe for patching.
+Use `--include-unknown` when unrecognized files should appear in the detailed report.
 
-## Evidence levels
-
-### Signature evidence
-
-The scanner decompresses LZ10-wrapped files before checking their first four decoded bytes. These formats are only identified when the decoded signature matches:
-
-| Signature | Format |
-| --- | --- |
-| `BMD0` | NSBMD model |
-| `BTX0` | NSBTX texture archive |
-| `SDAT` | Nintendo DS sound archive |
-| `NARC` | Nitro archive |
-| `RGCN` | NCGR character/tile graphics |
-| `RLCN` | NCLR palette |
-| `RCSN` | NSCR screen map |
-| `BCA0` | NSBCA animation |
-| `BMA0` | NSBMA material animation |
-| `BTP0` | NSBTP texture-pattern animation |
-| `BTA0` | NSBTA texture-coordinate animation |
-| `BVA0` | NSBVA visibility animation |
-
-A signed file-name family such as `.nsbmd` that does not decode to the expected signature is reported as a signed mismatch rather than silently trusted.
-
-### Extension evidence
-
-Bakugan also contains raw Nintendo tile and palette payloads using:
-
-- `.ntft` -> NTFT tile data;
-- `.ntfp` -> NTFP palette data.
-
-These raw payloads do not provide the same self-identifying four-byte signature. The inventory therefore labels them as `extension` evidence instead of promoting the name to signature-confirmed evidence.
-
-### Unknown
-
-Other files remain `unknown`. The command does not infer the meaning of Bakugan-specific `.bin`, `.mes`, `.cam`, `.ahx`, `.adx`, or other payloads merely from their names.
-
-## Localized suffixes
-
-The ROM contains localized suffix variants such as `.nsbmd_d`, `.nsbmd_f`, `.nsbtx_g`, and similar forms. The inventory keeps the literal suffix in each record while normalizing the expected family to NSBMD/NSBTX for signature comparison.
-
-This matters for the exact reference count: counting only files whose literal suffix is `.nsbmd` or `.nsbtx` undercounts the actual signed model and texture assets.
-
-## Exact B6RE reference
+## Exact B6RE reference inventory
 
 For the supported USA revision-0 B6RE ROM, the current exact-binary fixture is:
 
@@ -77,10 +37,14 @@ Recognized raw files:           1
 Signed mismatches:              0
 ```
 
-These numbers are regression evidence for the exact supported ROM, not generic Nintendo DS assumptions.
+These counts are B6RE regression evidence, not assumptions about other Nintendo DS games.
 
-## Relationship to Tinke
+## Bakugan-specific interpretation boundary
 
-Tinke was useful reference material for identifying the Nintendo Nitro formats relevant to Bakugan, especially BMD0/BTX0 and the NTFT/NTFP file families. The implementation in this repository is clean-room Python and does not vendor Tinke source.
+The generic toolkit recognizes standard Nintendo formats but does not infer semantics for Bakugan-specific `.bin`, `.mes`, `.cam`, `.ahx`, `.adx`, or other unknown payload families merely from filenames.
 
-The current inventory intentionally stops at classification. Parsing model geometry, texture metadata, palettes, or sound-bank internals should be added as separate evidence-backed format readers only when the project needs them.
+Likewise, the presence of a standard NSBMD/NSBTX/NTFT/NTFP asset establishes its container/format family, not its role in Bakugan gameplay or presentation. Any game-specific interpretation should be backed by Bakugan evidence and remain in this repository.
+
+## Reference-material boundary
+
+Tinke and other external Nintendo DS tools were useful reference material when identifying relevant standard Nitro formats. The implementation consumed by Bakugan is the clean-room Python implementation in `NDS-Disassembly-Toolkit`; no Tinke implementation is vendored into this repository.

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from nds_disassembly_toolkit import cli as toolkit_cli
 
 from bakugan_ds import cli
 
@@ -28,9 +29,9 @@ def test_cli_writes_report_from_mocked_inspection(
         def to_json(self) -> str:
             return '{"supported": true}\n'
 
-    monkeypatch.setattr(cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(toolkit_cli, "load_profile", lambda path: object())
     monkeypatch.setattr(
-        cli,
+        toolkit_cli,
         "inspect_rom",
         lambda path, profile, require_supported: FakeInspection(),
     )

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from nds_disassembly_toolkit import assets_cli as toolkit_assets_cli
 
 from bakugan_ds import assets_cli, cli
 
@@ -27,7 +28,7 @@ def test_assets_inventory_dispatches(
     assert result == 0
     assert calls[0].assets_command == "inventory"
     assert calls[0].include_unknown is True
-    assert calls[0].allow_unsupported is True
+    assert calls[0].require_supported is False
 
 
 def test_assets_inventory_writes_deterministic_report(
@@ -42,14 +43,14 @@ def test_assets_inventory_writes_deterministic_report(
         def to_json(self) -> str:
             return '{"format_version": 1}\n'
 
-    monkeypatch.setattr(assets_cli, "load_profile", lambda path: object())
+    monkeypatch.setattr(toolkit_assets_cli, "load_profile", lambda path: object())
     monkeypatch.setattr(
-        assets_cli,
+        toolkit_assets_cli,
         "inspect_rom",
         lambda path, profile, require_supported: object(),
     )
     monkeypatch.setattr(
-        assets_cli,
+        toolkit_assets_cli,
         "inventory_assets",
         lambda data, inspection, include_unknown: FakeInventory(),
     )

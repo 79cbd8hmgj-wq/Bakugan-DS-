@@ -3,10 +3,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from nds_disassembly_toolkit.assets_cli import (
-    add_assets_parser as _add_assets_parser,
-    run_assets_command,
-)
+from nds_disassembly_toolkit.assets_cli import add_assets_parser as _add_assets_parser
+from nds_disassembly_toolkit.assets_cli import run_assets_command
 
 
 def add_assets_parser(

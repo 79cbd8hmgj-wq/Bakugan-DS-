@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from nds_disassembly_toolkit import assets_cli as toolkit_assets_cli
+from nds_disassembly_toolkit import cli as toolkit_cli
 from nds_disassembly_toolkit import disassembly_cli as toolkit_disassembly_cli
 from nds_disassembly_toolkit import source_patch_cli as toolkit_source_patch_cli
 
@@ -13,6 +14,7 @@ def test_generic_cli_runners_are_toolkit_owned() -> None:
         disassembly_cli.run_disassembly_command
         is toolkit_disassembly_cli.run_disassembly_command
     )
+    assert cli.run_patch_command is toolkit_cli.run_patch_command
 
 
 def test_bakugan_cli_keeps_supported_rom_policy() -> None:

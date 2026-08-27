@@ -5,13 +5,17 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from nds_disassembly_toolkit.cli import add_rom_parsers, run_rom_command
+from nds_disassembly_toolkit.cli import (
+    add_patch_parser,
+    add_rom_parsers,
+    run_patch_command,
+    run_rom_command,
+)
 
 from bakugan_ds.assets_cli import add_assets_parser, run_assets_command
 from bakugan_ds.disassembly_cli import add_disassembly_parser, run_disassembly_command
 from bakugan_ds.errors import BakuganDSError, ProfileError, RomFormatError, UnsupportedRomError
 from bakugan_ds.gates.cli import add_gate_parser, run_gate_command
-from bakugan_ds.patches.apply import apply_patch_set
 from bakugan_ds.source_patch_cli import add_source_patch_parser, run_source_patch_command
 
 DEFAULT_PROFILE = Path("config/b6re_rev0.json")
@@ -28,13 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
         supported_by_default=True,
         allow_unsupported_commands={"inspect"},
     )
-
-    patch_parser = subparsers.add_parser(
-        "patch", help="apply guarded binary replacements to a workspace"
-    )
-    patch_parser.add_argument("workspace", type=Path)
-    patch_parser.add_argument("patch_file", type=Path)
-
+    add_patch_parser(subparsers)
     add_assets_parser(subparsers, default_profile=DEFAULT_PROFILE)
     add_disassembly_parser(subparsers, default_profile=DEFAULT_PROFILE)
     add_source_patch_parser(subparsers, default_profile=DEFAULT_PROFILE)
@@ -60,15 +58,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if arguments.command in _ROM_COMMANDS:
             return run_rom_command(arguments)
         if arguments.command == "patch":
-            workspace = arguments.workspace.expanduser().resolve()
-            patch_file = arguments.patch_file.expanduser().resolve()
-            patch_report = apply_patch_set(workspace, patch_file)
-            report_path = workspace / "manifests" / f"patch-{patch_file.stem}.json"
-            print(
-                f"Applied {len(patch_report.applied)} patches to {workspace}; "
-                f"report: {report_path}"
-            )
-            return 0
+            return run_patch_command(arguments)
     except UnsupportedRomError as exc:
         print(str(exc), file=sys.stderr)
         return 3

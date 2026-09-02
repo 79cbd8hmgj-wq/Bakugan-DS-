@@ -87,19 +87,3 @@ jobs:
           else
             git diff --check --cached
           fi
-
-      - name: Package temporary source snapshot
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          tar --exclude=.git --exclude=m6e-source.tar.gz -czf m6e-source.tar.gz .
-
-      - name: Upload temporary source snapshot
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: m6e-source-snapshot
-          path: m6e-source.tar.gz
-          if-no-files-found: error
-          retention-days: 1

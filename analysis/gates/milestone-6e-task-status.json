@@ -12,11 +12,11 @@
     "8": "complete",
     "9": "complete",
     "10": "complete",
-    "11": "complete_pending_exact_head_ci",
-    "12": "complete_pending_exact_rom_ci",
-    "13": "blocked_missing_runtime_bundle_and_playable_state",
+    "11": "complete",
+    "12": "complete",
+    "13": "in_progress_fresh_runtime_recreated",
     "14": "in_progress"
   },
   "merge_ready": false,
-  "next_action": "Mount the validated Linux DeSmuME GDB bundle and playable Milestone 6E battle save/state, then execute the bounded seven-archetype representative runtime matrix."
+  "next_action": "Execute the bounded Milestone 6E representative runtime matrix on the exact rebuilt ROM using known System 2.0 loader/calculation/selector breakpoints; avoid broad RAM scans."
 }

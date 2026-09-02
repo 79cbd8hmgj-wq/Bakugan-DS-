@@ -12,13 +12,18 @@ from bakugan_ds.errors import WorkspaceError
 from bakugan_ds.gates.authoring import (
     build_milestone_6d_balance_report,
     load_authoring_document,
+    load_gate_roster_authoring_document,
     load_milestone_6d_authoring_document,
     validate_milestone_6d_roster,
     write_milestone_6d_balance_report,
 )
 from bakugan_ds.gates.context import context_report, load_context_fields
 from bakugan_ds.gates.discovery import load_discovery_artifact
-from bakugan_ds.gates.install import install_milestone_6c, install_milestone_6d
+from bakugan_ds.gates.install import (
+    install_milestone_6c,
+    install_milestone_6d,
+    install_milestone_6e,
+)
 from bakugan_ds.gates.io import load_json_object, write_evidence
 from bakugan_ds.gates.legacy import (
     LegacyGateRecord,
@@ -29,6 +34,8 @@ from bakugan_ds.gates.legacy import (
 from bakugan_ds.gates.model import LegacyGateTableSpec
 from bakugan_ds.gates.readiness_report import generate_readiness_report
 from bakugan_ds.gates.record import build_trailer, parse_trailer
+from bakugan_ds.gates.roster_analysis import write_roster_analysis
+from bakugan_ds.gates.roster_metadata import load_gate_roster_metadata
 from bakugan_ds.gates.runtime_image import (
     load_runtime_arm9,
     load_workspace_arm9,
@@ -109,6 +116,18 @@ def _add_gate_commands(subparsers: Any) -> None:
     )
     install_6d_parser.add_argument("--dry-run", action="store_true")
 
+    install_6e = subparsers.add_parser(
+        "install-milestone-6e",
+        help="transactionally install the complete Milestone 6E Gate roster",
+    )
+    install_6e.add_argument("workspace", type=Path)
+    install_6e.add_argument(
+        "--authoring",
+        type=Path,
+        default=Path("config/gates/milestone-6e-system2-v1.json"),
+    )
+    install_6e.add_argument("--dry-run", action="store_true")
+
     validate_6d_parser = subparsers.add_parser(
         "validate-milestone-6d",
         help="validate the deterministic Milestone 6D Gate balance authoring roster",
@@ -121,6 +140,18 @@ def _add_gate_commands(subparsers: Any) -> None:
     )
     report_6d_parser.add_argument("authoring", type=Path)
     report_6d_parser.add_argument("output", type=Path)
+
+    report_6e_parser = subparsers.add_parser(
+        "report-milestone-6e-roster",
+        help="write the deterministic Milestone 6E whole-roster analysis",
+    )
+    report_6e_parser.add_argument("authoring", type=Path)
+    report_6e_parser.add_argument("output", type=Path)
+    report_6e_parser.add_argument(
+        "--metadata",
+        type=Path,
+        default=Path("config/gates/milestone-6e-roster-metadata.json"),
+    )
 
     readiness_parser = subparsers.add_parser(
         "readiness",
@@ -307,6 +338,15 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
             f"patches={len(install_report.binary_patches)}"
         )
         return 0
+    if arguments.gate_command == "install-milestone-6e":
+        install_report = install_milestone_6e(
+            arguments.workspace,
+            arguments.authoring,
+            dry_run=arguments.dry_run,
+        )
+        print(json.dumps(install_report.to_dict(), indent=2, sort_keys=True))
+        return 0
+
     if arguments.gate_command == "install-milestone-6d":
         install_report = install_milestone_6d(
             arguments.workspace,
@@ -352,6 +392,19 @@ def run_gate_command(arguments: argparse.Namespace) -> int:
         write_milestone_6d_balance_report(output, gate_records)
         digest = hashlib.sha256(output.read_bytes()).hexdigest()
         print(f"Wrote Milestone 6D Gate balance report: {output}; sha256={digest}")
+        return 0
+    if arguments.gate_command == "report-milestone-6e-roster":
+        gate_records = load_gate_roster_authoring_document(arguments.authoring)
+        metadata = load_gate_roster_metadata(arguments.metadata)
+        output = ensure_local_output(arguments.output)
+        write_roster_analysis(output, gate_records, metadata)
+        digest = hashlib.sha256(output.read_bytes()).hexdigest()
+        live_count = sum(record.archetype != 0 for record in gate_records)
+        print(
+            "Wrote Milestone 6E Gate roster analysis: "
+            f"{output}; record_count={len(gate_records)}; "
+            f"live_count={live_count}; sha256={digest}"
+        )
         return 0
     if arguments.gate_command == "validate-trailer":
         sys.stdout.write(

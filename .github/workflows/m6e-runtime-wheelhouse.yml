@@ -29,7 +29,7 @@ jobs:
             esac
             cp -L "$lib" runtime-tools/lib/
           done < <(ldd /usr/bin/xdotool | awk '/=> \/.* \(/ {print $3} /^[[:space:]]*\/.*\(/ {print $1}' | sort -u)
-          LD_LIBRARY_PATH="$PWD/runtime-tools/lib" runtime-tools/bin/xdotool version
+          LD_LIBRARY_PATH="$PWD/runtime-tools/lib" runtime-tools/bin/xdotool --version
           sha256sum runtime-tools/bin/xdotool runtime-tools/lib/* runtime-tools/wheelhouse/* > runtime-tools/SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:

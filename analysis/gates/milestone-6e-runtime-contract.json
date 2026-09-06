@@ -1,0 +1,12 @@
+{
+  "cache_range": ["0x02293C20", "0x02293C60"],
+  "format": "bakugan-ds-gate-milestone-6e-runtime-contract",
+  "format_version": 1,
+  "live_record_count": 103,
+  "module_base": "0x0228BC20",
+  "module_size": 32768,
+  "protected_core_g_ranges": [[146456, 146460], [146608, 146680], [146808, 146812]],
+  "runtime_semantics": "milestone-6d-frozen",
+  "transactional_install": true,
+  "unsupported_record_ids": []
+}

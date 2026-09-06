@@ -212,3 +212,7 @@ conversion remains Milestone 6E. See the
 Milestone 4B requires a Linux x86_64 DeSmuME CLI with ARM9 GDB-stub support.
 The manual, ROM-free GitHub Actions workflow and artifact handoff are documented
 in [docs/desmume-debug-bundle.md](docs/desmume-debug-bundle.md).
+
+## Gate Card System 2.0 complete roster
+
+Milestone 6E authors all 103 Gate Cards across the seven approved archetypes while preserving the frozen Milestone 6D runtime semantics. See `docs/gate-card-system-2-complete-roster.md` and the committed roster and balance contracts under `analysis/gates/`.

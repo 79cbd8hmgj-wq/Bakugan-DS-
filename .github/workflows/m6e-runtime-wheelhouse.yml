@@ -1,0 +1,26 @@
+name: M6E Runtime Python Wheelhouse
+
+on:
+  push:
+    branches:
+      - milestone-6e-complete-gate-roster-conversion
+
+permissions:
+  contents: read
+
+jobs:
+  wheelhouse:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Download runtime wheels
+        run: |
+          mkdir wheelhouse
+          python -m pip download --only-binary=:all: 'capstone>=5,<7' -d wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m6e-runtime-wheelhouse
+          path: wheelhouse
+          retention-days: 1

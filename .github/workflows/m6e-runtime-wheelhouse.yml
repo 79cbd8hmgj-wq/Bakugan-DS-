@@ -1,4 +1,4 @@
-name: M6E Runtime Python Wheelhouse
+name: M6E Runtime Host Tools
 
 on:
   push:
@@ -9,18 +9,30 @@ permissions:
   contents: read
 
 jobs:
-  wheelhouse:
+  host-tools:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Download runtime wheels
+      - name: Stage Capstone and xdotool
         run: |
-          mkdir wheelhouse
-          python -m pip download --only-binary=:all: 'capstone>=5,<7' -d wheelhouse
+          set -euo pipefail
+          mkdir -p runtime-tools/wheelhouse runtime-tools/bin runtime-tools/lib
+          python -m pip download --only-binary=:all: 'capstone>=5,<7' -d runtime-tools/wheelhouse
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends xdotool
+          cp -L /usr/bin/xdotool runtime-tools/bin/
+          while read -r lib; do
+            case "$(basename "$lib")" in
+              libc.so.6|libm.so.6|libdl.so.2|libpthread.so.0|ld-linux-x86-64.so.2) continue ;;
+            esac
+            cp -L "$lib" runtime-tools/lib/
+          done < <(ldd /usr/bin/xdotool | awk '/=> \/.* \(/ {print $3} /^[[:space:]]*\/.*\(/ {print $1}' | sort -u)
+          LD_LIBRARY_PATH="$PWD/runtime-tools/lib" runtime-tools/bin/xdotool version
+          sha256sum runtime-tools/bin/xdotool runtime-tools/lib/* runtime-tools/wheelhouse/* > runtime-tools/SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: m6e-runtime-wheelhouse
-          path: wheelhouse
+          name: m6e-runtime-host-tools
+          path: runtime-tools
           retention-days: 1

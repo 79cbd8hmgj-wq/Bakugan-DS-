@@ -2,7 +2,7 @@
   "format_version": 1,
   "milestone": "6E",
   "profile_id": "b6re_rev0",
-  "status": "runtime_representative_capture_pending",
+  "status": "runtime_representative_capture_blocked_on_throw_gesture",
   "bounded_claims": [
     "The unchanged Milestone 6D runtime module and cache lifecycle retain their previously accepted live-ROM evidence.",
     "All 103 Milestone 6E records are validated by the host model and exact emitted-ARM interpreter.",
@@ -24,9 +24,10 @@
   "rejected_claims": [
     "Every Milestone 6E archetype has already been exercised naturally in DeSmuME.",
     "The prior Milestone 6D live capture alone proves every new authored record is reachable through normal gameplay.",
-    "The runtime scaffold below constitutes a live capture; no runtime observation in this file has been recorded."
+    "The runtime scaffold below constitutes a live capture; no Gate System 2.0 breakpoint has fired in a recorded runtime observation in this file.",
+    "A savestate checkpoint satisfying describe_required_checkpoints() has been captured for any sample-matrix case."
   ],
-  "blocker": "The Linux DeSmuME GDB bundle and the preserved playable battle save/state are not mounted in the current execution runtime.",
+  "blocker": "A live session was launched against the exact rebuilt ROM (sha256 7b8f0ac330d3bf7cef2acb8e4e9318e797e1f2e051f1c2f1c87d998ef8d2558b) with the user-supplied Linux GDB-enabled DeSmuME build, and was navigated by hand through boot, save creation, and the tutorial battle intro to the in-game \"Throw Bakugan\" screen for Gate 19 (juggernoid-comeback), with the target Gate card correctly aimed (grid cursor placed on Shuji's occupied cell via both touch and D-Pad, confirmed by pixel-level screenshot comparison). Landing the thrown Bakugan on that Gate card requires a touchscreen flick/steer gesture (per the in-game Alice tutorial text: \"make short strokes on the Touch Screen with the stylus after you throw\"). Roughly 20 distinct synthetic-input techniques were tried against this gesture through the toolkit's X11 host driver (varying drag duration from 20ms to smooth 350ms interpolations, step counts from 2 to 30, dwell time at the release point, chained single-invocation xdotool mousedown/mousemove/mouseup, direction and distance, long holds up to 3.6s, and the on-screen confirm icon), and in every case the throw did not register: the ball visibly tracks the stylus 1:1 while held (proving touch delivery and coordinate mapping are correct, consistent with the same mapping working for every other confirmed interaction: grid-cell selection, the Bakugan-select OK button, and the Gate Card peek icon) but snaps back to the ready pose within one frame of release rather than launching. This looks like a synthetic-input fidelity limit of the sandboxed X11 driver against this specific gesture recognizer, not a toolkit defect: the reliability layer itself (launch, debugger_reachable, window health, watchdog, scenario execution with a live PC snapshot) was independently exercised successfully in the same session. No checkpoint in describe_required_checkpoints() has been captured, and no Timing* breakpoint has fired against a real session as a result.",
   "runtime_reliability_layer": {
     "source": "NDS-Disassembly-Toolkit@8ec5185a26c75026e61a75b57460c175cbeff339 (claude/nds-toolkit-runtime-reliability-a19c8a)",
     "addresses": [
@@ -47,13 +48,22 @@
   },
   "task13_scaffold": {
     "module": "src/bakugan_ds/runtime/milestone_6e_task13.py",
-    "status": "constructed_and_unit_tested_not_yet_executed",
+    "status": "constructed_and_unit_tested; live_session_reached_pre_throw_state; blocked_on_throw_gesture",
     "breakpoints_source": "analysis/symbols/gate_system2_context.csv (mapping_confidence == confirmed)",
     "sample_matrix_card_ids": [19, 1, 16, 32, 33, 40, 82, 96, 6],
     "sample_matrix_derivation": "re-derived and asserted against config/gates/milestone-6e-roster-metadata.json in tests/unit/test_milestone_6e_task13.py, not an independently hand-maintained list",
+    "live_session_progress": {
+      "rom_verified": true,
+      "emulator_launched_with_real_gdb_handshake": true,
+      "watchdog_running_against_live_session": true,
+      "smoke_scenario_executed": "store_scenario/run_scenario validated end-to-end with a real PC snapshot (0x02000800) captured to traces/boot-state.json",
+      "navigated_to": "Gate 19 (juggernoid-comeback) Throw Bakugan screen, target cell correctly aimed",
+      "blocked_at": "the touchscreen throw/flick gesture does not register via synthetic X11 input (see blocker field above)"
+    },
     "not_yet_done": [
       "no checkpoint has been captured against a live session (see describe_required_checkpoints())",
-      "no scenario or acceptance-matrix run has been executed against the exact rebuilt ROM",
+      "no scenario or acceptance-matrix run has been executed against a post-throw, pre-evaluation game state",
+      "no Timing* breakpoint (TIMING_PRE_GATE etc.) has fired against a real session",
       "no exact G-value / selector-weight assertions have been added to the scenario steps yet"
     ]
   }

@@ -14,9 +14,9 @@
     "10": "complete",
     "11": "complete",
     "12": "complete",
-    "13": "in_progress_scaffold_ready_pending_local_execution",
+    "13": "in_progress_live_session_reached_pre_throw_state_blocked_on_throw_gesture",
     "14": "in_progress"
   },
   "merge_ready": false,
-  "next_action": "Execute the bounded Milestone 6E representative runtime matrix (src/bakugan_ds/runtime/milestone_6e_task13.py) on the exact rebuilt ROM using known System 2.0 loader/calculation/selector breakpoints; avoid broad RAM scans. The NDS Disassembly Toolkit's runtime-orchestration layer was hardened for exactly this (see analysis/runtime-observations/gate-system2-milestone-6e-validation.json#runtime_reliability_layer); a local operator with the real ROM and a GDB-enabled DeSmuME build still needs to capture the checkpoints in describe_required_checkpoints() and run the matrix, since neither the ROM nor a GDB-capable emulator can be present in this repository."
+  "next_action": "A live session was launched against the exact rebuilt ROM with a real GDB-enabled DeSmuME build and navigated by hand to the Gate 19 (juggernoid-comeback) Throw Bakugan screen with the target Gate card correctly aimed. Landing the throw requires a touchscreen flick/steer gesture that did not register through ~20 systematic synthetic-input variations via the toolkit's X11 host driver (see analysis/runtime-observations/gate-system2-milestone-6e-validation.json#blocker for the full account). The reliability layer itself (launch, debugger_reachable, window health, watchdog, scenario execution with a live PC snapshot) was independently validated in the same session. Remaining work: find a working synthetic technique for the throw gesture (or capture the gesture's exact timing/coordinates from a human play session for replay), then capture the checkpoints in describe_required_checkpoints() and run the matrix in src/bakugan_ds/runtime/milestone_6e_task13.py."
 }

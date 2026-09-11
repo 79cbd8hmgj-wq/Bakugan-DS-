@@ -23,7 +23,38 @@
   },
   "rejected_claims": [
     "Every Milestone 6E archetype has already been exercised naturally in DeSmuME.",
-    "The prior Milestone 6D live capture alone proves every new authored record is reachable through normal gameplay."
+    "The prior Milestone 6D live capture alone proves every new authored record is reachable through normal gameplay.",
+    "The runtime scaffold below constitutes a live capture; no runtime observation in this file has been recorded."
   ],
-  "blocker": "The Linux DeSmuME GDB bundle and the preserved playable battle save/state are not mounted in the current execution runtime."
+  "blocker": "The Linux DeSmuME GDB bundle and the preserved playable battle save/state are not mounted in the current execution runtime.",
+  "runtime_reliability_layer": {
+    "source": "NDS-Disassembly-Toolkit@8ec5185a26c75026e61a75b57460c175cbeff339 (claude/nds-toolkit-runtime-reliability-a19c8a)",
+    "addresses": [
+      "async/background execution for long runtime operations (`runtime job`)",
+      "automatic relaunch from checkpoints for dead emulator processes",
+      "a real debugger_reachable() probe",
+      "real window-health validation",
+      "a persistent heartbeat/watchdog (`runtime watchdog`)",
+      "session-isolated battery saves",
+      "enforced checkpoint memory-region verification",
+      "first-class DeSmuME screenshots and richer failure bundles",
+      "a deeper runtime doctor with a live-probe mode",
+      "hard deadlines on X11 subprocesses",
+      "hardened save-state slot discovery",
+      "enforced runtime session lifecycle transitions"
+    ],
+    "pinned_via": "bakugan-ds pyproject.toml [project.optional-dependencies].runtime"
+  },
+  "task13_scaffold": {
+    "module": "src/bakugan_ds/runtime/milestone_6e_task13.py",
+    "status": "constructed_and_unit_tested_not_yet_executed",
+    "breakpoints_source": "analysis/symbols/gate_system2_context.csv (mapping_confidence == confirmed)",
+    "sample_matrix_card_ids": [19, 1, 16, 32, 33, 40, 82, 96, 6],
+    "sample_matrix_derivation": "re-derived and asserted against config/gates/milestone-6e-roster-metadata.json in tests/unit/test_milestone_6e_task13.py, not an independently hand-maintained list",
+    "not_yet_done": [
+      "no checkpoint has been captured against a live session (see describe_required_checkpoints())",
+      "no scenario or acceptance-matrix run has been executed against the exact rebuilt ROM",
+      "no exact G-value / selector-weight assertions have been added to the scenario steps yet"
+    ]
+  }
 }

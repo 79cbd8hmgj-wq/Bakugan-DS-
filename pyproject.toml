@@ -18,6 +18,13 @@ dev = [
   "pytest>=8.3",
   "ruff>=0.6",
 ]
+# Only needed for the live Milestone 6E Task 13 runtime acceptance pass
+# (analysis/runtime/milestone_6e_task13.py). Static ROM inspection, workspace
+# rebuild, and the Gate System 2.0 host/emitted model are self-contained and
+# do not require this extra.
+runtime = [
+  "nds-disassembly-toolkit @ git+https://github.com/79cbd8hmgj-wq/NDS-Disassembly-Toolkit.git@bc7dec8df5acdb7a66fc7d0b2bda5dc9295e9fba",
+]
 
 [project.scripts]
 bakugan-ds = "bakugan_ds.cli:main"

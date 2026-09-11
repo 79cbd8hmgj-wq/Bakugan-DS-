@@ -14,9 +14,9 @@
     "10": "complete",
     "11": "complete",
     "12": "complete",
-    "13": "in_progress_fresh_runtime_recreated",
+    "13": "in_progress_scaffold_ready_pending_local_execution",
     "14": "in_progress"
   },
   "merge_ready": false,
-  "next_action": "Execute the bounded Milestone 6E representative runtime matrix on the exact rebuilt ROM using known System 2.0 loader/calculation/selector breakpoints; avoid broad RAM scans."
+  "next_action": "Execute the bounded Milestone 6E representative runtime matrix (src/bakugan_ds/runtime/milestone_6e_task13.py) on the exact rebuilt ROM using known System 2.0 loader/calculation/selector breakpoints; avoid broad RAM scans. The NDS Disassembly Toolkit's runtime-orchestration layer was hardened for exactly this (see analysis/runtime-observations/gate-system2-milestone-6e-validation.json#runtime_reliability_layer); a local operator with the real ROM and a GDB-enabled DeSmuME build still needs to capture the checkpoints in describe_required_checkpoints() and run the matrix, since neither the ROM nor a GDB-capable emulator can be present in this repository."
 }
